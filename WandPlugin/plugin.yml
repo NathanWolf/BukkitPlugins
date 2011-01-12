@@ -1,0 +1,3 @@
+name: WandPlugin
+main: com.elmakers.mine.bukkit.plugins.wand.WandPlugin
+version: 0.01
