@@ -1,25 +1,21 @@
 package com.elmakers.mine.bukkit.plugins.wand;
 
-import java.io.File;
-
-import org.bukkit.Server;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class WandPlugin extends JavaPlugin 
 {
-
-	public WandPlugin(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File plugin, ClassLoader cLoader) 
+	
+	@Override
+	public void onInitialize()
 	{
-        super(pluginLoader, instance, desc, plugin, cLoader);
-    }
+		
+	}
 	
 	@Override
 	public void onEnable() 
 	{
-
         PluginManager pm = getServer().getPluginManager();
 		// TODO: Register our events        
 

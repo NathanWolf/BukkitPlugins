@@ -1,4 +1,4 @@
-WandPlugin (****WIP***!)
+WandPlugin (***WIP***!)
 ==========
 
 A magic wand plugin for the Bukkit Minecraft server mod.
