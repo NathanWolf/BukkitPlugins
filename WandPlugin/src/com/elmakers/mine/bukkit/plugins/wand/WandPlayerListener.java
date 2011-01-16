@@ -166,7 +166,7 @@ public class WandPlayerListener extends PlayerListener
     			}
     			String commandMessage = prefix + command.getName();
     			String commandDescription = command.getDescription();
-    			if (commandDescription.length() > 0)
+    			if (commandDescription != null && commandDescription.length() > 0)
     			{
     				commandMessage = commandMessage + " : " + commandDescription;
     			}
