@@ -6,7 +6,7 @@ public class HealSpell extends Spell
 {
 
 	@Override
-	public boolean cast(SpellsPlugin plugin, Player player) 
+	public boolean onCast(String[] parameters) 
 	{
 		player.sendMessage("You heal yourself");
 		player.setHealth(20);

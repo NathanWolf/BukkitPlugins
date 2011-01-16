@@ -45,7 +45,14 @@ public class SpellsPlayerListener extends PlayerListener
     		return;
     	}
     	
-    	spell.cast(plugin, event.getPlayer());
+    	String[] parameters = new String[split.length - 1];
+    	for (int i = 1; i < split.length; i++)
+    	{
+    		parameters[i - 1] = split[i];
+    	}
+    	
+    	spell.initialize(plugin, event.getPlayer());
+    	spell.onCast(parameters);
     }
     
 }

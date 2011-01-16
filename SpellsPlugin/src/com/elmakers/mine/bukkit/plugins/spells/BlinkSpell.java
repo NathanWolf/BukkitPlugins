@@ -22,11 +22,11 @@ public class BlinkSpell extends Spell
 		return "Teleport to your target";
 	}
 	
-	public boolean cast(SpellsPlugin plugin, Player player)
+	@Override
+	public boolean onCast(String[] parameters)
 	{
-		HitBlox hit = new HitBlox(player);
-		Block target = hit.getTargetBlock();
-		Block face = hit.getLastBlock();
+		Block target = getTargetBlock();
+		Block face = getLastBlock();
 		
 		if (target == null) 
 		{

@@ -18,13 +18,17 @@ public class SpellsPlugin extends JavaPlugin
 	@Override
 	public void onInitialize()
 	{
-		// Heal
-		Spell heal = new HealSpell();
-		spells.put(heal.getName(), heal);
-		
-		// Blink
-		Spell blink = new BlinkSpell();
-		spells.put(blink.getName(), blink);
+		// Create all of our spells
+		addSpell(new HealSpell());
+		addSpell(new BlinkSpell());
+		addSpell(new AscendSpell());
+		addSpell(new DescendSpell());
+		addSpell(new TorchSpell());
+	}
+	
+	private void addSpell(Spell spell)
+	{
+		spells.put(spell.getName(), spell);
 	}
 	
 	@Override
