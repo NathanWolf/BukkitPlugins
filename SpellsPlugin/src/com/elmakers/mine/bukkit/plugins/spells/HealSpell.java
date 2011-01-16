@@ -1,7 +1,5 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
-import org.bukkit.entity.Player;
-
 public class HealSpell extends Spell 
 {
 
