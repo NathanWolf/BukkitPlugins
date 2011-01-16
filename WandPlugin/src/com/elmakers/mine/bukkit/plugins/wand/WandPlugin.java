@@ -94,6 +94,10 @@ public class WandPlugin extends JavaPlugin
 						if (wand.getCurrentCommand() != null)
 						{
 							wandLine += wand.getCurrentCommand().getName() + ":";
+							for (WandCommand command : wand.getCommands())
+							{
+								wandLine += command.getName() + ":";
+							}
 						}
 						playerLine += wandLine + ";";
 					}
@@ -123,12 +127,13 @@ public class WandPlugin extends JavaPlugin
 	}
 
 	public void load() 
-	{
+	{	
 		if (!new File(commandFile).exists())
 		{
 			log.info("File does not exist " + commandFile);
 			return;
 		}
+		playerWands.clear();
 		try 
 		{
 			log.info("Loading " + commandFile);
