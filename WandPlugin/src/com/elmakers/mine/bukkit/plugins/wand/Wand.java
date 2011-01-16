@@ -3,7 +3,7 @@ package com.elmakers.mine.bukkit.plugins.wand;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bukkit.Player;
+import org.bukkit.entity.Player;
 
 public class Wand 
 {

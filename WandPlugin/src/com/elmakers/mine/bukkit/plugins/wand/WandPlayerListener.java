@@ -1,7 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.wand;
 
 import org.bukkit.Material;
-import org.bukkit.Player;
+import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.event.player.PlayerChatEvent;
