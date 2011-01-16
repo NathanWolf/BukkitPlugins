@@ -2,9 +2,10 @@ package com.elmakers.mine.bukkit.plugins.spells;
 
 import net.minecraft.server.WorldServer;
 
-import org.bukkit.Block;
+import org.bukkit.block.Block;
 import org.bukkit.Location;
-import org.bukkit.Player;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 
@@ -47,8 +48,8 @@ public class BlinkSpell extends Spell
 		Block twoUp = craftWorld.getBlockAt(target.getX() ,target.getY() + 2, target.getZ());
 		if 
 		(
-			oneUp.getTypeID() == 0 
-		&&  twoUp.getTypeID() == 0
+			oneUp.getType() == Material.AIR
+		&&  twoUp.getType() == Material.AIR
 		) 
 		{
 			player.sendMessage("Blink!");

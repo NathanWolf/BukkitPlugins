@@ -1,6 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
-import org.bukkit.Block;
+import org.bukkit.block.Block;
 import org.bukkit.Material;
 
 public class TorchSpell extends Spell 

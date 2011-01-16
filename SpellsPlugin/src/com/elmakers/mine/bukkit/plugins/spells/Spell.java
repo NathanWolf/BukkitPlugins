@@ -1,11 +1,9 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
-import net.minecraft.server.WorldServer;
-
-import org.bukkit.Block;
+import org.bukkit.block.Block;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Player;
+import org.bukkit.entity.Player;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 
@@ -50,7 +48,7 @@ public abstract class Spell
     private double length, h_length;
     private double x_offset, y_offset, z_offset;
     private int last_x, last_y, last_z;
-    private int target_x, target_y, target_z, target_type;
+    private int target_x, target_y, target_z;
 	
 	public abstract boolean onCast(String[] parameters);
 	public abstract String getName();
@@ -211,10 +209,10 @@ public abstract class Spell
     public boolean setBlockAt(int blockType, int x, int y, int z) {
     	World world = player.getWorld();
     	Block block = world.getBlockAt(x, y, z);
-    	block.setTypeID(blockType);
+    	block.setTypeId(blockType);
     	CraftWorld craftWorld = (CraftWorld)world;
     	craftWorld.updateBlock(x, y, z);
-        return block.getTypeID() == blockType;
+        return block.getTypeId() == blockType;
     }
     
     /**
@@ -257,7 +255,7 @@ public abstract class Spell
 			Block block = world.getBlockAt(x, y, z);
 			Block blockOneUp = world.getBlockAt(x, y + 1, z);
 			Block blockTwoUp = world.getBlockAt(x, y + 2, z);
-			if (block.getTypeID() != 0 && blockOneUp.getTypeID() == 0 && blockTwoUp.getTypeID() == 0) 
+			if (block.getTypeId() != 0 && blockOneUp.getTypeId() == 0 && blockTwoUp.getTypeId() == 0) 
 			{
 				// spot found - return location
 				return new Location(world, (double)x + 0.5,(double)y + 1, (double)z + 0.5, playerLoc.getYaw(), playerLoc.getPitch());
