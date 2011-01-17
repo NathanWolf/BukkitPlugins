@@ -18,8 +18,6 @@ public class SpellsPlugin extends JavaPlugin
 	private static final Logger log = Logger.getLogger("Minecraft");
 	static final SpellsPlayerListener playerListener = new SpellsPlayerListener();
 	static final HashMap<String, Spell> spells = new HashMap<String, Spell>();
-	private int currentMaterialType;
-	private boolean currentlyUsingMaterial = false;
 	private final HashMap<String, PlayerSpells> playerSpells = new HashMap<String, PlayerSpells>();
 
 	public SpellsPlugin(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File dataFolder, File plugin, ClassLoader cLoader) 
