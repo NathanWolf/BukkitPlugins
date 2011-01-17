@@ -9,10 +9,12 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,11 +25,11 @@ public class WandPlugin extends JavaPlugin
 	static final WandPlayerListener playerListener = new WandPlayerListener();
 	static final HashMap<String, PlayerWandList> playerWands = new HashMap<String, PlayerWandList>();
 	
-	@Override
-	public void onInitialize()
+	public WandPlugin(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File dataFolder, File plugin, ClassLoader cLoader) 
 	{
+		super(pluginLoader, instance, desc, dataFolder, plugin, cLoader);
 	}
-	
+	 
 	@Override
 	public void onEnable() 
 	{
