@@ -1,11 +1,14 @@
 package com.elmakers.mine.bukkit.plugins.spells;
+import java.io.File;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -15,15 +18,18 @@ public class SpellsPlugin extends JavaPlugin
 	static final SpellsPlayerListener playerListener = new SpellsPlayerListener();
 	static final HashMap<String, Spell> spells = new HashMap<String, Spell>();
 
-	@Override
-	public void onInitialize()
+	public SpellsPlugin(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File dataFolder, File plugin, ClassLoader cLoader) 
 	{
-		// Create all of our spells
+		super(pluginLoader, instance, desc, dataFolder, plugin, cLoader);
+	
 		addSpell(new HealSpell());
 		addSpell(new BlinkSpell());
 		addSpell(new AscendSpell());
 		addSpell(new DescendSpell());
 		addSpell(new TorchSpell());
+		addSpell(new ExtendSpell());
+		addSpell(new FireballSpell());
+		addSpell(new TowerSpell());
 	}
 	
 	private void addSpell(Spell spell)

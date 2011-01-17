@@ -250,7 +250,7 @@ public abstract class Spell
 		World world = player.getWorld();
 				
 		// search for a spot to stand
-		while (2 < y && y < 125) 
+		while (2 < y && y < 255) 
 		{
 			Block block = world.getBlockAt(x, y, z);
 			Block blockOneUp = world.getBlockAt(x, y + 1, z);
@@ -265,5 +265,29 @@ public abstract class Spell
 		
 		// no spot found
 		return null;
+	}
+   
+	public float getPlayerRotation()
+	{
+		float playerRot = player.getLocation().getYaw();
+		while (playerRot < 0) playerRot += 360;
+		while (playerRot > 360) playerRot -= 360;
+		return playerRot;
+	}
+	
+	public Block getPlayerBlock()
+	{
+		Block playerBlock = null;
+		Location playerLoc = player.getLocation();
+		int x = (int)Math.round(playerLoc.getX() - 0.5);
+		int y = (int)Math.round(playerLoc.getY() - 0.5);
+		int z = (int)Math.round(playerLoc.getZ() - 0.5);
+		int dy = 0;
+		while (dy > -3 && (playerBlock == null || playerBlock.getType() == Material.AIR))
+		{
+			playerBlock = player.getWorld().getBlockAt(x, y + dy, z);
+			dy--;
+		}			
+		return playerBlock;
 	}
 }
