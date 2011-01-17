@@ -54,11 +54,18 @@ public abstract class Spell
 	public abstract String getName();
 	public abstract String getDescription();
 	
-	public void initialize(SpellsPlugin plugin, Player player)
+	public void cast(String[] parameters, SpellsPlugin plugin, Player player)
 	{
 		this.player = player;
 		this.plugin = plugin;
 		
+		getTargets(player);
+        
+        onCast(parameters);
+	}
+	
+	public void getTargets(Player player)
+	{
 		player_loc = player.getLocation();
         length = 0;
         rot_x = (player_loc.getYaw() + 90) % 360;

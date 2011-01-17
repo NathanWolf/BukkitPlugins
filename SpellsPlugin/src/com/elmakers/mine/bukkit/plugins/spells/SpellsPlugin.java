@@ -30,6 +30,9 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new ExtendSpell());
 		addSpell(new FireballSpell());
 		addSpell(new TowerSpell());
+		addSpell(new PillarSpell());
+		addSpell(new BridgeSpell());
+		addSpell(new AbsorbSpell());
 	}
 	
 	private void addSpell(Spell spell)

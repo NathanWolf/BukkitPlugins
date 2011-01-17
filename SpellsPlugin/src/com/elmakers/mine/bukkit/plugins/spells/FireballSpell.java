@@ -1,12 +1,14 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
 import net.minecraft.server.EntityFireball;
+import net.minecraft.server.EntityLiving;
 import net.minecraft.server.WorldServer;
 import net.minecraft.server.World;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 public class FireballSpell extends Spell {
@@ -28,7 +30,9 @@ public class FireballSpell extends Spell {
         double dz = target.getZ() - playerLoc.getZ();
 		
 		player.sendMessage("FOOM!");
-		EntityFireball fireball = new EntityFireball(((CraftWorld)player.getWorld()).getHandle());
+		CraftPlayer craftPlayer = (CraftPlayer)player;
+		EntityLiving playerEntity = craftPlayer.getHandle();
+		EntityFireball fireball = new EntityFireball(((CraftWorld)player.getWorld()).getHandle(), playerEntity, dx, dy, dz);
 		
 		double d8 = 4D;
         Vec3D vec3d = getLocation(player, 1.0F);

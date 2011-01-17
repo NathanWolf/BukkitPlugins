@@ -14,7 +14,7 @@ public class TowerSpell extends Spell {
 			player.sendMessage("No target");
 			return false;
 		}
-		int MAX_HEIGHT = 127;
+		int MAX_HEIGHT = 255;
 		int height = 16;
 		int maxHeight = 127;
 		int material = 20;
@@ -28,14 +28,14 @@ public class TowerSpell extends Spell {
 			int y = midY + i;
 			if (y > MAX_HEIGHT)
 			{
-				maxHeight = MAX_HEIGHT - midZ;
+				maxHeight = MAX_HEIGHT - midY;
 				height = height > maxHeight ? maxHeight : height;
 				break;
 			}
 			Block block = getBlockAt(midX, y, midZ);
 			if (block.getType() != Material.AIR)
 			{
-				player.sendMessage("Found ceiling of " + block.getType().name());
+				player.sendMessage("Found ceiling of " + block.getType().name().toLowerCase());
 				height = i;
 				break;
 			}

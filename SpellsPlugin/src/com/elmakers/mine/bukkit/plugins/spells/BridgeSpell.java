@@ -4,7 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
-public class ExtendSpell extends Spell 
+public class BridgeSpell extends Spell 
 {
 	int MAX_SEARCH_DISTANCE = 16;
 	
@@ -14,8 +14,8 @@ public class ExtendSpell extends Spell
 		Block playerBlock = getPlayerBlock();
 		if (playerBlock == null) 
 		{
-			// no spot found to ascend
-			player.sendMessage("Nowhere to extend");
+			// no spot found to bridge
+			player.sendMessage("Need air to build a bridge");
 			return false;
 		}		
 
@@ -49,11 +49,11 @@ public class ExtendSpell extends Spell
 		}
 		if (targetBlock.getType() != Material.AIR)
 		{
-			player.sendMessage("Can't extend any further");
+			player.sendMessage("Can't bridge any further");
 			return false;
 		}
 		setBlockAt(attachBlock.getTypeId(), targetBlock.getX(), targetBlock.getY(), targetBlock.getZ());
-		player.sendMessage("You extend your target");
+		player.sendMessage("A bridge extends!");
 		//player.sendMessage("Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
 		
 		return true;
@@ -62,13 +62,13 @@ public class ExtendSpell extends Spell
 	@Override
 	public String getName() 
 	{
-		return "extend";
+		return "bridge";
 	}
 
 	@Override
 	public String getDescription() 
 	{
-		return "Extends your target outward";
+		return "Extends the ground underneath you";
 	}
 
 }

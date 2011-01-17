@@ -51,8 +51,7 @@ public class SpellsPlayerListener extends PlayerListener
     		parameters[i - 1] = split[i];
     	}
     	
-    	spell.initialize(plugin, event.getPlayer());
-    	spell.onCast(parameters);
+    	spell.cast(parameters, plugin, event.getPlayer());
     }
     
 }
