@@ -71,4 +71,9 @@ public class BridgeSpell extends Spell
 		return "Extends the ground underneath you";
 	}
 
+	@Override
+	public String getCategory() 
+	{
+		return "build";
+	}
 }

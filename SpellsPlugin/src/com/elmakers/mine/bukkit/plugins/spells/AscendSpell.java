@@ -35,4 +35,9 @@ public class AscendSpell extends Spell
 		return "Go up to the nearest safe spot";
 	}
 
+	@Override
+	public String getCategory() 
+	{
+		return "movement";
+	}
 }

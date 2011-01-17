@@ -38,7 +38,6 @@ public abstract class Spell
 	protected Player player;
 	protected SpellsPlugin plugin;
 
-	
 	private int range = 200;
 	private double view_height = 1.65;
 	private double step = 0.2;
@@ -52,6 +51,7 @@ public abstract class Spell
 	
 	public abstract boolean onCast(String[] parameters);
 	public abstract String getName();
+	public abstract String getCategory();
 	public abstract String getDescription();
 	
 	public void cast(String[] parameters, SpellsPlugin plugin, Player player)

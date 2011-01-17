@@ -23,4 +23,9 @@ public class HealSpell extends Spell
 		return "Heal yourself";
 	}
 
+	@Override
+	public String getCategory() 
+	{
+		return "help";
+	}
 }

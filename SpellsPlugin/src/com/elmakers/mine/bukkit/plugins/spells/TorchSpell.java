@@ -34,4 +34,9 @@ public class TorchSpell extends Spell
 		return "Place a torch at your target";
 	}
 
+	@Override
+	public String getCategory() 
+	{
+		return "build";
+	}
 }

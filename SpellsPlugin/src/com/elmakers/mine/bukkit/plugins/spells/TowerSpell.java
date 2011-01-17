@@ -77,4 +77,9 @@ public class TowerSpell extends Spell {
 		return "Create a tower out of the specified material";
 	}
 
+	@Override
+	public String getCategory() 
+	{
+		return "build";
+	}
 }

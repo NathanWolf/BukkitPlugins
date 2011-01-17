@@ -33,6 +33,8 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new PillarSpell());
 		addSpell(new BridgeSpell());
 		addSpell(new AbsorbSpell());
+		addSpell(new FillSpell());
+		addSpell(new TimeSpell());
 	}
 	
 	private void addSpell(Spell spell)

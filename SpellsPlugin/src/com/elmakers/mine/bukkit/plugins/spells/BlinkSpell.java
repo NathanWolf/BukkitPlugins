@@ -85,4 +85,10 @@ public class BlinkSpell extends Spell
 		+ 		Math.pow(loc.getZ() - target.getZ(), 2)
 		);
 	}
+	
+	@Override
+	public String getCategory() 
+	{
+		return "movement";
+	}
 }

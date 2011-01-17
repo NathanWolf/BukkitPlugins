@@ -35,4 +35,9 @@ public class AbsorbSpell extends Spell
 		return "Give yourself some of your target";
 	}
 
+	@Override
+	public String getCategory() 
+	{
+		return "build";
+	}
 }

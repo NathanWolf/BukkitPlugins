@@ -51,4 +51,9 @@ public class PillarSpell extends Spell
 		return "Creates a pillar at your target";
 	}
 
+	@Override
+	public String getCategory() 
+	{
+		return "build";
+	}
 }

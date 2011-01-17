@@ -71,4 +71,9 @@ public class ExtendSpell extends Spell
 		return "Extends your target outward";
 	}
 
+	@Override
+	public String getCategory() 
+	{
+		return "build";
+	}
 }

@@ -2,8 +2,6 @@ package com.elmakers.mine.bukkit.plugins.spells;
 
 import net.minecraft.server.EntityFireball;
 import net.minecraft.server.EntityLiving;
-import net.minecraft.server.WorldServer;
-import net.minecraft.server.World;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -82,4 +80,9 @@ public class FireballSpell extends Spell {
         }
     }
 
+	@Override
+	public String getCategory() 
+	{
+		return "combat";
+	}
 }
