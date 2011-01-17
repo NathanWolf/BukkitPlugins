@@ -1,5 +1,8 @@
 package com.elmakers.mine.bukkit.plugins.spells;
+
+import org.bukkit.Material;
 import org.bukkit.event.player.PlayerChatEvent;
+import org.bukkit.event.player.PlayerItemEvent;
 import org.bukkit.event.player.PlayerListener;
 
 public class SpellsPlayerListener extends PlayerListener 
@@ -52,6 +55,24 @@ public class SpellsPlayerListener extends PlayerListener
     	}
     	
     	spell.cast(parameters, plugin, event.getPlayer());
+    }
+    
+
+    /**
+     * Called when a player uses an item
+     * 
+     * @param event Relevant event details
+     */
+	@Override
+    public void onPlayerItem(PlayerItemEvent event) 
+	{
+		// Kind of a hack for Wand compatibility, ignore the stick.
+		// What we really need is a way to tell what are blocks, or a whitelist.
+		Material material = event.getPlayer().getInventory().getItemInHand().getType();
+		if (material != Material.STICK)
+		{
+			plugin.setCurrentMaterialType(event.getPlayer(), material);
+		}
     }
     
 }

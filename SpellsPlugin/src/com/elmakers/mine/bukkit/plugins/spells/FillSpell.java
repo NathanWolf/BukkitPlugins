@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 
 public class FillSpell extends Spell 
@@ -11,6 +12,7 @@ public class FillSpell extends Spell
 	public boolean onCast(String[] parameters) 
 	{
 		Block targetBlock = getTargetBlock();
+		Material material = plugin.finishMaterialUse(player);
 		if (targetBlock == null) 
 		{
 			player.sendMessage("No target");
@@ -43,7 +45,7 @@ public class FillSpell extends Spell
 			absy++;
 			absz++;
 			
-			player.sendMessage("Filling " + absx + "x" + absy + "x" + absz + " area with " + target.getType().name().toLowerCase());
+			player.sendMessage("Filling " + absx + "x" + absy + "x" + absz + " area with " + material.name().toLowerCase());
 			int x = target.getX();
 			int y = target.getY();
 			int z = target.getZ();
@@ -53,7 +55,7 @@ public class FillSpell extends Spell
 				{
 					for (int iz = 0; iz < absz; iz++)
 					{
-						setBlockAt(target.getTypeId(), x + ix * dx, y + iy * dy, z + iz * dz);
+						setBlockAt(material.getId(), x + ix * dx, y + iy * dy, z + iz * dz);
 					}
 				}
 			}
@@ -64,6 +66,7 @@ public class FillSpell extends Spell
 		else
 		{
 			target = targetBlock;
+			plugin.startMaterialUse(player, target.getType());
 			player.sendMessage("Cast again to fill with " + target.getType().name().toLowerCase());
 			return true;
 		}
