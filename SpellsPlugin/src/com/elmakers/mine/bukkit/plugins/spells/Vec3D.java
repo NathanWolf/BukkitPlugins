@@ -161,7 +161,7 @@ public class Vec3D
         return (new StringBuilder()).append("(").append(xCoord).append(", ").append(yCoord).append(", ").append(zCoord).append(")").toString();
     }
 
-    private static List vectorList = new ArrayList();
+    private static List<Vec3D> vectorList = new ArrayList<Vec3D>();
     private static int nextVector = 0;
     public double xCoord;
     public double yCoord;

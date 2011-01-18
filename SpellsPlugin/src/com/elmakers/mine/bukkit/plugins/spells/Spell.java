@@ -7,6 +7,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 
+import com.elmakers.mine.bukkit.utilities.PluginProperties;
+
 /**
  * 
  * Base class for spells. Handles finding player location, targetting, and other
@@ -53,6 +55,11 @@ public abstract class Spell
 	public abstract String getName();
 	public abstract String getCategory();
 	public abstract String getDescription();
+	
+	public void load(PluginProperties properties)
+	{
+		
+	}
 	
 	public void cast(String[] parameters, SpellsPlugin plugin, Player player)
 	{

@@ -9,9 +9,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 
+import com.elmakers.mine.bukkit.utilities.PluginProperties;
+
 public class BlinkSpell extends Spell
 {
-	private int RANGE = 0;
+	private int maxRange = 0;
 	
 	public String getName()
 	{
@@ -34,7 +36,7 @@ public class BlinkSpell extends Spell
 			player.sendMessage("Nowhere to blink to");
 			return false;
 		}
-		if (RANGE > 0 && getDistance(player,target) > RANGE) 
+		if (maxRange > 0 && getDistance(player,target) > maxRange) 
 		{
 			player.sendMessage("Can't blink that far");
 			return false;
@@ -90,5 +92,11 @@ public class BlinkSpell extends Spell
 	public String getCategory() 
 	{
 		return "movement";
+	}
+
+	@Override
+	public void load(PluginProperties properties)
+	{
+		maxRange = properties.getInteger("spells-blink-range", maxRange);
 	}
 }

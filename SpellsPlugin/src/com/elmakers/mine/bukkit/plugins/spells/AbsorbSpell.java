@@ -3,9 +3,11 @@ package com.elmakers.mine.bukkit.plugins.spells;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
+import com.elmakers.mine.bukkit.utilities.PluginProperties;
+
 public class AbsorbSpell extends Spell 
 {
-	int DEFAULT_AMOUNT = 16;
+	int defaultAmount = 16;
 
 	@Override
 	public boolean onCast(String[] parameters) 
@@ -17,7 +19,7 @@ public class AbsorbSpell extends Spell
 			player.sendMessage("No target");
 			return false;
 		}
-		int amount = DEFAULT_AMOUNT;
+		int amount = defaultAmount;
 		player.sendMessage("Absorbing some " + target.getType().name().toLowerCase());
 		player.getWorld().dropItem(player.getLocation(), new ItemStack(target.getType(), amount));
 		return true;
@@ -39,5 +41,11 @@ public class AbsorbSpell extends Spell
 	public String getCategory() 
 	{
 		return "build";
+	}
+	
+	@Override
+	public void load(PluginProperties properties)
+	{
+		defaultAmount = properties.getInteger("spells-absorb-amount", defaultAmount);
 	}
 }

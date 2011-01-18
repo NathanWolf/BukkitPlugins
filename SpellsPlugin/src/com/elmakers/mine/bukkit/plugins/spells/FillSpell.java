@@ -3,9 +3,12 @@ package com.elmakers.mine.bukkit.plugins.spells;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
+import com.elmakers.mine.bukkit.utilities.PluginProperties;
+
 public class FillSpell extends Spell 
 {
-	int MAX_DIMENTION = 32;
+	int maxDimension = 128;
+	int maxVolume = 512;
 	Block target = null;
 	
 	@Override
@@ -30,7 +33,14 @@ public class FillSpell extends Spell
 			int absy = Math.abs(deltay);
 			int absz = Math.abs(deltaz);
 		
-			if (absx > MAX_DIMENTION || absy > MAX_DIMENTION || absz > MAX_DIMENTION)
+			if (absx > maxDimension || absy > maxDimension || absz > maxDimension)
+			{
+				player.sendMessage("Dimension is too big!");
+				target = null;
+				return false;
+			}
+
+			if (absx * absy * absz > maxVolume)
 			{
 				player.sendMessage("Volume is too big!");
 				target = null;
@@ -88,5 +98,12 @@ public class FillSpell extends Spell
 	public String getCategory() 
 	{
 		return "build";
+	}
+
+	@Override
+	public void load(PluginProperties properties)
+	{
+		maxDimension = properties.getInteger("spells-fill-max-dimension", maxDimension);
+		maxVolume = properties.getInteger("spells-fill-max-volume", maxVolume);
 	}
 }

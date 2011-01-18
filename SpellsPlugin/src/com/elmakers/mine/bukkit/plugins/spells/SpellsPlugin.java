@@ -13,11 +13,15 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.elmakers.mine.bukkit.utilities.PluginProperties;
+
 public class SpellsPlugin extends JavaPlugin 
 {
-	private static final Logger log = Logger.getLogger("Minecraft");
-	static final SpellsPlayerListener playerListener = new SpellsPlayerListener();
-	static final HashMap<String, Spell> spells = new HashMap<String, Spell>();
+	private String propertiesFile = "spells.properties";
+	
+	private final Logger log = Logger.getLogger("Minecraft");
+	private final SpellsPlayerListener playerListener = new SpellsPlayerListener();
+	private final HashMap<String, Spell> spells = new HashMap<String, Spell>();
 	private final HashMap<String, PlayerSpells> playerSpells = new HashMap<String, PlayerSpells>();
 
 	public SpellsPlugin(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File dataFolder, File plugin, ClassLoader cLoader) 
@@ -37,6 +41,25 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new AbsorbSpell());
 		addSpell(new FillSpell());
 		addSpell(new TimeSpell());
+		addSpell(new ReloadSpell());
+	}
+	
+	protected void loadProperties()
+	{
+		PluginProperties properties = new PluginProperties(propertiesFile);
+		properties.load();
+		
+		for (Spell spell : spells.values())
+		{
+			spell.load(properties);
+		}
+		
+		properties.save();
+	}
+	
+	public void load()
+	{
+		loadProperties();
 	}
 	
 	protected PlayerSpells getPlayerSpells(Player player)
@@ -58,12 +81,14 @@ public class SpellsPlugin extends JavaPlugin
 	@Override
 	public void onEnable() 
 	{
+		load();
 		playerListener.setPlugin(this);
 		
         PluginManager pm = getServer().getPluginManager();
 		
         pm.registerEvent(Type.PLAYER_COMMAND, playerListener, Priority.Normal, this);
-        pm.registerEvent(Type.PLAYER_ANIMATION, playerListener, Priority.Normal, this);
+        //pm.registerEvent(Type.PLAYER_ANIMATION, playerListener, Priority.Normal, this);
+        pm.registerEvent(Type.PLAYER_ITEM, playerListener, Priority.Normal, this);
         
         PluginDescriptionFile pdfFile = this.getDescription();
         log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled");
