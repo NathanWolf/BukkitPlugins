@@ -10,6 +10,8 @@ import org.bukkit.event.player.PlayerItemEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.inventory.ItemStack;
 
+import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
+
 public class SpellsPlayerListener extends PlayerListener 
 {
 	private SpellsPlugin plugin;
@@ -37,19 +39,25 @@ public class SpellsPlayerListener extends PlayerListener
     		return;
     	}
     	
-    	if (split.length < 2)
+    	PlayerPermissions permissions = plugin.getPermissions(event.getPlayer().getName());
+    	
+    	if (permissions == null)
     	{
-    		plugin.listSpells(event.getPlayer());
     		return;
     	}
-
-    	// No params
+    	
+    	if (split.length < 2)
+    	{
+    		plugin.listSpells(event.getPlayer(), permissions);
+    		return;
+    	}
    
     	String spellName = split[1];
+    	
     	Spell spell = plugin.getSpell(spellName);
-    	if (spell == null || spellName.equalsIgnoreCase("help") || spellName.equalsIgnoreCase("list"))
+    	if (spell == null || spellName.equalsIgnoreCase("help") || spellName.equalsIgnoreCase("list") || !permissions.hasPermission(spell.getName()))
     	{
-    		plugin.listSpells(event.getPlayer());
+    		plugin.listSpells(event.getPlayer(), permissions);
     		return;
     	}
     	

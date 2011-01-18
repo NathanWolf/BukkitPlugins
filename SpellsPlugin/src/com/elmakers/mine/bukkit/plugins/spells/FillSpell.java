@@ -33,14 +33,14 @@ public class FillSpell extends Spell
 			int absy = Math.abs(deltay);
 			int absz = Math.abs(deltaz);
 		
-			if (absx > maxDimension || absy > maxDimension || absz > maxDimension)
+			if (maxDimension > 0 && (absx > maxDimension || absy > maxDimension || absz > maxDimension))
 			{
 				player.sendMessage("Dimension is too big!");
 				target = null;
 				return false;
 			}
 
-			if (absx * absy * absz > maxVolume)
+			if (maxVolume > 0 && absx * absy * absz > maxVolume)
 			{
 				player.sendMessage("Volume is too big!");
 				target = null;

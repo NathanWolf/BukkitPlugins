@@ -13,13 +13,17 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.elmakers.mine.bukkit.plugins.groups.Permissions;
+import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
 import com.elmakers.mine.bukkit.utilities.PluginProperties;
 
 public class SpellsPlugin extends JavaPlugin 
 {
-	private String propertiesFile = "spells.properties";
+	private final String propertiesFile = "spells.properties";
+	private String permissionsFile = "spell-classes.txt";
 	
 	private final Logger log = Logger.getLogger("Minecraft");
+	private final Permissions permissions = new Permissions();
 	private final SpellsPlayerListener playerListener = new SpellsPlayerListener();
 	private final HashMap<String, Spell> spells = new HashMap<String, Spell>();
 	private final HashMap<String, PlayerSpells> playerSpells = new HashMap<String, PlayerSpells>();
@@ -48,6 +52,9 @@ public class SpellsPlugin extends JavaPlugin
 	{
 		PluginProperties properties = new PluginProperties(propertiesFile);
 		properties.load();
+		
+		permissionsFile = properties.getString("spells-classes-file", permissionsFile);
+		permissions.load(permissionsFile);
 		
 		for (Spell spell : spells.values())
 		{
@@ -99,13 +106,21 @@ public class SpellsPlugin extends JavaPlugin
 	{
 	}
 	
-	public void listSpells(Player player)
+	public void listSpells(Player player, PlayerPermissions playerPermissions)
 	{
 		player.sendMessage("Use: /cast <spell>: ");
 		for (Spell spell : spells.values())
 		{
-			player.sendMessage(" " + spell.getName() + " : " + spell.getDescription());
+			if (playerPermissions.hasPermission(spell.getName()))
+			{
+				player.sendMessage(" " + spell.getName() + " : " + spell.getDescription());
+			}
 		}
+	}
+	
+	public PlayerPermissions getPermissions(String playerName)
+	{
+		return permissions.getPlayerPermissions(playerName);
 	}
 	
 	public Spell getSpell(String name)
