@@ -1,9 +1,11 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
 import org.bukkit.Material;
+import org.bukkit.event.player.PlayerAnimationEvent;
+import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.event.player.PlayerChatEvent;
-import org.bukkit.event.player.PlayerItemEvent;
 import org.bukkit.event.player.PlayerListener;
+import org.bukkit.inventory.ItemStack;
 
 public class SpellsPlayerListener extends PlayerListener 
 {
@@ -59,16 +61,26 @@ public class SpellsPlayerListener extends PlayerListener
     
 
     /**
-     * Called when a player uses an item
+     * Called when a player performs an animation, such as the arm swing
      * 
      * @param event Relevant event details
      */
 	@Override
-    public void onPlayerItem(PlayerItemEvent event) 
+    public void onPlayerAnimation(PlayerAnimationEvent event) 
 	{
+		if (event.getAnimationType() != PlayerAnimationType.ARM_SWING)
+		{
+			return;
+		}
+		
 		// Kind of a hack for Wand compatibility, ignore the stick.
 		// What we really need is a way to tell what are blocks, or a whitelist.
-		Material material = event.getPlayer().getInventory().getItemInHand().getType();
+		ItemStack item = event.getPlayer().getInventory().getItemInHand();
+		Material material = Material.AIR;
+		if (item != null)
+		{
+			material = item.getType();
+		}
 		if (material != Material.STICK)
 		{
 			plugin.setCurrentMaterialType(event.getPlayer(), material);
