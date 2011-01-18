@@ -4,7 +4,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,12 +20,25 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.elmakers.mine.bukkit.utilities.PluginProperties;
+
 public class WandPlugin extends JavaPlugin 
 {
+	private String propertiesFile = "wand.properties";
+
+	private int wandTypeId = 280;
 	private String commandFile = "wand-commands.txt";	
-	private static final Logger log = Logger.getLogger("Minecraft");
-	static final WandPlayerListener playerListener = new WandPlayerListener();
-	static final HashMap<String, PlayerWandList> playerWands = new HashMap<String, PlayerWandList>();
+	
+	private final Logger log = Logger.getLogger("Minecraft");
+	private final HashMap<String, WandPermissions> permissions = new HashMap<String, WandPermissions>();
+	private final WandPlayerListener playerListener = new WandPlayerListener();
+	private final HashMap<String, PlayerWandList> playerWands = new HashMap<String, PlayerWandList>();
+	
+	private boolean allCanUse = true;
+	private boolean allCanAdminister = true;
+	private boolean allCanModify = true;
+	
+	private PlayerWandList defaultWands = null;
 	
 	public WandPlugin(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File dataFolder, File plugin, ClassLoader cLoader) 
 	{
@@ -55,10 +70,106 @@ public class WandPlugin extends JavaPlugin
 		save();
 	}
 	
+	public void loadProperties()
+	{
+		PluginProperties properties = new PluginProperties(propertiesFile);
+		properties.load();
+		
+		// Get and set all properties
+		commandFile = properties.getString("wand-commands-file", commandFile);
+		wandTypeId = properties.getInteger("wand-type-id", wandTypeId);
+		String wandDefault = properties.getString("wand-default", "");
+		String wandUsers = properties.getString("wand-users", "");
+		String wandMods = properties.getString("wand-mods", "");
+		String wandAdmins = properties.getString("wand-admins", "");
+		
+		parsePermissions(wandUsers, wandMods, wandAdmins);
+		defaultWands = parseWands("DEFAULT:" + wandDefault);
+		
+		properties.save();
+	}
+	
+	protected void parsePermissions(String wandUserString, String wandModString, String wandAdminString)
+	{
+		permissions.clear();
+		
+		List<String> wandUsers = parseUserList(wandUserString);
+		List<String> wandMods = parseUserList(wandModString);
+		List<String> wandAdmins = parseUserList(wandAdminString);
+		
+		allCanUse = true;
+		allCanAdminister = true;
+		allCanModify = true;
+		
+		for (String user : wandUsers)
+		{
+			allCanUse = false;
+			WandPermissions player = getPermissions(user);
+			player.setCanUse(true);
+		}
+		
+		for (String mod : wandMods)
+		{
+			allCanModify = false;
+			WandPermissions player = getPermissions(mod);
+			player.setCanModify(true);
+		}
+		
+		for (String admin : wandAdmins)
+		{
+			allCanAdminister = false;
+			WandPermissions player = getPermissions(admin);
+			player.setCanAdminister(true);
+		}
+	}
+	
+	protected List<String> parseUserList(String userList)
+	{	
+		List<String> users = new ArrayList<String>();
+		if (userList == null || userList.length() == 0)
+		{
+			return users;
+		}
+		String[] userSplit = userList.split("");
+		
+		for (int i = 0; i < userSplit.length; i++)
+		{
+			String userName = userSplit[i];
+			if (userName == null || userName.length() == 0)
+			{
+				continue;
+			}
+			users.add(userName);
+		}
+		return users;
+	}
+	
 	public PlayerWandList getPlayerWands(Player player)
 	{
-		return getPlayerWands(player.getName());
+		PlayerWandList list = getPlayerWands(player.getName());
+		if (list != null)
+		{
+			list.setPlayer(player);
+		}
+		return list;
 	}
+	
+	
+	public WandPermissions getPermissions(String playerName)
+	{
+		WandPermissions player = permissions.get(playerName);
+		
+		if (player == null)
+		{
+			player = new WandPermissions();
+			player.setCanAdminister(allCanAdminister);
+			player.setCanModify(allCanModify);
+			player.setCanUse(allCanUse);
+			permissions.put(playerName, player);
+		}
+		
+		return player;
+	}	
 	
 	public PlayerWandList getPlayerWands(String playerName)
 	{
@@ -68,6 +179,11 @@ public class WandPlugin extends JavaPlugin
 		{
 			wands = new PlayerWandList();
 			playerWands.put(playerName, wands);
+		}
+		
+		if (wands.isEmpty() && defaultWands != null)
+		{
+			defaultWands.copyTo(wands);
 		}
 		
 		return wands;
@@ -130,6 +246,7 @@ public class WandPlugin extends JavaPlugin
 
 	public void load() 
 	{	
+		loadProperties();
 		if (!new File(commandFile).exists())
 		{
 			log.info("File does not exist " + commandFile);
@@ -146,45 +263,12 @@ public class WandPlugin extends JavaPlugin
 				if (line.startsWith("#") || line.equals(""))
 					continue;
 				
-				String[] splitWands = line.split(";");
-				
-				if (splitWands.length < 1) 
+				PlayerWandList parsedWands = parseWands(line);
+				if (parsedWands != null)
 				{
-					log.log(Level.SEVERE, "Malformed line (" + line + ") in " + commandFile);
-					continue;
+					PlayerWandList userWands = getPlayerWands(parsedWands.getPlayerName());
+					parsedWands.copyTo(userWands);
 				}
-
-				String playerInfo = splitWands[0];
-				String[] playerSplit = playerInfo.split(":");
-				if (playerSplit.length < 1) 
-				{
-					log.log(Level.SEVERE, "Malformed line (" + line + ") in " + commandFile);
-					continue;
-				}
-				
-				String playerName = playerSplit[0];
-				String selectedWand = "";
-				if (playerSplit.length > 1)
-				{
-					selectedWand = playerSplit[1];
-				}
-				PlayerWandList wands = getPlayerWands(playerName);
-				for (int wandIndex = 1; wandIndex < splitWands.length; wandIndex++)
-				{
-					if (splitWands[wandIndex].length() <= 0) continue;
-					String[] wandSplit = splitWands[wandIndex].split(":");
-					if (wandSplit.length < 1) continue;
-					Wand wand = wands.addWand(wandSplit[0]);
-					if (wandSplit.length < 2) continue;
-					String selectedCommand = wandSplit[1];
-					for (int commandIndex = 2; commandIndex < wandSplit.length; commandIndex++)
-					{
-						String command = wandSplit[commandIndex];
-						wand.addCommand(command);
-					}
-					wand.selectCommand(selectedCommand);
-				}
-				wands.selectWand(selectedWand);
 			}
 			scanner.close();
 		} 
@@ -194,4 +278,53 @@ public class WandPlugin extends JavaPlugin
 		}
 	}
 	
+	public PlayerWandList parseWands(String wandString)
+	{
+		PlayerWandList wands = new PlayerWandList();
+		String[] splitWands = wandString.split(";");
+		
+		if (splitWands.length < 1) 
+		{
+			return null;
+		}
+
+		String playerInfo = splitWands[0];
+		String[] playerSplit = playerInfo.split(":");
+		if (playerSplit.length < 1) 
+		{
+			return null;
+		}
+		
+		String playerName = playerSplit[0];
+		wands.setPlayerName(playerName);
+		
+		String selectedWand = "";
+		if (playerSplit.length > 1)
+		{
+			selectedWand = playerSplit[1];
+		}
+		for (int wandIndex = 1; wandIndex < splitWands.length; wandIndex++)
+		{
+			if (splitWands[wandIndex].length() <= 0) continue;
+			String[] wandSplit = splitWands[wandIndex].split(":");
+			if (wandSplit.length < 1) continue;
+			Wand wand = wands.addWand(wandSplit[0]);
+			if (wandSplit.length < 2) continue;
+			String selectedCommand = wandSplit[1];
+			for (int commandIndex = 2; commandIndex < wandSplit.length; commandIndex++)
+			{
+				String command = wandSplit[commandIndex];
+				wand.addCommand(command);
+			}
+			wand.selectCommand(selectedCommand);
+		}
+		wands.selectWand(selectedWand);
+		
+		return wands;
+	}
+	
+	public int getWandTypeId()
+	{
+		return wandTypeId;
+	}
 }

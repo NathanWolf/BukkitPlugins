@@ -1,6 +1,5 @@
 package com.elmakers.mine.bukkit.plugins.wand;
 
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
@@ -28,8 +27,14 @@ public class WandPlayerListener extends PlayerListener
 	{
 		if (event.getAnimationType() == PlayerAnimationType.ARM_SWING)
 		{
-			if (event.getPlayer().getInventory().getItemInHand().getType() == Material.STICK)
+			if (event.getPlayer().getInventory().getItemInHand().getTypeId() == plugin.getWandTypeId())
 			{
+				WandPermissions permissions = plugin.getPermissions(event.getPlayer().getName());	
+				if (!permissions.canUse())
+				{
+					return;
+				}
+				
 				PlayerWandList wands = plugin.getPlayerWands(event.getPlayer());
 				Wand wand = wands.getCurrentWand();
 				if (wand == null)
@@ -49,8 +54,14 @@ public class WandPlayerListener extends PlayerListener
 	@Override
     public void onPlayerItem(PlayerItemEvent event) 
 	{
-		if (event.getPlayer().getInventory().getItemInHand().getType() == Material.STICK)
+		if (event.getPlayer().getInventory().getItemInHand().getTypeId() == plugin.getWandTypeId())
 		{
+			WandPermissions permissions = plugin.getPermissions(event.getPlayer().getName());	
+			if (!permissions.canUse())
+			{
+				return;
+			}
+			
 			PlayerWandList wands = plugin.getPlayerWands(event.getPlayer());
 			Wand wand = wands.getCurrentWand();
 			if (wand == null)
@@ -65,14 +76,25 @@ public class WandPlayerListener extends PlayerListener
 	private void showHelp(PlayerWandList wands)
 	{
 		Player player = wands.getPlayer();
+		WandPermissions permissions = plugin.getPermissions(player.getName());
 		player.sendMessage("Usage: \\wand [command] [parameters]");
-		player.sendMessage(" create [name] : Create a magic wand");
-		player.sendMessage(" destroy [name] : Destroy one of your wands");
-		player.sendMessage(" list : List the spells bound to your wand");
+		player.sendMessage(" spells : List the spells bound to your wand");
 		player.sendMessage(" wands : List all of your wands");
-		player.sendMessage(" bind [command] : Bind a command to your wand");
-		player.sendMessage(" unbind [command] : Unbind a command from your wand");
 		player.sendMessage(" next : Switch to the next wand");
+
+		if (permissions.canModify())
+		{
+			player.sendMessage(" create [name] : Create a magic wand");
+			player.sendMessage(" bind [command] : Bind a command to your wand");
+			player.sendMessage(" unbind [command] : Unbind a command from your wand");
+			player.sendMessage(" destroy [name] : Destroy one of your wands");
+		}
+		
+		if (permissions.canAdminister())
+		{
+			player.sendMessage(" reload : Reload the configuration");
+		}
+		
 	}
 	
 	/**
@@ -85,6 +107,13 @@ public class WandPlayerListener extends PlayerListener
     @Override
     public void onPlayerCommand(PlayerChatEvent event) 
     {
+    	WandPermissions permissions = plugin.getPermissions(event.getPlayer().getName());
+
+		if (!permissions.canUse())
+		{
+			return;
+		}
+		
     	String[] split = event.getMessage().split(" ");
     	String commandString = split[0];
     	
@@ -110,7 +139,7 @@ public class WandPlayerListener extends PlayerListener
     		return;
     	}
     	
-    	if (wandCommand.equalsIgnoreCase("reload"))
+    	if (wandCommand.equalsIgnoreCase("reload") && permissions.canAdminister())
     	{
     		plugin.load();
     		event.getPlayer().sendMessage("Wands reloaded");
@@ -151,7 +180,7 @@ public class WandPlayerListener extends PlayerListener
     		return;
     	}
     	
-    	if (wandCommand.equalsIgnoreCase("list"))
+    	if (wandCommand.equalsIgnoreCase("spells"))
     	{
     		Wand wand = wands.getCurrentWand();
     		if (wand == null)
@@ -175,6 +204,13 @@ public class WandPlayerListener extends PlayerListener
     			}
     			event.getPlayer().sendMessage(commandMessage);
     		}
+    		return;
+    	}
+    	
+    	// All mod stuff from here
+    	if (!permissions.canModify())
+    	{
+    		showHelp(wands);
     		return;
     	}
     	

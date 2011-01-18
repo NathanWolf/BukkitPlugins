@@ -10,6 +10,13 @@ public class WandCommand
 	private String name;
 	private String description;
 	
+	public void copyTo(WandCommand other)
+	{
+		other.command = command;
+		other.name = name;
+		other.description = description;
+	}
+	
 	public void use(WandPlugin plugin, Player player)
 	{
 		plugin.getServer().getPluginManager().callEvent(new PlayerChatEvent(Type.PLAYER_COMMAND, player, "/" + command));

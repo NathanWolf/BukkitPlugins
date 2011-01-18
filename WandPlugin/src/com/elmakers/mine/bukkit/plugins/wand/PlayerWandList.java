@@ -10,15 +10,55 @@ public class PlayerWandList
 	private final List<Wand>	wands = new ArrayList<Wand>();
 	private Wand				currentWand;
 	private Player				player;
+	private String				playerName;
+	
+	public void copyTo(PlayerWandList other)
+	{
+		other.clear();
+		for (Wand wand : wands)
+		{
+			Wand newWand = other.addWand(wand.getName());
+			wand.copyTo(newWand);
+		}
+		if (currentWand != null)
+		{
+			other.selectWand(currentWand.getName());
+		}
+	}
+	
+	public void clear()
+	{
+		currentWand = null;
+		wands.clear();
+	}
+	
+	public boolean isEmpty()
+	{
+		return wands.isEmpty();
+	}
 	
 	public void setPlayer(Player player)
 	{
 		this.player = player;
+		if (player != null)
+		{
+			this.playerName = player.getName();
+		}
 	}
 	
 	public Player getPlayer()
 	{
 		return player;
+	}
+	
+	public void setPlayerName(String playerName)
+	{
+		this.playerName = playerName;
+	}
+	
+	public String getPlayerName()
+	{
+		return playerName;
 	}
 	
 	public Wand getCurrentWand()

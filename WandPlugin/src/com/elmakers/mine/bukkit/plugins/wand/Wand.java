@@ -12,6 +12,26 @@ public class Wand
 	private final List<WandCommand> commands = new ArrayList<WandCommand>();
 	private WandCommand currentCommand;
 	
+	public void copyTo(Wand other)
+	{
+		other.clear();
+		other.name = name;
+		other.description = description;
+		for (WandCommand command : commands)
+		{
+			WandCommand newCommand = other.addCommand(command.getCommand());
+			command.copyTo(newCommand);
+		}
+		
+		other.selectCommand(currentCommand.getCommand());
+	}
+	
+	public void clear()
+	{
+		commands.clear();
+		currentCommand = null;
+	}
+	
 	public final List<WandCommand> getCommands()
 	{
 		return commands;
@@ -22,12 +42,13 @@ public class Wand
 		return currentCommand;
 	}
 	
-	public void addCommand(String command)
+	public WandCommand addCommand(String command)
 	{
 		WandCommand newCommand = new WandCommand();
 		newCommand.setCommand(command);
 		commands.add(newCommand);
 		currentCommand = newCommand;
+		return newCommand;
 	}
 	
 	public void selectCommand(String command)
