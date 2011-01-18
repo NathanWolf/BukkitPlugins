@@ -54,6 +54,12 @@ public class Permissions
 						groups.put(group.getName(), group);
 					}
 				}
+				
+				// Construct permissions afterward so user/group order is not important.
+				for (PlayerPermissions player : players.values())
+				{
+					player.constructPermissions();
+				}
 			}
 			scanner.close();
 		} 
@@ -73,7 +79,7 @@ public class Permissions
 			writer = new BufferedWriter(new FileWriter(fileName));
 			writer.write("# " + fileName);
 			writer.newLine();
-			writer.write("# Format (groups before users!): ");
+			writer.write("# Format: ");
 			writer.newLine();
 			writer.write("# group=groupName:command1,command2,command3");
 			writer.newLine();
@@ -81,7 +87,7 @@ public class Permissions
 			writer.newLine();	
 			writer.write("# 'admins' is a special group that has access to any command - put yourself in it!");
 			writer.newLine();	
-			writer.write("# Note that player/class can be used in place of user/group.");
+			writer.write("# 'player'/'class' can be used in place of 'user'/'group'.");
 			writer.newLine();	
 			writer.write("player=YOURNAMEHERE:admins");
 			writer.newLine();

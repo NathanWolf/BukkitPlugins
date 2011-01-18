@@ -34,8 +34,6 @@ public class PlayerPermissions
 			}
 		}
 		
-		constructPermissions();
-		
 		return true;
 	}
 	
