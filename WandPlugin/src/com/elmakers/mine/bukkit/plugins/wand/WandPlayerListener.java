@@ -58,7 +58,7 @@ public class WandPlayerListener extends PlayerListener
 				return;
 			}
 			wand.nextCommand();
-			event.getPlayer().sendMessage("Wand '" + wand.getName() + "' : '" + wand.getCurrentCommand().getName() + "'");
+			event.getPlayer().sendMessage(" " + wand.getName() + " : " + wand.getCurrentCommand().getName());
 		}
     }
 	
@@ -126,7 +126,9 @@ public class WandPlayerListener extends PlayerListener
     			return;
     		}
     		wands.nextWand();
-    		event.getPlayer().sendMessage("Wand '" + wand.getName() + "' : '" + wand.getCurrentCommand().getName() + "'");
+    		wand = wands.getCurrentWand();
+    		event.getPlayer().sendMessage(" " + wand.getName() + " : " + wand.getCurrentCommand().getName());
+    		return;
     	}
 
     	if (wandCommand.equalsIgnoreCase("wands"))
@@ -140,7 +142,7 @@ public class WandPlayerListener extends PlayerListener
     			}
     			String wandMessage = prefix + wand.getName();
     			String wandDescription = wand.getDescription();
-    			if (wandDescription.length() > 0)
+    			if (wandDescription != null && wandDescription.length() > 0)
     			{
     				wandMessage = wandMessage + " : " + wandDescription;
     			}
@@ -157,6 +159,7 @@ public class WandPlayerListener extends PlayerListener
     			event.getPlayer().sendMessage("Create a wand first");
     			return;
     		}
+    		event.getPlayer().sendMessage(wand.getName());
     		for (WandCommand command : wand.getCommands())
     		{
     			String prefix = " ";
