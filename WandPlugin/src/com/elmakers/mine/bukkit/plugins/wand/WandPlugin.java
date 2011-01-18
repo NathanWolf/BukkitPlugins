@@ -130,7 +130,7 @@ public class WandPlugin extends JavaPlugin
 		{
 			return users;
 		}
-		String[] userSplit = userList.split("");
+		String[] userSplit = userList.split(",");
 		
 		for (int i = 0; i < userSplit.length; i++)
 		{

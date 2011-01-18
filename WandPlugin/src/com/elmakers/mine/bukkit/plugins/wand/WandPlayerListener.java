@@ -162,6 +162,7 @@ public class WandPlayerListener extends PlayerListener
 
     	if (wandCommand.equalsIgnoreCase("wands"))
     	{
+    		event.getPlayer().sendMessage("You have " + wands.getWands().size() + " wands:");
     		for (Wand wand : wands.getWands())
     		{
     			String prefix = " ";
@@ -188,6 +189,7 @@ public class WandPlayerListener extends PlayerListener
     			event.getPlayer().sendMessage("Create a wand first");
     			return;
     		}
+    		event.getPlayer().sendMessage("You have " + wand.getCommands().size() + " spells on your " + wand.getName() + " wand:");
     		event.getPlayer().sendMessage(wand.getName());
     		for (WandCommand command : wand.getCommands())
     		{
