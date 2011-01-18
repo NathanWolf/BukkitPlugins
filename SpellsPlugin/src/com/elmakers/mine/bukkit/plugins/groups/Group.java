@@ -15,15 +15,17 @@ public class Group
 		commands.clear();
 		administrator = false;
 		
-		String[] pieces = line.split(",");
-		if (pieces.length < 1) return false;
+		String[] pieces = line.split(":");
+		if (pieces.length < 2) return false;
 		
 		setName(pieces[0]);
 		if (name.length() < 1) return false;
 		
-		for (int i = 1; i < pieces.length; i++)
+		String[] commandString = pieces[1].split(",");
+		
+		for (int i = 0; i < commandString.length; i++)
 		{
-			String command = pieces[i];
+			String command = commandString[i];
 			if (command.length() > 0)
 			{
 				commands.add(command);

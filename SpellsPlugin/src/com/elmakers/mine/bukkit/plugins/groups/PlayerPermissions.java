@@ -16,15 +16,17 @@ public class PlayerPermissions
 		administrator = false;
 		groups.clear();
 		
-		String[] pieces = line.split(",");
-		if (pieces.length < 1) return false;
+		String[] pieces = line.split(":");
+		if (pieces.length < 2) return false;
 		
 		playerName = pieces[0];
 		if (playerName.length() < 1) return false;
 		
-		for (int i = 1; i < pieces.length; i++)
+		String[] groupString = pieces[1].split(",");
+		
+		for (int i = 0; i < groupString.length; i++)
 		{
-			String groupName = pieces[i];
+			String groupName = groupString[i];
 			Group group = permissions.getGroup(groupName);
 			if (group != null)
 			{

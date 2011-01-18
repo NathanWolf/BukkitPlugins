@@ -33,7 +33,7 @@ public class Permissions
 				if (line.startsWith("#") || line.equals(""))
 					continue;
 				
-				String[] pieces = line.split(":");
+				String[] pieces = line.split("=");
 				if (pieces.length < 2)
 					continue;
 				
@@ -75,15 +75,15 @@ public class Permissions
 			writer.newLine();
 			writer.write("# Format (groups before users!): ");
 			writer.newLine();
-			writer.write("# group:groupName,command1,command2,command3");
+			writer.write("# group=groupName:command1,command2,command3");
 			writer.newLine();
-			writer.write("# user:userName,group1,group2,group3");
+			writer.write("# user=userName:group1,group2,group3");
 			writer.newLine();	
 			writer.write("# 'admins' is a special group that has access to any command - put yourself in it!");
 			writer.newLine();	
 			writer.write("# Note that player/class can be used in place of user/group.");
 			writer.newLine();	
-			writer.write("player:YOURNAMEHERE,admins");
+			writer.write("player=YOURNAMEHERE:admins");
 			writer.newLine();
 		} 
 		catch (Exception e) 
