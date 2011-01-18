@@ -35,7 +35,7 @@ import com.elmakers.mine.bukkit.utilities.PluginProperties;
  * 
  * @author Ho0ber
  */
-public abstract class Spell 
+public abstract class Spell implements Comparable<Spell>
 {
 	protected Player player;
 	protected SpellsPlugin plugin;
@@ -303,5 +303,11 @@ public abstract class Spell
 			dy--;
 		}			
 		return playerBlock;
+	}
+	
+	@Override
+	public int compareTo(Spell other) 
+	{
+		return getName().compareTo(other.getName());
 	}
 }

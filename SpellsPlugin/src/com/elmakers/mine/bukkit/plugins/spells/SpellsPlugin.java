@@ -1,6 +1,9 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.Material;
@@ -109,9 +112,40 @@ public class SpellsPlugin extends JavaPlugin
 	public void listSpells(Player player, PlayerPermissions playerPermissions)
 	{
 		player.sendMessage("Use: /cast <spell>: ");
+		class SpellGroup implements Comparable<SpellGroup>
+		{
+			public String groupName;
+			public List<Spell> spells = new ArrayList<Spell>();
+			
+			@Override
+			public int compareTo(SpellGroup other) 
+			{
+				return groupName.compareTo(other.groupName);
+			}
+		}
+		HashMap<String, SpellGroup> spellGroups = new HashMap<String, SpellGroup>();
+	
 		for (Spell spell : spells.values())
 		{
-			if (playerPermissions.hasPermission(spell.getName()))
+			SpellGroup group = spellGroups.get(spell.getCategory());
+			if (group == null)
+			{
+				group = new SpellGroup();
+				group.groupName = spell.getCategory();
+				spellGroups.put(group.groupName, group);	
+			}
+			group.spells.add(spell);
+		}
+		
+		List<SpellGroup> sortedGroups = new ArrayList<SpellGroup>();
+		sortedGroups.addAll(spellGroups.values());
+		Collections.sort(sortedGroups);
+		
+		for (SpellGroup group : sortedGroups)
+		{
+			player.sendMessage(group.groupName + ":");
+			Collections.sort(group.spells);
+			for (Spell spell : group.spells)
 			{
 				player.sendMessage(" " + spell.getName() + " : " + spell.getDescription());
 			}
