@@ -24,7 +24,7 @@ import com.elmakers.mine.bukkit.utilities.PluginProperties;
 
 public class WandPlugin extends JavaPlugin 
 {
-	private String propertiesFile = "wand.properties";
+	private final String propertiesFile = "wand.properties";
 
 	private int wandTypeId = 280;
 	private String commandFile = "wand-commands.txt";	
