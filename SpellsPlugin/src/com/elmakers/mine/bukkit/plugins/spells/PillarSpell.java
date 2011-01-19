@@ -18,17 +18,15 @@ public class PillarSpell extends Spell
 			return false;
 		}	
 
-		Block targetBlock = attachBlock.getFace(BlockFace.UP);
-		
-		BlockFace direction = BlockFace.UP;
-		
-		
+		BlockFace direction = BlockFace.UP;	
 		if (parameters.length > 0 && parameters[0].equalsIgnoreCase("down"))
 		{
 			direction = BlockFace.DOWN;
 		}
 		
+		Block targetBlock = attachBlock.getFace(direction);
 		int distance = 0;
+		
 		while (targetBlock.getType() != Material.AIR && distance <= MAX_SEARCH_DISTANCE)
 		{
 			distance++;
@@ -56,7 +54,7 @@ public class PillarSpell extends Spell
 	@Override
 	public String getDescription() 
 	{
-		return "Creates a pillar at your target";
+		return "Raises a pillar up (or down)";
 	}
 
 	@Override
