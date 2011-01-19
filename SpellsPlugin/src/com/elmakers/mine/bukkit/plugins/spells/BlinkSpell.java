@@ -14,6 +14,8 @@ import com.elmakers.mine.bukkit.utilities.PluginProperties;
 public class BlinkSpell extends Spell
 {
 	private int maxRange = 0;
+	private boolean allowAscend = true;
+	private boolean allowDescend = true;
 	
 	public String getName()
 	{
@@ -30,6 +32,28 @@ public class BlinkSpell extends Spell
 	{
 		Block target = getTargetBlock();
 		Block face = getLastBlock();
+		
+		if (yRotation < -80 && allowDescend)
+		{
+			Location location = findPlaceToStand(player, false);
+			if (location != null) 
+			{
+				player.sendMessage("Blink down!");
+				player.teleportTo(location);
+				return true;
+			}
+		}
+		
+		if (yRotation > 80 && allowAscend)
+		{
+			Location location = findPlaceToStand(player, true);
+			if (location != null) 
+			{
+				player.sendMessage("Blink up!");
+				player.teleportTo(location);
+				return true;
+			}
+		}
 		
 		if (target == null) 
 		{
@@ -98,5 +122,7 @@ public class BlinkSpell extends Spell
 	public void load(PluginProperties properties)
 	{
 		maxRange = properties.getInteger("spells-blink-range", maxRange);
+		allowAscend = properties.getBoolean("spells-blink-allow-ascend", allowAscend);
+		allowDescend = properties.getBoolean("spells-blink-allow-ascend", allowDescend);
 	}
 }

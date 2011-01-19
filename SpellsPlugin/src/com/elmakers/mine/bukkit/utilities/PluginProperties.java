@@ -80,4 +80,15 @@ public class PluginProperties extends Properties
 		put(key, value);
         return value;
 	}
+	
+	public boolean getBoolean(String key, boolean value)
+	{
+		if (containsKey(key)) 
+		{
+            String boolString = getProperty(key);
+            return (boolString.length() > 0 && boolString.toLowerCase().charAt(0) == 't');
+        }
+		put(key, value ? "true" : "false");
+        return value;
+	}
 }

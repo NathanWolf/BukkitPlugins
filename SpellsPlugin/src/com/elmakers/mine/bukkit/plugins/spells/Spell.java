@@ -40,16 +40,16 @@ public abstract class Spell implements Comparable<Spell>
 	protected Player player;
 	protected SpellsPlugin plugin;
 
-	private int range = 200;
-	private double view_height = 1.65;
-	private double step = 0.2;
+	protected int range = 200;
+	protected double viewHeight = 1.65;
+	protected double step = 0.2;
 	
-	private Location player_loc;	
-    private double rot_x, rot_y;
-    private double length, h_length;
-    private double x_offset, y_offset, z_offset;
-    private int last_x, last_y, last_z;
-    private int target_x, target_y, target_z;
+	protected Location playerLocation;	
+	protected double xRotation, yRotation;
+	protected double length, hLength;
+	protected double xOffset, yOffset, zOffset;
+	protected int lastX, lastY, lastZ;
+	protected int targetX, targetY, targetZ;
 	
 	public abstract boolean onCast(String[] parameters);
 	public abstract String getName();
@@ -73,17 +73,17 @@ public abstract class Spell implements Comparable<Spell>
 	
 	public void getTargets(Player player)
 	{
-		player_loc = player.getLocation();
+		playerLocation = player.getLocation();
         length = 0;
-        rot_x = (player_loc.getYaw() + 90) % 360;
-        rot_y = player_loc.getPitch() * -1;
+        xRotation = (playerLocation.getYaw() + 90) % 360;
+        yRotation = playerLocation.getPitch() * -1;
 
-        target_x = (int) Math.floor(player_loc.getX());
-        target_y = (int) Math.floor(player_loc.getY() + view_height);
-        target_z = (int) Math.floor(player_loc.getZ());
-        last_x = target_x;
-        last_y = target_y;
-        last_z = target_z;
+        targetX = (int) Math.floor(playerLocation.getX());
+        targetY = (int) Math.floor(playerLocation.getY() + viewHeight);
+        targetZ = (int) Math.floor(playerLocation.getZ());
+        lastX = targetX;
+        lastY = targetY;
+        lastZ = targetZ;
 	}
     
 
@@ -132,7 +132,7 @@ public abstract class Spell implements Comparable<Spell>
     public void setFaceBlock(int type) {
         while ((getNextBlock() != null) && (getCurBlock().getType() == Material.AIR));
         if (getCurBlock() != null) {
-            setBlockAt(type, last_x, last_y, last_z);
+            setBlockAt(type, lastX, lastY, lastZ);
         }
     }
 
@@ -142,29 +142,29 @@ public abstract class Spell implements Comparable<Spell>
      * @return Block
      */
     public Block getNextBlock() {
-        last_x = target_x;
-        last_y = target_y;
-        last_z = target_z;
+        lastX = targetX;
+        lastY = targetY;
+        lastZ = targetZ;
 
         do {
             length += step;
 
-            h_length = (length * Math.cos(Math.toRadians(rot_y)));
-            y_offset = (length * Math.sin(Math.toRadians(rot_y)));
-            x_offset = (h_length * Math.cos(Math.toRadians(rot_x)));
-            z_offset = (h_length * Math.sin(Math.toRadians(rot_x)));
+            hLength = (length * Math.cos(Math.toRadians(yRotation)));
+            yOffset = (length * Math.sin(Math.toRadians(yRotation)));
+            xOffset = (hLength * Math.cos(Math.toRadians(xRotation)));
+            zOffset = (hLength * Math.sin(Math.toRadians(xRotation)));
 
-            target_x = (int) Math.floor(x_offset + player_loc.getX());
-            target_y = (int) Math.floor(y_offset + player_loc.getY() + view_height);
-            target_z = (int) Math.floor(z_offset + player_loc.getZ());
+            targetX = (int) Math.floor(xOffset + playerLocation.getX());
+            targetY = (int) Math.floor(yOffset + playerLocation.getY() + viewHeight);
+            targetZ = (int) Math.floor(zOffset + playerLocation.getZ());
 
-        } while ((length <= range) && ((target_x == last_x) && (target_y == last_y) && (target_z == last_z)));
+        } while ((length <= range) && ((targetX == lastX) && (targetY == lastY) && (targetZ == lastZ)));
 
         if (length > range) {
             return null;
         }
 
-        return getBlockAt(target_x, target_y, target_z);
+        return getBlockAt(targetX, targetY, targetZ);
     }
 
     /**
@@ -176,7 +176,7 @@ public abstract class Spell implements Comparable<Spell>
         if (length > range) {
             return null;
         } else {
-            return getBlockAt(target_x, target_y, target_z);
+            return getBlockAt(targetX, targetY, targetZ);
         }
     }
 
@@ -187,7 +187,7 @@ public abstract class Spell implements Comparable<Spell>
      */
     public void setCurBlock(int type) {
         if (getCurBlock() != null) {
-            setBlockAt(type, target_x, target_y, target_z);
+            setBlockAt(type, targetX, targetY, targetZ);
         }
     }
 
@@ -197,7 +197,7 @@ public abstract class Spell implements Comparable<Spell>
      * @return Block
      */
     public Block getLastBlock() {
-        return getBlockAt(last_x, last_y, last_z);
+        return getBlockAt(lastX, lastY, lastZ);
     }
 
     /**
@@ -207,7 +207,7 @@ public abstract class Spell implements Comparable<Spell>
      */
     public void setLastBlock(int type) {
         if (getLastBlock() != null) {
-            setBlockAt(type, last_x, last_y, last_z);
+            setBlockAt(type, lastX, lastY, lastZ);
         }
     }
     
