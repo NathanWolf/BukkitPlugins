@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Timer;
 import java.util.logging.Logger;
 
 import org.bukkit.Material;
@@ -26,11 +25,12 @@ public class SpellsPlugin extends JavaPlugin
 	private final String propertiesFile = "spells.properties";
 	private String permissionsFile = "spell-classes.txt";
 	
-	private final int CLEANUP_FREQUENCY = 500;
+	private final String wandPropertiesFile = "wand.properties";
+	private int wandTypeId = 280;
 	
 	private final List<BlockList> cleanupBlocks = new ArrayList<BlockList>();
 	private final Object cleanupLock = new Object();
-	private Timer cleanupTimer = null;
+	private long lastCleanupTime = 0;
 	
 	private final Logger log = Logger.getLogger("Minecraft");
 	private final Permissions permissions = new Permissions();
@@ -56,7 +56,7 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new FillSpell());
 		addSpell(new TimeSpell());
 		addSpell(new ReloadSpell());
-		//addSpell(new CushionSpell());
+		addSpell(new CushionSpell());
 	}
 	
 	protected void loadProperties()
@@ -73,6 +73,15 @@ public class SpellsPlugin extends JavaPlugin
 		}
 		
 		properties.save();
+		
+		// Load wand properties as well, in case that plugin exists.
+		properties = new PluginProperties(wandPropertiesFile);
+		properties.load();
+		
+		// Get and set all properties
+		wandTypeId = properties.getInteger("wand-type-id", wandTypeId);
+		
+		// Don't save the wand properties!!
 	}
 	
 	public void load()
@@ -106,6 +115,8 @@ public class SpellsPlugin extends JavaPlugin
 		
         pm.registerEvent(Type.PLAYER_COMMAND, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_ITEM, playerListener, Priority.Normal, this);
+        pm.registerEvent(Type.PLAYER_ANIMATION, playerListener, Priority.Normal, this);
+        pm.registerEvent(Type.PLAYER_MOVE, playerListener, Priority.Normal, this);
         
         PluginDescriptionFile pdfFile = this.getDescription();
         log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled");
@@ -114,6 +125,7 @@ public class SpellsPlugin extends JavaPlugin
 	@Override
 	public void onDisable() 
 	{
+		forceCleanup();
 	}
 	
 	public void listSpells(Player player, PlayerPermissions playerPermissions)
@@ -191,13 +203,15 @@ public class SpellsPlugin extends JavaPlugin
 		return spells.finishMaterialUse();
 	}
 
-	public void cleanup(SpellsCleanupTask task)
+	public void cleanup()
 	{
 		synchronized(cleanupLock)
 		{
+			if (cleanupBlocks.size() == 0) return;
+			
 			List<BlockList> tempList = new ArrayList<BlockList>();
 			tempList.addAll(cleanupBlocks);
-			long timePassed = System.currentTimeMillis() - task.getTimeStarted();
+			long timePassed = System.currentTimeMillis() - lastCleanupTime;
 			for (BlockList blocks : tempList)
 			{
 				if (blocks.age((int)timePassed))
@@ -209,29 +223,41 @@ public class SpellsPlugin extends JavaPlugin
 					cleanupBlocks.remove(blocks);
 				}
 			}
-			cleanupTimer = null;
-			if (!cleanupBlocks.isEmpty())
-			{
-				startCleanupTimer();
-			}
+			lastCleanupTime = System.currentTimeMillis();
 		}
 	}
 	
-	protected void startCleanupTimer()
+	public void forceCleanup()
 	{
-		cleanupTimer = new Timer();
-		cleanupTimer.schedule(new SpellsCleanupTask(this), CLEANUP_FREQUENCY);
+		for (BlockList blocks : cleanupBlocks)
+		{
+			blocks.undo();
+		}
+		cleanupBlocks.clear();
 	}
 	
 	public void scheduleCleanup(BlockList blocks)
 	{
 		synchronized(cleanupLock)
 		{
-			cleanupBlocks.add(blocks);
-			if (cleanupTimer == null)
+			if (lastCleanupTime == 0)
 			{
-				startCleanupTimer();
+				lastCleanupTime = System.currentTimeMillis();
 			}
+			cleanupBlocks.add(blocks);
+		}
+	}
+	
+	public int getWandTypeId()
+	{
+		return wandTypeId;
+	}
+	
+	public void cancel()
+	{
+		for (Spell spell : spells.values())
+		{
+			spell.cancel();
 		}
 	}
 }

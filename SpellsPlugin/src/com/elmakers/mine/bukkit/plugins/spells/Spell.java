@@ -51,6 +51,8 @@ public abstract class Spell implements Comparable<Spell>
 	protected int lastX, lastY, lastZ;
 	protected int targetX, targetY, targetZ;
 	
+	// Begin override methods
+	
 	public abstract boolean onCast(String[] parameters);
 	public abstract String getName();
 	public abstract String getCategory();
@@ -60,6 +62,13 @@ public abstract class Spell implements Comparable<Spell>
 	{
 		
 	}
+	
+	public void cancel()
+	{
+		
+	}
+	
+	// End override methods
 	
 	public void cast(String[] parameters, SpellsPlugin plugin, Player player)
 	{

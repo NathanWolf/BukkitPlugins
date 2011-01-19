@@ -10,9 +10,9 @@ import com.elmakers.mine.bukkit.utilities.UndoableBlock;
 
 public class CushionSpell extends Spell
 {
-	private int cushionWidth = 5;
+	private int cushionWidth = 3;
 	private int cushionHeight = 4;
-	private int airBubble = 2;
+	private int airBubble = 3;
 	
 	@Override
 	public boolean onCast(String[] parameters) 
@@ -30,11 +30,14 @@ public class CushionSpell extends Spell
 		
 		BlockList cushionBlocks = new BlockList();
 		cushionBlocks.setTimeToLive(10000);
+		
 		BlockList airBlocks = new BlockList();
 		airBlocks.setTimeToLive(500);
 		airBlocks.setRepetitions(30);
+		
 		int bubbleStart = -cushionWidth  / 2;
 		int bubbleEnd = cushionWidth  / 2;
+		
 		for (int dx = bubbleStart - airBubble; dx < bubbleEnd + airBubble; dx++)
 		{
 			for (int dz = bubbleStart - airBubble ; dz < bubbleEnd + airBubble; dz++)
@@ -47,7 +50,7 @@ public class CushionSpell extends Spell
 					Block block = craftWorld.getBlockAt(x, y, z);
 					if (block.getType() == Material.AIR)
 					{
-						if (dx <= bubbleStart || dx >= bubbleEnd || dz <= bubbleStart || dz >= bubbleEnd || dy <= airBubble)
+						if (dx <= bubbleStart || dx >= bubbleEnd || dz <= bubbleStart || dz >= bubbleEnd || dy <= 0)
 						{
 							airBlocks.addBlock(block);
 						}
@@ -68,6 +71,8 @@ public class CushionSpell extends Spell
 		// Schedule an additional later cleanup, to cleanup water spillage
 		BlockList delayedCleanup = new BlockList(cushionBlocks);
 		delayedCleanup.setTimeToLive(15000);
+		
+		plugin.scheduleCleanup(delayedCleanup);
 		
 		return true;
 	}

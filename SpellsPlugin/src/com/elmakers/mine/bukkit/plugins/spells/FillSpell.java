@@ -19,7 +19,6 @@ public class FillSpell extends Spell
 		if (targetBlock == null) 
 		{
 			player.sendMessage("No target");
-			target = null;
 			return false;
 		}
 		
@@ -36,14 +35,12 @@ public class FillSpell extends Spell
 			if (maxDimension > 0 && (absx > maxDimension || absy > maxDimension || absz > maxDimension))
 			{
 				player.sendMessage("Dimension is too big!");
-				target = null;
 				return false;
 			}
 
 			if (maxVolume > 0 && absx * absy * absz > maxVolume)
 			{
 				player.sendMessage("Volume is too big!");
-				target = null;
 				return false;
 			}
 			
@@ -79,6 +76,16 @@ public class FillSpell extends Spell
 			plugin.startMaterialUse(player, target.getType());
 			player.sendMessage("Cast again to fill with " + target.getType().name().toLowerCase());
 			return true;
+		}
+	}
+	
+	@Override
+	public void cancel()
+	{
+		if (target != null)
+		{
+			player.sendMessage("Cancelled fill");
+			target = null;
 		}
 	}
 
