@@ -6,33 +6,40 @@ import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftWorld;
 
 import com.elmakers.mine.bukkit.utilities.PluginProperties;
+import com.elmakers.mine.bukkit.utilities.UndoableBlock;
 
 public class CushionSpell extends Spell
 {
 	private int cushionWidth = 5;
 	private int cushionHeight = 4;
+	private int airBubble = 2;
 	
 	@Override
 	public boolean onCast(String[] parameters) 
 	{
 		World world = player.getWorld();
     	CraftWorld craftWorld = (CraftWorld)world;
-  		Block targetFace = getFaceBlock();
+  		Block targetFace = getTargetBlock();
 		if (targetFace == null)
 		{
 			player.sendMessage("No target");
 			return false;
 		}
 		
-		player.sendMessage("Creating cushion");
+		player.sendMessage("Happy landings");
 		
-		BlockList blocks = new BlockList(player);
-		blocks.setTimeToLive(10000);
-		for (int dx = -cushionWidth  / 2 ; dx < cushionWidth / 2; dx++)
+		BlockList cushionBlocks = new BlockList();
+		cushionBlocks.setTimeToLive(10000);
+		BlockList airBlocks = new BlockList();
+		airBlocks.setTimeToLive(500);
+		airBlocks.setRepetitions(30);
+		int bubbleStart = -cushionWidth  / 2;
+		int bubbleEnd = cushionWidth  / 2;
+		for (int dx = bubbleStart - airBubble; dx < bubbleEnd + airBubble; dx++)
 		{
-			for (int dz = -cushionWidth  / 2 ; dz < cushionWidth / 2; dz++)
+			for (int dz = bubbleStart - airBubble ; dz < bubbleEnd + airBubble; dz++)
 			{
-				for (int dy = 0; dy < cushionHeight; dy++)
+				for (int dy = -airBubble; dy < cushionHeight + airBubble; dy++)
 				{
 					int x = targetFace.getX() + dx;
 					int y = targetFace.getY() + dy;
@@ -40,18 +47,26 @@ public class CushionSpell extends Spell
 					Block block = craftWorld.getBlockAt(x, y, z);
 					if (block.getType() == Material.AIR)
 					{
-						blocks.addBlock(block);
-						block.setType(Material.STATIONARY_WATER);
-						craftWorld.updateBlock(block.getX(), block.getY(), block.getZ());
+						if (dx <= bubbleStart || dx >= bubbleEnd || dz <= bubbleStart || dz >= bubbleEnd || dy <= airBubble)
+						{
+							airBlocks.addBlock(block);
+						}
+						else
+						{
+							UndoableBlock undoBlock = cushionBlocks.addBlock(block);
+							block.setType(Material.STATIONARY_WATER);
+							undoBlock.update();
+						}
 					}
 				}
 			}
 		}
 	
-		plugin.scheduleCleanup(blocks);
+		plugin.scheduleCleanup(cushionBlocks);
+		plugin.scheduleCleanup(airBlocks);
 	
 		// Schedule an additional later cleanup, to cleanup water spillage
-		BlockList delayedCleanup = new BlockList(blocks);
+		BlockList delayedCleanup = new BlockList(cushionBlocks);
 		delayedCleanup.setTimeToLive(15000);
 		
 		return true;
@@ -80,5 +95,6 @@ public class CushionSpell extends Spell
 	{
 		cushionWidth = properties.getInteger("spells-cushion-width", cushionWidth);
 		cushionHeight = properties.getInteger("spells-cushion-height", cushionHeight);
+		airBubble = properties.getInteger("spells-air-bubble-thickness", airBubble);
 	}
 }

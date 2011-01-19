@@ -26,6 +26,8 @@ public class SpellsPlugin extends JavaPlugin
 	private final String propertiesFile = "spells.properties";
 	private String permissionsFile = "spell-classes.txt";
 	
+	private final int CLEANUP_FREQUENCY = 500;
+	
 	private final List<BlockList> cleanupBlocks = new ArrayList<BlockList>();
 	private final Object cleanupLock = new Object();
 	private Timer cleanupTimer = null;
@@ -199,10 +201,12 @@ public class SpellsPlugin extends JavaPlugin
 			long timePassed = System.currentTimeMillis() - task.getTimeStarted();
 			for (BlockList blocks : tempList)
 			{
-				blocks.age((int)timePassed);
-				if (blocks.isExpired())
+				if (blocks.age((int)timePassed))
 				{
 					blocks.undo();
+				}
+				if (blocks.isExpired())
+				{
 					cleanupBlocks.remove(blocks);
 				}
 			}
@@ -217,7 +221,7 @@ public class SpellsPlugin extends JavaPlugin
 	protected void startCleanupTimer()
 	{
 		cleanupTimer = new Timer();
-		cleanupTimer.schedule(new SpellsCleanupTask(this), 5000);
+		cleanupTimer.schedule(new SpellsCleanupTask(this), CLEANUP_FREQUENCY);
 	}
 	
 	public void scheduleCleanup(BlockList blocks)
