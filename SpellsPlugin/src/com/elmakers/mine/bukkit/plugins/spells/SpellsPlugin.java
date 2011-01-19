@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
 import java.util.logging.Logger;
 
 import org.bukkit.Material;
@@ -24,6 +25,10 @@ public class SpellsPlugin extends JavaPlugin
 {
 	private final String propertiesFile = "spells.properties";
 	private String permissionsFile = "spell-classes.txt";
+	
+	private final List<BlockList> cleanupBlocks = new ArrayList<BlockList>();
+	private final Object cleanupLock = new Object();
+	private Timer cleanupTimer = null;
 	
 	private final Logger log = Logger.getLogger("Minecraft");
 	private final Permissions permissions = new Permissions();
@@ -49,6 +54,7 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new FillSpell());
 		addSpell(new TimeSpell());
 		addSpell(new ReloadSpell());
+		addSpell(new CushionSpell());
 	}
 	
 	protected void loadProperties()
@@ -182,5 +188,47 @@ public class SpellsPlugin extends JavaPlugin
 	{
 		PlayerSpells spells = getPlayerSpells(player);
 		return spells.finishMaterialUse();
+	}
+
+	public void cleanup(SpellsCleanupTask task)
+	{
+		synchronized(cleanupLock)
+		{
+			List<BlockList> tempList = new ArrayList<BlockList>();
+			tempList.addAll(cleanupBlocks);
+			long timePassed = System.currentTimeMillis() - task.getTimeStarted();
+			for (BlockList blocks : tempList)
+			{
+				blocks.age((int)timePassed);
+				if (blocks.isExpired())
+				{
+					blocks.undo();
+					cleanupBlocks.remove(blocks);
+				}
+			}
+			cleanupTimer = null;
+			if (!cleanupBlocks.isEmpty())
+			{
+				startCleanupTimer();
+			}
+		}
+	}
+	
+	protected void startCleanupTimer()
+	{
+		cleanupTimer = new Timer();
+		cleanupTimer.schedule(new SpellsCleanupTask(this), 5000);
+	}
+	
+	public void scheduleCleanup(BlockList blocks)
+	{
+		synchronized(cleanupLock)
+		{
+			cleanupBlocks.add(blocks);
+			if (cleanupTimer == null)
+			{
+				startCleanupTimer();
+			}
+		}
 	}
 }

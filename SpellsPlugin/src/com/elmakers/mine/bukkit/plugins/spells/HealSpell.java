@@ -2,7 +2,6 @@ package com.elmakers.mine.bukkit.plugins.spells;
 
 public class HealSpell extends Spell 
 {
-
 	@Override
 	public boolean onCast(String[] parameters) 
 	{

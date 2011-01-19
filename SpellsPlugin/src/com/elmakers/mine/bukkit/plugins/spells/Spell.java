@@ -310,4 +310,5 @@ public abstract class Spell implements Comparable<Spell>
 	{
 		return getName().compareTo(other.getName());
 	}
+
 }
