@@ -240,7 +240,7 @@ public class SpellsPlugin extends JavaPlugin
 	{
 		synchronized(cleanupLock)
 		{
-			if (lastCleanupTime == 0)
+			if (cleanupBlocks.size() == 0)
 			{
 				lastCleanupTime = System.currentTimeMillis();
 			}

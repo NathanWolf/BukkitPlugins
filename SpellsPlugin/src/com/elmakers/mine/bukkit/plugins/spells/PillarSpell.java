@@ -20,12 +20,20 @@ public class PillarSpell extends Spell
 
 		Block targetBlock = attachBlock.getFace(BlockFace.UP);
 		
+		BlockFace direction = BlockFace.UP;
+		
+		
+		if (parameters.length > 0 && parameters[0].equalsIgnoreCase("down"))
+		{
+			direction = BlockFace.DOWN;
+		}
+		
 		int distance = 0;
 		while (targetBlock.getType() != Material.AIR && distance <= MAX_SEARCH_DISTANCE)
 		{
 			distance++;
 			attachBlock = targetBlock;
-			targetBlock = attachBlock.getFace(BlockFace.UP);
+			targetBlock = attachBlock.getFace(direction);
 		}
 		if (targetBlock.getType() != Material.AIR)
 		{
@@ -33,7 +41,7 @@ public class PillarSpell extends Spell
 			return false;
 		}
 		setBlockAt(attachBlock.getTypeId(), targetBlock.getX(), targetBlock.getY(), targetBlock.getZ());
-		player.sendMessage("You extend your target pillar");
+		player.sendMessage("Creating a pillar of " + attachBlock.getType().name().toLowerCase());
 		//player.sendMessage("Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
 		
 		return true;
