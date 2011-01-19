@@ -56,7 +56,7 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new FillSpell());
 		addSpell(new TimeSpell());
 		addSpell(new ReloadSpell());
-		addSpell(new CushionSpell());
+		//addSpell(new CushionSpell());
 	}
 	
 	protected void loadProperties()
@@ -105,7 +105,6 @@ public class SpellsPlugin extends JavaPlugin
         PluginManager pm = getServer().getPluginManager();
 		
         pm.registerEvent(Type.PLAYER_COMMAND, playerListener, Priority.Normal, this);
-        //pm.registerEvent(Type.PLAYER_ANIMATION, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_ITEM, playerListener, Priority.Normal, this);
         
         PluginDescriptionFile pdfFile = this.getDescription();
