@@ -92,6 +92,14 @@ public class PlayerWandList
 				break;
 			}
 		}
+		if (currentWand == foundWand)
+		{
+			currentWand = null;
+			if (wands.size() > 0)
+			{
+				currentWand = wands.get(0);
+			}
+		}
 		return (foundWand != null);
 	}
 	

@@ -93,6 +93,14 @@ public class Wand
 				break;
 			}
 		}
+		if (currentCommand == foundCommand)
+		{
+			currentCommand = null;
+			if (commands.size() > 0)
+			{
+				currentCommand = commands.get(0);
+			}
+		}
 		return (foundCommand != null);
 	}
 	
