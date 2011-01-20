@@ -1,5 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
+import java.util.HashMap;
+
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
@@ -8,9 +10,9 @@ import com.elmakers.mine.bukkit.utilities.UndoableBlock;
 
 public class FillSpell extends Spell 
 {
-	int maxDimension = 128;
-	int maxVolume = 512;
-	Block target = null;
+	private int maxDimension = 128;
+	private int maxVolume = 512;
+	private final HashMap<String, Block> playerTargets = new HashMap<String, Block>();
 	
 	@Override
 	public boolean onCast(String[] parameters) 
@@ -22,6 +24,8 @@ public class FillSpell extends Spell
 			castMessage(player, "No target");
 			return false;
 		}
+		
+		Block target = getTarget();
 		
 		if (target != null)
 		{			
@@ -73,25 +77,37 @@ public class FillSpell extends Spell
 			}
 			plugin.addToUndoQueue(player, filledBlocks);
 			
-			target = null;
+			setTarget(null);
 			return true;
 		}
 		else
 		{
 			target = targetBlock;
+			setTarget(target);
 			plugin.startMaterialUse(player, target.getType());
 			player.sendMessage("Cast again to fill with " + target.getType().name().toLowerCase());
 			return true;
 		}
 	}
 	
+	protected Block getTarget()
+	{
+		return playerTargets.get(player.getName());
+	}
+	
+	protected void setTarget(Block target)
+	{
+		playerTargets.put(player.getName(), target);
+	}
+	
 	@Override
 	public void onCancel()
 	{
+		Block target = getTarget();
 		if (target != null)
 		{
 			player.sendMessage("Cancelled fill");
-			target = null;
+			setTarget(null);
 		}
 	}
 

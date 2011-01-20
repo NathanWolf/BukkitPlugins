@@ -116,7 +116,7 @@ public class SpellsMasterListener
     	ItemStack item = event.getPlayer().getInventory().getItemInHand();
     	if (item != null && item.getTypeId() == plugin.getWandTypeId())
     	{
-    		plugin.cancel();
+    		plugin.cancel(event.getPlayer());
     	}
     }
     

@@ -76,4 +76,15 @@ public class BlockList
 		}
 	}
 
+	public boolean contains(Block block)
+	{
+		for (UndoableBlock undo : blocks)
+		{
+			if (undo.getBlock() == block)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 }

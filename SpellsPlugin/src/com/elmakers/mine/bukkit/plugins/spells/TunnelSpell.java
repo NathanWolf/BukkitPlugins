@@ -121,16 +121,10 @@ public class TunnelSpell extends Spell
 	
 	public boolean isDestructible(Block block)
 	{
-		if (block.getType() == Material.AIR) return false;
-		
-		for (Material material : destructibleMaterials)
-		{
-			if (material == block.getType())
-			{
-				return true;
-			}
-		}
-		return false;
+		if (block.getType() == Material.AIR)
+			return false;
+
+		return destructibleMaterials.contains(block.getType());
 	}
 
 	@Override

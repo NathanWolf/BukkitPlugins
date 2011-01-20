@@ -34,6 +34,7 @@ public class SpellsPlugin extends JavaPlugin
 	
 	private int undoQueueDepth = 256;
 	private boolean silent = false;
+	private boolean quiet = false;
 	private HashMap<String, UndoQueue> playerUndoQueues =  new HashMap<String, UndoQueue>();
 	
 	private final Logger log = Logger.getLogger("Minecraft");
@@ -68,6 +69,7 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new AlterSpell());
 		addSpell(new StairsSpell());
 		addSpell(new BlastSpell());
+		addSpell(new MineSpell());
 	}
 	
 	protected void loadProperties()
@@ -78,6 +80,7 @@ public class SpellsPlugin extends JavaPlugin
 		permissionsFile = properties.getString("spells-general-classes-file", permissionsFile);
 		undoQueueDepth = properties.getInteger("spells-general-undo-depth", undoQueueDepth);
 		silent = properties.getBoolean("spells-general-silent", silent);
+		quiet = properties.getBoolean("spells-general-quiet", quiet);
 		
 		permissions.load(permissionsFile);
 		
@@ -277,11 +280,11 @@ public class SpellsPlugin extends JavaPlugin
 		return wandTypeId;
 	}
 	
-	public void cancel()
+	public void cancel(Player player)
 	{
 		for (Spell spell : spells.values())
 		{
-			spell.onCancel();
+			spell.cancel(this, player);
 		}
 	}
 	
@@ -310,6 +313,11 @@ public class SpellsPlugin extends JavaPlugin
 	}
 
 	public boolean isQuiet()
+	{
+		return quiet;
+	}
+
+	public boolean isSilent()
 	{
 		return silent;
 	}

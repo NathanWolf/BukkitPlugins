@@ -81,6 +81,14 @@ public abstract class Spell implements Comparable<Spell>
         onCast(parameters);
 	}
 	
+	public void cancel(SpellsPlugin plugin, Player player)
+	{
+		this.player = player;
+		this.plugin = plugin;
+
+		onCancel();
+	}
+	
 	public void getTargets(Player player)
 	{
 		playerLocation = player.getLocation();
@@ -418,7 +426,7 @@ public abstract class Spell implements Comparable<Spell>
 	
 	public void castMessage(Player player, String message)
 	{
-		if (!plugin.isQuiet())
+		if (!plugin.isQuiet() && !plugin.isSilent())
 		{
 			player.sendMessage(message);
 		}
@@ -426,6 +434,9 @@ public abstract class Spell implements Comparable<Spell>
 	
 	public void sendMessage(Player player, String message)
 	{	
-		player.sendMessage(message);
+		if (!plugin.isSilent())
+		{
+			player.sendMessage(message);
+		}
 	}
 }
