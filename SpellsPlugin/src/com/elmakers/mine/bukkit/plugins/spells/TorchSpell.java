@@ -3,12 +3,22 @@ package com.elmakers.mine.bukkit.plugins.spells;
 import org.bukkit.block.Block;
 import org.bukkit.Material;
 
+import com.elmakers.mine.bukkit.utilities.PluginProperties;
+
 public class TorchSpell extends Spell 
 {
+	private boolean allowDay = true;
 
 	@Override
 	public boolean onCast(String[] parameters) 
 	{
+		if (yRotation > 80 && allowDay)
+		{
+			player.sendMessage("FLAME ON!");
+			setRelativeTime(0);
+			return true;
+		}
+		
 		Block face = getLastBlock();
 		if (face == null || face.getType() != Material.AIR)
 		{
@@ -38,5 +48,11 @@ public class TorchSpell extends Spell
 	public String getCategory() 
 	{
 		return "build";
+	}
+
+	@Override
+	public void onLoad(PluginProperties properties)
+	{
+		allowDay = properties.getBoolean("spells-torch-allow-day", allowDay);
 	}
 }

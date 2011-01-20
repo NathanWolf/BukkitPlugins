@@ -119,7 +119,7 @@ public class BlinkSpell extends Spell
 	}
 
 	@Override
-	public void load(PluginProperties properties)
+	public void onLoad(PluginProperties properties)
 	{
 		maxRange = properties.getInteger("spells-blink-range", maxRange);
 		allowAscend = properties.getBoolean("spells-blink-allow-ascend", allowAscend);

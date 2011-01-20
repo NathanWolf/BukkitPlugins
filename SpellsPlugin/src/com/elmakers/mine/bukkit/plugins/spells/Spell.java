@@ -1,6 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -58,12 +59,12 @@ public abstract class Spell implements Comparable<Spell>
 	public abstract String getCategory();
 	public abstract String getDescription();
 	
-	public void load(PluginProperties properties)
+	public void onLoad(PluginProperties properties)
 	{
 		
 	}
 	
-	public void cancel()
+	public void onCancel()
 	{
 		
 	}
@@ -319,5 +320,89 @@ public abstract class Spell implements Comparable<Spell>
 	{
 		return getName().compareTo(other.getName());
 	}
+	
+	public BlockFace getPlayerFacing()
+	{
+		float playerRot = getPlayerRotation();
+		
+		BlockFace direction = BlockFace.NORTH;
+		if (playerRot <= 45 || playerRot > 315)
+		{
+			direction = BlockFace.WEST;
+		}
+		else if (playerRot > 45 && playerRot <= 135)
+		{
+			direction = BlockFace.NORTH;
+		}
+		else if (playerRot > 135 && playerRot <= 225)
+		{
+			direction = BlockFace.EAST;
+		}
+		else if (playerRot > 225 && playerRot <= 315)
+		{
+			direction = BlockFace.SOUTH;
+		}
+		
+		return direction;
+	}
+	
+	// Should go in BlockFace?
+	// Also, there's probably some better matrix-y, math-y way to do this.
+	public BlockFace goLeft(BlockFace direction)
+	{
+		switch (direction)
+		{
+			case EAST:
+				return BlockFace.NORTH;
+			case NORTH:
+				return BlockFace.WEST;
+			case WEST:
+				return BlockFace.SOUTH;
+			case SOUTH:
+				return BlockFace.EAST;
+		}
+		return direction;
+	}
+	public BlockFace goRight(BlockFace direction)
+	{
+		switch (direction)
+		{
+			case EAST:
+				return BlockFace.SOUTH;
+			case SOUTH:
+				return BlockFace.WEST;
+			case WEST:
+				return BlockFace.NORTH;
+			case NORTH:
+				return BlockFace.EAST;
+		}
+		return direction;		
+	}
+	
+	/**
+	 * Sets the current server time
+	 *
+	 * @param time
+	 *            time (0-24000)
+	 */
+	public void setRelativeTime(long time) 
+	{
+	    long margin = (time - getTime()) % 24000;
+	    // Java modulus is stupid.
+	    if (margin < 0) 
+	    {
+	        margin += 24000;
+	    }
+	   plugin.getServer().setTime(getTime() + margin);
+	}
 
+	/**
+     * Returns actual server time (-2^63 to 2^63-1)
+     *
+     * @return time server time
+     */
+    public long getTime() 
+    {
+        return plugin.getServer().getTime();
+    }
 }

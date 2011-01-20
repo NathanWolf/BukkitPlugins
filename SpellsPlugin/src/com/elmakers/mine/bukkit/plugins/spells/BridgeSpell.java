@@ -15,29 +15,11 @@ public class BridgeSpell extends Spell
 		if (playerBlock == null) 
 		{
 			// no spot found to bridge
-			player.sendMessage("Need air to build a bridge");
+			player.sendMessage("You need to be standing on something");
 			return false;
-		}		
-
-		float playerRot = getPlayerRotation();
-	
-		BlockFace direction = BlockFace.NORTH;
-		if (playerRot <= 45 || playerRot > 315)
-		{
-			direction = BlockFace.WEST;
 		}
-		else if (playerRot > 45 && playerRot <= 135)
-		{
-			direction = BlockFace.NORTH;
-		}
-		else if (playerRot > 135 && playerRot <= 225)
-		{
-			direction = BlockFace.EAST;
-		}
-		else if (playerRot > 225 && playerRot <= 315)
-		{
-			direction = BlockFace.SOUTH;
-		}
+		
+		BlockFace direction = getPlayerFacing();
 		Block attachBlock = playerBlock;
 		Block targetBlock = attachBlock.getFace(direction);
 		int distance = 0;

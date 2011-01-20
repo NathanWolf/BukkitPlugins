@@ -34,7 +34,9 @@ public class SpellsPlugin extends JavaPlugin
 	
 	private final Logger log = Logger.getLogger("Minecraft");
 	private final Permissions permissions = new Permissions();
+	private final SpellsMasterListener listener = new SpellsMasterListener();
 	private final SpellsPlayerListener playerListener = new SpellsPlayerListener();
+	private final SpellsEntityListener entityListener = new SpellsEntityListener();
 	private final HashMap<String, Spell> spells = new HashMap<String, Spell>();
 	private final HashMap<String, PlayerSpells> playerSpells = new HashMap<String, PlayerSpells>();
 
@@ -57,6 +59,9 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new TimeSpell());
 		addSpell(new ReloadSpell());
 		addSpell(new CushionSpell());
+		addSpell(new TunnelSpell());
+		//addSpell(new AlterSpell());
+		//addSpell(new StairsSpell());
 	}
 	
 	protected void loadProperties()
@@ -69,7 +74,7 @@ public class SpellsPlugin extends JavaPlugin
 		
 		for (Spell spell : spells.values())
 		{
-			spell.load(properties);
+			spell.onLoad(properties);
 		}
 		
 		properties.save();
@@ -109,7 +114,9 @@ public class SpellsPlugin extends JavaPlugin
 	public void onEnable() 
 	{
 		load();
-		playerListener.setPlugin(this);
+		listener.setPlugin(this);
+		playerListener.setMaster(listener);
+		entityListener.setMaster(listener);
 		
         PluginManager pm = getServer().getPluginManager();
 		
@@ -117,6 +124,14 @@ public class SpellsPlugin extends JavaPlugin
         pm.registerEvent(Type.PLAYER_ITEM, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_ANIMATION, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_MOVE, playerListener, Priority.Normal, this);
+        /*
+        pm.registerEvent(Type.ENTITY_DAMAGED, entityListener, Priority.Normal, this);
+        pm.registerEvent(Type.ENTITY_COMBUST, entityListener, Priority.Normal, this);
+        pm.registerEvent(Type.ENTITY_DAMAGEDBY_BLOCK, entityListener, Priority.Normal, this);
+        pm.registerEvent(Type.ENTITY_DAMAGEDBY_ENTITY, entityListener, Priority.Normal, this);
+        pm.registerEvent(Type.ENTITY_DAMAGEDBY_PROJECTILE, entityListener, Priority.Normal, this);
+        pm.registerEvent(Type.ENTITY_EXPLODE, entityListener, Priority.Normal, this);
+        */
         
         PluginDescriptionFile pdfFile = this.getDescription();
         log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled");
@@ -257,7 +272,12 @@ public class SpellsPlugin extends JavaPlugin
 	{
 		for (Spell spell : spells.values())
 		{
-			spell.cancel();
+			spell.onCancel();
 		}
+	}
+	
+	public void addToUndoQueue(Player player, BlockList blocks)
+	{
+		// TODO!
 	}
 }

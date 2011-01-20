@@ -1,13 +1,16 @@
 package com.elmakers.mine.bukkit.utilities;
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.bukkit.Material;
 
 public class PluginProperties extends Properties 
 {
@@ -90,5 +93,24 @@ public class PluginProperties extends Properties
         }
 		put(key, value ? "true" : "false");
         return value;
+	}
+	
+	public List<Material> getMaterials(String key, String csvList)
+	{
+		if (containsKey(key)) 
+		{
+			csvList = getProperty(key);
+		}
+		List<Material> materials = new ArrayList<Material>();
+		
+		String[] matIds = csvList.split(",");
+		for (String matId : matIds)
+		{
+			int typeId = Integer.parseInt(matId);
+			materials.add(Material.values()[typeId]);
+		}
+		put(key, csvList);
+		
+		return materials;
 	}
 }

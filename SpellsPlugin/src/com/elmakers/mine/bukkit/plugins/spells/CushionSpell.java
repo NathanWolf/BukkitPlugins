@@ -96,7 +96,7 @@ public class CushionSpell extends Spell
 	}
 	
 	@Override
-	public void load(PluginProperties properties)
+	public void onLoad(PluginProperties properties)
 	{
 		cushionWidth = properties.getInteger("spells-cushion-width", cushionWidth);
 		cushionHeight = properties.getInteger("spells-cushion-height", cushionHeight);

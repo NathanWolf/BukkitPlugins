@@ -80,7 +80,7 @@ public class FillSpell extends Spell
 	}
 	
 	@Override
-	public void cancel()
+	public void onCancel()
 	{
 		if (target != null)
 		{
@@ -108,7 +108,7 @@ public class FillSpell extends Spell
 	}
 
 	@Override
-	public void load(PluginProperties properties)
+	public void onLoad(PluginProperties properties)
 	{
 		maxDimension = properties.getInteger("spells-fill-max-dimension", maxDimension);
 		maxVolume = properties.getInteger("spells-fill-max-volume", maxVolume);

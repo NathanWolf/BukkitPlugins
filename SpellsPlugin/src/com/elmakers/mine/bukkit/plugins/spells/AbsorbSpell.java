@@ -44,7 +44,7 @@ public class AbsorbSpell extends Spell
 	}
 	
 	@Override
-	public void load(PluginProperties properties)
+	public void onLoad(PluginProperties properties)
 	{
 		defaultAmount = properties.getInteger("spells-absorb-amount", defaultAmount);
 	}

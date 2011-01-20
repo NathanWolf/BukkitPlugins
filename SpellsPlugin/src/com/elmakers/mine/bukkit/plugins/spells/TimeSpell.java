@@ -35,34 +35,6 @@ public class TimeSpell extends Spell {
 		
 		return true;
 	}
-
-
-	/**
-	 * Sets the current server time
-	 *
-	 * @param time
-	 *            time (0-24000)
-	 */
-	public void setRelativeTime(long time) 
-	{
-	    long margin = (time - getTime()) % 24000;
-	    // Java modulus is stupid.
-	    if (margin < 0) 
-	    {
-	        margin += 24000;
-	    }
-	   plugin.getServer().setTime(getTime() + margin);
-	}
-
-	/**
-     * Returns actual server time (-2^63 to 2^63-1)
-     *
-     * @return time server time
-     */
-    public long getTime() 
-    {
-        return plugin.getServer().getTime();
-    }
 	
 	@Override
 	public String getName() 

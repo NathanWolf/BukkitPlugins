@@ -23,6 +23,11 @@ public class BlockList
 		blocks.addAll(other.blocks);
 		timeToLive = other.timeToLive;
 	}
+	
+	public int getCount()
+	{
+		return blocks.size();
+	}
 		
 	public void setTimeToLive(int ttl)
 	{

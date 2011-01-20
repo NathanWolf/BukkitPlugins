@@ -1,23 +1,18 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
-import org.bukkit.Material;
 import org.bukkit.event.player.PlayerAnimationEvent;
-import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerItemEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.inventory.ItemStack;
-
-import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
 
 public class SpellsPlayerListener extends PlayerListener 
 {
-	private SpellsPlugin plugin;
+	private SpellsMasterListener master;
 	
-	public void setPlugin(SpellsPlugin plugin)
+	public void setMaster(SpellsMasterListener master)
 	{
-		this.plugin = plugin;
+		this.master = master;
 	}
 	
 	/**
@@ -30,43 +25,7 @@ public class SpellsPlayerListener extends PlayerListener
     @Override
     public void onPlayerCommand(PlayerChatEvent event) 
     {
-    	String[] split = event.getMessage().split(" ");
-    	String commandString = split[0];
-    	
-    	if (!commandString.equalsIgnoreCase("/cast"))
-    	{
-    		return;
-    	}
-    	
-    	PlayerPermissions permissions = plugin.getPermissions(event.getPlayer().getName());
-    	
-    	if (permissions == null)
-    	{
-    		return;
-    	}
-    	
-    	if (split.length < 2)
-    	{
-    		plugin.listSpells(event.getPlayer(), permissions);
-    		return;
-    	}
-   
-    	String spellName = split[1];
-    	
-    	Spell spell = plugin.getSpell(spellName);
-    	if (spell == null || spellName.equalsIgnoreCase("help") || spellName.equalsIgnoreCase("list") || !permissions.hasPermission(spell.getName()))
-    	{
-    		plugin.listSpells(event.getPlayer(), permissions);
-    		return;
-    	}
-    	
-    	String[] parameters = new String[split.length - 2];
-    	for (int i = 2; i < split.length; i++)
-    	{
-    		parameters[i - 2] = split[i];
-    	}
-    	
-    	spell.cast(parameters, plugin, event.getPlayer());
+    	master.onPlayerCommand(event);
     }
     
 
@@ -79,23 +38,7 @@ public class SpellsPlayerListener extends PlayerListener
 	@Override
     public void onPlayerAnimation(PlayerAnimationEvent event) 
 	{
-		if (event.getAnimationType() != PlayerAnimationType.ARM_SWING)
-		{
-			return;
-		}
-		
-		// Kind of a hack for Wand compatibility, ignore the stick.
-		// What we really need is a way to tell what are blocks, or a whitelist.
-		ItemStack item = event.getPlayer().getInventory().getItemInHand();
-		Material material = Material.AIR;
-		if (item != null)
-		{
-			material = item.getType();
-		}
-		if (material.getId() != plugin.getWandTypeId())
-		{
-			plugin.setCurrentMaterialType(event.getPlayer(), material);
-		}
+		master.onPlayerAnimation(event);
     }
 	
     /**
@@ -105,7 +48,7 @@ public class SpellsPlayerListener extends PlayerListener
      */
     public void onPlayerMove(PlayerMoveEvent event) 
     {
-    	plugin.cleanup();
+    	master.onPlayerMove(event);
     }
  
     /**
@@ -115,10 +58,6 @@ public class SpellsPlayerListener extends PlayerListener
      */
     public void onPlayerItem(PlayerItemEvent event) 
     {
-    	ItemStack item = event.getPlayer().getInventory().getItemInHand();
-    	if (item != null && item.getTypeId() == plugin.getWandTypeId())
-    	{
-    		plugin.cancel();
-    	}
+    	master.onPlayerItem(event);
     }
 }
