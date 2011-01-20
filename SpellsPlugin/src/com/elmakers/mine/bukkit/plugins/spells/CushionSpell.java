@@ -22,11 +22,11 @@ public class CushionSpell extends Spell
   		Block targetFace = getTargetBlock();
 		if (targetFace == null)
 		{
-			plugin.castMessage(player, "No target");
+			castMessage(player, "No target");
 			return false;
 		}
 		
-		plugin.castMessage(player, "Happy landings");
+		castMessage(player, "Happy landings");
 		
 		BlockList cushionBlocks = new BlockList();
 		cushionBlocks.setTimeToLive(10000);

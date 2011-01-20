@@ -67,6 +67,7 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new UndoSpell());
 		addSpell(new AlterSpell());
 		addSpell(new StairsSpell());
+		addSpell(new BlastSpell());
 	}
 	
 	protected void loadProperties()
@@ -74,9 +75,9 @@ public class SpellsPlugin extends JavaPlugin
 		PluginProperties properties = new PluginProperties(propertiesFile);
 		properties.load();
 		
-		permissionsFile = properties.getString("spells-classes-file", permissionsFile);
-		undoQueueDepth = properties.getInteger("spells-undo-depth", undoQueueDepth);
-		silent = properties.getBoolean("spells-silent", silent);
+		permissionsFile = properties.getString("spells-general-classes-file", permissionsFile);
+		undoQueueDepth = properties.getInteger("spells-general-undo-depth", undoQueueDepth);
+		silent = properties.getBoolean("spells-general-silent", silent);
 		
 		permissions.load(permissionsFile);
 		
@@ -307,12 +308,9 @@ public class SpellsPlugin extends JavaPlugin
 		UndoQueue queue = getUndoQueue(playerName);
 		return queue.undo();
 	}
-	
-	public void castMessage(Player player, String message)
+
+	public boolean isQuiet()
 	{
-		if (!silent)
-		{
-			player.sendMessage(message);
-		}
+		return silent;
 	}
 }

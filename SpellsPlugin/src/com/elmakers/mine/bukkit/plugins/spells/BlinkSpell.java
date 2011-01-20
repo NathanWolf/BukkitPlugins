@@ -1,13 +1,10 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
-import net.minecraft.server.WorldServer;
-
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.CraftWorld;
 
 import com.elmakers.mine.bukkit.utilities.PluginProperties;
 
@@ -35,10 +32,10 @@ public class BlinkSpell extends Spell
 		
 		if (yRotation < -80 && allowDescend)
 		{
-			Location location = findPlaceToStand(player, false);
+			Location location = findPlaceToStand(player.getLocation(), false);
 			if (location != null) 
 			{
-				plugin.castMessage(player, "Blink down!");
+				castMessage(player, "Blink down!");
 				player.teleportTo(location);
 				return true;
 			}
@@ -46,10 +43,10 @@ public class BlinkSpell extends Spell
 		
 		if (yRotation > 80 && allowAscend)
 		{
-			Location location = findPlaceToStand(player, true);
+			Location location = findPlaceToStand(player.getLocation(), true);
 			if (location != null) 
 			{
-				plugin.castMessage(player, "Blink up!");
+				castMessage(player, "Blink up!");
 				player.teleportTo(location);
 				return true;
 			}
@@ -57,59 +54,50 @@ public class BlinkSpell extends Spell
 		
 		if (target == null) 
 		{
-			plugin.castMessage(player, "Nowhere to blink to");
+			castMessage(player, "Nowhere to blink to");
 			return false;
 		}
 		if (maxRange > 0 && getDistance(player,target) > maxRange) 
 		{
-			plugin.castMessage(player, "Can't blink that far");
+			sendMessage(player, "Can't blink that far");
 			return false;
 		}
 		
 		World world = player.getWorld();
-    	WorldServer server = ((CraftWorld)world).getHandle();
-    	CraftWorld craftWorld = server.getWorld();
 		
-		Block oneUp = craftWorld.getBlockAt(target.getX() ,target.getY() + 1, target.getZ());
-		Block twoUp = craftWorld.getBlockAt(target.getX() ,target.getY() + 2, target.getZ());
-		if 
+		// Don't drop the player too far, and make sure there is somewhere to stand
+    	Block destination = face;
+    	Block groundBlock = destination.getFace(BlockFace.DOWN);
+    	while (groundBlock.getType() == Material.AIR)
+    	{
+    		destination = groundBlock;
+    		groundBlock = destination.getFace(BlockFace.DOWN);
+    	}
+    	
+		Block oneUp = destination.getFace(BlockFace.UP);
+		Block twoUp = oneUp.getFace(BlockFace.UP);
+		if
 		(
-			oneUp.getType() == Material.AIR
-		&&  twoUp.getType() == Material.AIR
+			oneUp.getType() != Material.AIR
+		||  twoUp.getType() != Material.AIR
 		) 
 		{
-			plugin.castMessage(player, "Blink!");
-			player.teleportTo
-			(
-				new org.bukkit.Location
-				(
-					world,
-					face.getX() + 0.5,
-					face.getY(),
-					face.getZ() + 0.5,
-					player.getLocation().getYaw(),
-					player.getLocation().getPitch()
-				)
-			);
-			return true;
+			sendMessage(player, "You can't fit in there!");
 		}
-		else 
-		{
-			// no place to stand
-			plugin.castMessage(player, "Nowhere to stand there");
-			return false;
-		}
-	}
-
-	public double getDistance(Player player, Block target) 
-	{
-		Location loc = player.getLocation();
-		return Math.sqrt
+		castMessage(player, "Blink!");
+		player.teleportTo
 		(
-				Math.pow(loc.getX() - target.getX(), 2) 
-		+ 		Math.pow(loc.getY() - target.getY(), 2) 
-		+ 		Math.pow(loc.getZ() - target.getZ(), 2)
+			new org.bukkit.Location
+			(
+				world,
+				destination.getX() + 0.5,
+				destination.getY(),
+				destination.getZ() + 0.5,
+				player.getLocation().getYaw(),
+				player.getLocation().getPitch()
+			)
 		);
+		return true;
 	}
 	
 	@Override

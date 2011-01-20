@@ -16,7 +16,7 @@ public class PillarSpell extends Spell
 		Block attachBlock = getTargetBlock();
 		if (attachBlock == null)
 		{
-			plugin.castMessage(player, "No target");
+			castMessage(player, "No target");
 			return false;
 		}	
 
@@ -47,9 +47,9 @@ public class PillarSpell extends Spell
 		pillar.setType(attachBlock.getType());
 		undoPillar.update();
 		
-		plugin.castMessage(player, "Creating a pillar of " + attachBlock.getType().name().toLowerCase());
+		castMessage(player, "Creating a pillar of " + attachBlock.getType().name().toLowerCase());
 		plugin.addToUndoQueue(player, pillarBlocks);
-		//plugin.castMessage(player, "Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
+		//castMessage(player, "Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
 		
 		return true;
 	}

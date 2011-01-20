@@ -12,7 +12,7 @@ import com.elmakers.mine.bukkit.utilities.UndoableBlock;
 
 public class TunnelSpell extends Spell
 {
-	static final String DEFAULT_DESTRUCTIBLES = "1,3,12,13";
+	static final String DEFAULT_DESTRUCTIBLES = "1,3,10,11,12,13";
 	
 	private List<Material> destructibleMaterials = new ArrayList<Material>();
 	private int defaultDepth = 8;
@@ -114,7 +114,7 @@ public class TunnelSpell extends Spell
 		}
 
 		plugin.addToUndoQueue(player, tunneledBlocks);
-		plugin.castMessage(player, "Tunneled through " + tunneledBlocks.getCount() + "blocks");
+		castMessage(player, "Tunneled through " + tunneledBlocks.getCount() + "blocks");
 		
 		return true;
 	}

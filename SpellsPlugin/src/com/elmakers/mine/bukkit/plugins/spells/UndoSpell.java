@@ -1,7 +1,5 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
-import org.bukkit.entity.Player;
-
 import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
 
 public class UndoSpell extends Spell
@@ -20,7 +18,7 @@ public class UndoSpell extends Spell
 		boolean undone = plugin.undo(undoPlayer);
 		if (undone)
 		{
-			plugin.castMessage(player, "Time reverses...");
+			castMessage(player, "Time reverses...");
 		}
 		else
 		{

@@ -19,7 +19,7 @@ public class FillSpell extends Spell
 		Material material = plugin.finishMaterialUse(player);
 		if (targetBlock == null) 
 		{
-			plugin.castMessage(player, "No target");
+			castMessage(player, "No target");
 			return false;
 		}
 		
@@ -54,7 +54,7 @@ public class FillSpell extends Spell
 			absz++;
 			
 			BlockList filledBlocks = new BlockList();
-			plugin.castMessage(player, "Filling " + absx + "x" + absy + "x" + absz + " area with " + material.name().toLowerCase());
+			castMessage(player, "Filling " + absx + "x" + absy + "x" + absz + " area with " + material.name().toLowerCase());
 			int x = target.getX();
 			int y = target.getY();
 			int z = target.getZ();

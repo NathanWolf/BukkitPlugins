@@ -21,7 +21,7 @@ public class AlterSpell extends Spell
 		Block targetBlock = getTargetBlock();
 		if (targetBlock == null) 
 		{
-			plugin.castMessage(player, "No target");
+			castMessage(player, "No target");
 			return false;
 		}
 		if (!adjustableMaterials.contains(targetBlock.getType()))
@@ -41,7 +41,7 @@ public class AlterSpell extends Spell
 		
 		plugin.addToUndoQueue(player, undoList);
 		
-		plugin.castMessage(player, "Adjusting " + targetBlock.getType().name().toLowerCase() + " from " + originalData + " to " + data);
+		castMessage(player, "Adjusting " + targetBlock.getType().name().toLowerCase() + " from " + originalData + " to " + data);
 		
 		return true;
 	}

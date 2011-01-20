@@ -8,17 +8,17 @@ public class DescendSpell extends Spell
 	@Override
 	public boolean onCast(String[] parameters) 
 	{
-		Location location = findPlaceToStand(player, false);
+		Location location = findPlaceToStand(player.getLocation(), false);
 		if (location != null) 
 		{
-			plugin.castMessage(player, "Going down!");
+			castMessage(player, "Going down!");
 			player.teleportTo(location);
 			return true;
 		} 
 		else 
 		{		
 			// no spot found to ascend
-			plugin.castMessage(player, "Nowhere to go down");
+			castMessage(player, "Nowhere to go down");
 			return false;
 		}
 	}

@@ -53,8 +53,8 @@ public class ExtendSpell extends Spell
 			return false;
 		}
 		setBlockAt(attachBlock.getTypeId(), targetBlock.getX(), targetBlock.getY(), targetBlock.getZ());
-		plugin.castMessage(player, "You extend your target");
-		//plugin.castMessage(player, "Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
+		castMessage(player, "You extend your target");
+		//castMessage(player, "Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
 		
 		return true;
 	}

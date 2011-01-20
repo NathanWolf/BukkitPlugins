@@ -253,7 +253,7 @@ public abstract class Spell implements Comparable<Spell>
 	   return world.getBlockAt(x, y, z);
    }
    
-   public Location findPlaceToStand(Player player, boolean goUp) 
+   public Location findPlaceToStand(Location playerLoc, boolean goUp) 
    {
 		int step;
 		if (goUp) 
@@ -266,7 +266,6 @@ public abstract class Spell implements Comparable<Spell>
 		}
 		
 		// get player position
-		Location playerLoc = player.getLocation();
 		int x = (int)Math.round(playerLoc.getX() - 0.5);
 		int y = (int)Math.round(playerLoc.getY() + step + step);
 		int z = (int)Math.round(playerLoc.getZ() - 0.5);
@@ -405,4 +404,28 @@ public abstract class Spell implements Comparable<Spell>
     {
         return plugin.getServer().getTime();
     }
+
+	public double getDistance(Player player, Block target) 
+	{
+		Location loc = player.getLocation();
+		return Math.sqrt
+		(
+				Math.pow(loc.getX() - target.getX(), 2) 
+		+ 		Math.pow(loc.getY() - target.getY(), 2) 
+		+ 		Math.pow(loc.getZ() - target.getZ(), 2)
+		);
+	}
+	
+	public void castMessage(Player player, String message)
+	{
+		if (!plugin.isQuiet())
+		{
+			player.sendMessage(message);
+		}
+	}
+	
+	public void sendMessage(Player player, String message)
+	{	
+		player.sendMessage(message);
+	}
 }

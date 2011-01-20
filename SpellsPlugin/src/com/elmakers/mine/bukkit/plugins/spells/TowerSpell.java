@@ -13,7 +13,7 @@ public class TowerSpell extends Spell {
 		Block target = getTargetBlock();
 		if (target == null) 
 		{
-			plugin.castMessage(player, "No target");
+			castMessage(player, "No target");
 			return false;
 		}
 		int MAX_HEIGHT = 255;
@@ -37,7 +37,7 @@ public class TowerSpell extends Spell {
 			Block block = getBlockAt(midX, y, midZ);
 			if (block.getType() != Material.AIR)
 			{
-				plugin.castMessage(player, "Found ceiling of " + block.getType().name().toLowerCase());
+				castMessage(player, "Found ceiling of " + block.getType().name().toLowerCase());
 				height = i;
 				break;
 			}
@@ -68,7 +68,7 @@ public class TowerSpell extends Spell {
 			}
 		}
 		plugin.addToUndoQueue(player, towerBlocks);
-		plugin.castMessage(player, "Made tower " + height + " high with " + blocksCreated + " blocks");
+		castMessage(player, "Made tower " + height + " high with " + blocksCreated + " blocks");
 		return true;
 	}
 

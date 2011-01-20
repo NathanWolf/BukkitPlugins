@@ -41,10 +41,10 @@ public class BridgeSpell extends Spell
 		targetBlock.setType(attachBlock.getType());
 		bridgeBlock.update();
 		
-		plugin.castMessage(player, "A bridge extends!");
+		castMessage(player, "A bridge extends!");
 		plugin.addToUndoQueue(player, bridgeBlocks);
 		
-		//plugin.castMessage(player, "Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
+		//castMessage(player, "Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
 		
 		return true;
 	}

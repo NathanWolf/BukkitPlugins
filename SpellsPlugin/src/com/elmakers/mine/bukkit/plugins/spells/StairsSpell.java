@@ -12,7 +12,7 @@ import com.elmakers.mine.bukkit.utilities.UndoableBlock;
 
 public class StairsSpell extends Spell
 {
-	static final String DEFAULT_DESTRUCTIBLES = "1,3,12,13";
+	static final String DEFAULT_DESTRUCTIBLES = "1,3,10,11,12,13";
 	
 	private List<Material> destructibleMaterials = new ArrayList<Material>();
 	private int defaultDepth = 4;
@@ -26,7 +26,7 @@ public class StairsSpell extends Spell
 		Block targetBlock = getTargetBlock();
 		if (targetBlock == null) 
 		{
-			plugin.castMessage(player, "No target");
+			castMessage(player, "No target");
 			return false;
 		}
 		
@@ -127,7 +127,7 @@ public class StairsSpell extends Spell
 
 		plugin.addToUndoQueue(player, tunneledBlocks);
 		plugin.addToUndoQueue(player, stairBlocks);
-		plugin.castMessage(player, "Tunneled through " + tunneledBlocks.getCount() + "blocks and created " + stairBlocks.getCount() + " stairs");
+		castMessage(player, "Tunneled through " + tunneledBlocks.getCount() + "blocks and created " + stairBlocks.getCount() + " stairs");
 	}	
 	
 	protected void createSpiralStairs(Block targetBlock)

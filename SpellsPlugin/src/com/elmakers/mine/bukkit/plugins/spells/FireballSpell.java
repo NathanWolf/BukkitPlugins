@@ -18,7 +18,7 @@ public class FireballSpell extends Spell {
 		Location playerLoc = player.getLocation();
 		if (target == null) 
 		{
-			plugin.castMessage(player, "No target");
+			castMessage(player, "No target");
 			return false;
 		}
 		
@@ -27,7 +27,7 @@ public class FireballSpell extends Spell {
         double dy = (target.getY() + (double)(height / 2.0F)) - (playerLoc.getY() + (double)(height / 2.0F));
         double dz = target.getZ() - playerLoc.getZ();
 		
-		plugin.castMessage(player, "FOOM!");
+		castMessage(player, "FOOM!");
 		CraftPlayer craftPlayer = (CraftPlayer)player;
 		EntityLiving playerEntity = craftPlayer.getHandle();
 		EntityFireball fireball = new EntityFireball(((CraftWorld)player.getWorld()).getHandle(), playerEntity, dx, dy, dz);

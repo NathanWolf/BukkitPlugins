@@ -14,7 +14,7 @@ public class TorchSpell extends Spell
 	{
 		if (yRotation > 80 && allowDay)
 		{
-			plugin.castMessage(player, "FLAME ON!");
+			castMessage(player, "FLAME ON!");
 			setRelativeTime(0);
 			return true;
 		}
@@ -26,7 +26,7 @@ public class TorchSpell extends Spell
 			return false;
 		}
 		
-		plugin.castMessage(player, "Flame on!");
+		castMessage(player, "Flame on!");
 		
 		setFaceBlock(50);
 		return true;

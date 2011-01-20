@@ -31,7 +31,7 @@ public class TimeSpell extends Spell {
 		}
 		
 		setRelativeTime(targetTime);	
-		plugin.castMessage(player, "Changed time to " + timeDescription);
+		castMessage(player, "Changed time to " + timeDescription);
 		
 		return true;
 	}
