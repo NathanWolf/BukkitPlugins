@@ -4,6 +4,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
+import com.elmakers.mine.bukkit.utilities.UndoableBlock;
+
 public class PillarSpell extends Spell 
 {
 	int MAX_SEARCH_DISTANCE = 255;
@@ -14,7 +16,7 @@ public class PillarSpell extends Spell
 		Block attachBlock = getTargetBlock();
 		if (attachBlock == null)
 		{
-			player.sendMessage("No target");
+			plugin.castMessage(player, "No target");
 			return false;
 		}	
 
@@ -38,9 +40,16 @@ public class PillarSpell extends Spell
 			player.sendMessage("Can't pillar any further");
 			return false;
 		}
-		setBlockAt(attachBlock.getTypeId(), targetBlock.getX(), targetBlock.getY(), targetBlock.getZ());
-		player.sendMessage("Creating a pillar of " + attachBlock.getType().name().toLowerCase());
-		//player.sendMessage("Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
+		
+		BlockList pillarBlocks = new BlockList();
+		Block pillar = getBlockAt(targetBlock.getX(), targetBlock.getY(), targetBlock.getZ());
+		UndoableBlock undoPillar = pillarBlocks.addBlock(pillar);
+		pillar.setType(attachBlock.getType());
+		undoPillar.update();
+		
+		plugin.castMessage(player, "Creating a pillar of " + attachBlock.getType().name().toLowerCase());
+		plugin.addToUndoQueue(player, pillarBlocks);
+		//plugin.castMessage(player, "Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
 		
 		return true;
 	}
@@ -60,6 +69,6 @@ public class PillarSpell extends Spell
 	@Override
 	public String getCategory() 
 	{
-		return "build";
+		return "construction";
 	}
 }

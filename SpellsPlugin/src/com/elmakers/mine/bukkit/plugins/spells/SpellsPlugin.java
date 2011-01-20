@@ -32,6 +32,10 @@ public class SpellsPlugin extends JavaPlugin
 	private final Object cleanupLock = new Object();
 	private long lastCleanupTime = 0;
 	
+	private int undoQueueDepth = 256;
+	private boolean silent = false;
+	private HashMap<String, UndoQueue> playerUndoQueues =  new HashMap<String, UndoQueue>();
+	
 	private final Logger log = Logger.getLogger("Minecraft");
 	private final Permissions permissions = new Permissions();
 	private final SpellsMasterListener listener = new SpellsMasterListener();
@@ -60,8 +64,9 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new ReloadSpell());
 		addSpell(new CushionSpell());
 		addSpell(new TunnelSpell());
-		//addSpell(new AlterSpell());
-		//addSpell(new StairsSpell());
+		addSpell(new UndoSpell());
+		addSpell(new AlterSpell());
+		addSpell(new StairsSpell());
 	}
 	
 	protected void loadProperties()
@@ -70,6 +75,9 @@ public class SpellsPlugin extends JavaPlugin
 		properties.load();
 		
 		permissionsFile = properties.getString("spells-classes-file", permissionsFile);
+		undoQueueDepth = properties.getInteger("spells-undo-depth", undoQueueDepth);
+		silent = properties.getBoolean("spells-silent", silent);
+		
 		permissions.load(permissionsFile);
 		
 		for (Spell spell : spells.values())
@@ -276,8 +284,35 @@ public class SpellsPlugin extends JavaPlugin
 		}
 	}
 	
+	public UndoQueue getUndoQueue(String playerName)
+	{
+		UndoQueue queue = playerUndoQueues.get(playerName);
+		if (queue == null)
+		{
+			queue = new UndoQueue();
+			queue.setMaxSize(undoQueueDepth);
+			playerUndoQueues.put(playerName, queue);
+		}
+		return queue;
+	}
+	
 	public void addToUndoQueue(Player player, BlockList blocks)
 	{
-		// TODO!
+		UndoQueue queue = getUndoQueue(player.getName());
+		queue.add(blocks);
+	}
+	
+	public boolean undo(String playerName)
+	{
+		UndoQueue queue = getUndoQueue(playerName);
+		return queue.undo();
+	}
+	
+	public void castMessage(Player player, String message)
+	{
+		if (!silent)
+		{
+			player.sendMessage(message);
+		}
 	}
 }

@@ -107,7 +107,7 @@ public class PluginProperties extends Properties
 		for (String matId : matIds)
 		{
 			int typeId = Integer.parseInt(matId);
-			materials.add(Material.values()[typeId]);
+			materials.add(Material.getMaterial(typeId));
 		}
 		put(key, csvList);
 		

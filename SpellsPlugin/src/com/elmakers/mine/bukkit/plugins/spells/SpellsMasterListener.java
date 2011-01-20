@@ -122,6 +122,6 @@ public class SpellsMasterListener
     
     public void onPlayerDamage(Player player, EntityEvent event)
     {
-    	player.sendMessage("OUCH!");
+    	plugin.castMessage(player, "OUCH!");
     }
 }

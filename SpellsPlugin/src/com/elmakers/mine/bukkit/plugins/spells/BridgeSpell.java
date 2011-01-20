@@ -4,6 +4,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
+import com.elmakers.mine.bukkit.utilities.UndoableBlock;
+
 public class BridgeSpell extends Spell 
 {
 	int MAX_SEARCH_DISTANCE = 16;
@@ -34,9 +36,15 @@ public class BridgeSpell extends Spell
 			player.sendMessage("Can't bridge any further");
 			return false;
 		}
-		setBlockAt(attachBlock.getTypeId(), targetBlock.getX(), targetBlock.getY(), targetBlock.getZ());
-		player.sendMessage("A bridge extends!");
-		//player.sendMessage("Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
+		BlockList bridgeBlocks = new BlockList();
+		UndoableBlock bridgeBlock = bridgeBlocks.addBlock(targetBlock);
+		targetBlock.setType(attachBlock.getType());
+		bridgeBlock.update();
+		
+		plugin.castMessage(player, "A bridge extends!");
+		plugin.addToUndoQueue(player, bridgeBlocks);
+		
+		//plugin.castMessage(player, "Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
 		
 		return true;
 	}
@@ -56,6 +64,6 @@ public class BridgeSpell extends Spell
 	@Override
 	public String getCategory() 
 	{
-		return "build";
+		return "construction";
 	}
 }

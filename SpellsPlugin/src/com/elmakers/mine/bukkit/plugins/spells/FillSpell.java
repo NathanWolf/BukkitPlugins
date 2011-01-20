@@ -4,6 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 
 import com.elmakers.mine.bukkit.utilities.PluginProperties;
+import com.elmakers.mine.bukkit.utilities.UndoableBlock;
 
 public class FillSpell extends Spell 
 {
@@ -18,7 +19,7 @@ public class FillSpell extends Spell
 		Material material = plugin.finishMaterialUse(player);
 		if (targetBlock == null) 
 		{
-			player.sendMessage("No target");
+			plugin.castMessage(player, "No target");
 			return false;
 		}
 		
@@ -52,7 +53,8 @@ public class FillSpell extends Spell
 			absy++;
 			absz++;
 			
-			player.sendMessage("Filling " + absx + "x" + absy + "x" + absz + " area with " + material.name().toLowerCase());
+			BlockList filledBlocks = new BlockList();
+			plugin.castMessage(player, "Filling " + absx + "x" + absy + "x" + absz + " area with " + material.name().toLowerCase());
 			int x = target.getX();
 			int y = target.getY();
 			int z = target.getZ();
@@ -62,10 +64,14 @@ public class FillSpell extends Spell
 				{
 					for (int iz = 0; iz < absz; iz++)
 					{
-						setBlockAt(material.getId(), x + ix * dx, y + iy * dy, z + iz * dz);
+						Block block = getBlockAt(x + ix * dx, y + iy * dy, z + iz * dz);
+						UndoableBlock undoBlock = filledBlocks.addBlock(block);
+						block.setType(material);
+						undoBlock.update();
 					}
 				}
 			}
+			plugin.addToUndoQueue(player, filledBlocks);
 			
 			target = null;
 			return true;
@@ -104,7 +110,7 @@ public class FillSpell extends Spell
 	@Override
 	public String getCategory() 
 	{
-		return "build";
+		return "construction";
 	}
 
 	@Override

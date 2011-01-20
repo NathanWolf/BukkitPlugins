@@ -26,7 +26,7 @@ public class StairsSpell extends Spell
 		Block targetBlock = getTargetBlock();
 		if (targetBlock == null) 
 		{
-			player.sendMessage("No target");
+			plugin.castMessage(player, "No target");
 			return false;
 		}
 		
@@ -127,7 +127,7 @@ public class StairsSpell extends Spell
 
 		plugin.addToUndoQueue(player, tunneledBlocks);
 		plugin.addToUndoQueue(player, stairBlocks);
-		player.sendMessage("Tunneled through " + tunneledBlocks.getCount() + "blocks and created " + stairBlocks.getCount() + " stairs");
+		plugin.castMessage(player, "Tunneled through " + tunneledBlocks.getCount() + "blocks and created " + stairBlocks.getCount() + " stairs");
 	}	
 	
 	protected void createSpiralStairs(Block targetBlock)
@@ -158,7 +158,7 @@ public class StairsSpell extends Spell
 	@Override
 	public String getCategory()
 	{
-		return "build";
+		return "construction";
 	}
 
 	@Override

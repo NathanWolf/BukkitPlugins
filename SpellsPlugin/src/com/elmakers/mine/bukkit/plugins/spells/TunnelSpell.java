@@ -114,7 +114,7 @@ public class TunnelSpell extends Spell
 		}
 
 		plugin.addToUndoQueue(player, tunneledBlocks);
-		player.sendMessage("Tunneled through " + tunneledBlocks.getCount() + "blocks");
+		plugin.castMessage(player, "Tunneled through " + tunneledBlocks.getCount() + "blocks");
 		
 		return true;
 	}

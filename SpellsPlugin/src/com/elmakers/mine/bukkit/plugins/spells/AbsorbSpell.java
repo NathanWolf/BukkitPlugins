@@ -16,11 +16,11 @@ public class AbsorbSpell extends Spell
 		
 		if (target == null) 
 		{
-			player.sendMessage("No target");
+			plugin.castMessage(player, "No target");
 			return false;
 		}
 		int amount = defaultAmount;
-		player.sendMessage("Absorbing some " + target.getType().name().toLowerCase());
+		plugin.castMessage(player, "Absorbing some " + target.getType().name().toLowerCase());
 		player.getWorld().dropItem(player.getLocation(), new ItemStack(target.getType(), amount));
 		return true;
 	}

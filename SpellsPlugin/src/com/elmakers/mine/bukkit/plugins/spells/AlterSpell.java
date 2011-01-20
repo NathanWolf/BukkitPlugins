@@ -21,7 +21,7 @@ public class AlterSpell extends Spell
 		Block targetBlock = getTargetBlock();
 		if (targetBlock == null) 
 		{
-			player.sendMessage("No target");
+			plugin.castMessage(player, "No target");
 			return false;
 		}
 		if (!adjustableMaterials.contains(targetBlock.getType()))
@@ -41,7 +41,7 @@ public class AlterSpell extends Spell
 		
 		plugin.addToUndoQueue(player, undoList);
 		
-		player.sendMessage("Adjusting " + targetBlock.getType().name().toLowerCase() + " from " + originalData + " to " + data);
+		plugin.castMessage(player, "Adjusting " + targetBlock.getType().name().toLowerCase() + " from " + originalData + " to " + data);
 		
 		return true;
 	}
@@ -55,7 +55,7 @@ public class AlterSpell extends Spell
 	@Override
 	public String getCategory()
 	{
-		return "build";
+		return "construction";
 	}
 
 	@Override

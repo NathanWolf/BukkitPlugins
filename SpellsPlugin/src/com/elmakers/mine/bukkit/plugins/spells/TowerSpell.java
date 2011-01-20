@@ -3,6 +3,8 @@ package com.elmakers.mine.bukkit.plugins.spells;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
+import com.elmakers.mine.bukkit.utilities.UndoableBlock;
+
 public class TowerSpell extends Spell {
 
 	@Override
@@ -11,7 +13,7 @@ public class TowerSpell extends Spell {
 		Block target = getTargetBlock();
 		if (target == null) 
 		{
-			player.sendMessage("No target");
+			plugin.castMessage(player, "No target");
 			return false;
 		}
 		int MAX_HEIGHT = 255;
@@ -35,13 +37,14 @@ public class TowerSpell extends Spell {
 			Block block = getBlockAt(midX, y, midZ);
 			if (block.getType() != Material.AIR)
 			{
-				player.sendMessage("Found ceiling of " + block.getType().name().toLowerCase());
+				plugin.castMessage(player, "Found ceiling of " + block.getType().name().toLowerCase());
 				height = i;
 				break;
 			}
 		}
 		
 		int blocksCreated = 0;
+		BlockList towerBlocks = new BlockList();
 		for (int i = 0; i < height; i++)
 		{
 			midY++;
@@ -56,12 +59,16 @@ public class TowerSpell extends Spell {
 					if (dx != 0 || dz != 0)
 					{
 						blocksCreated++;
-						setBlockAt(material, x, y, z);
+						Block block = getBlockAt(x, y, z);
+						UndoableBlock undoBlock = towerBlocks.addBlock(block);
+						block.setTypeId(material);
+						undoBlock.update();
 					}					
 				}
 			}
 		}
-		player.sendMessage("Made tower " + height + " high with " + blocksCreated + " blocks");
+		plugin.addToUndoQueue(player, towerBlocks);
+		plugin.castMessage(player, "Made tower " + height + " high with " + blocksCreated + " blocks");
 		return true;
 	}
 
@@ -80,6 +87,6 @@ public class TowerSpell extends Spell {
 	@Override
 	public String getCategory() 
 	{
-		return "build";
+		return "construction";
 	}
 }

@@ -53,8 +53,8 @@ public class ExtendSpell extends Spell
 			return false;
 		}
 		setBlockAt(attachBlock.getTypeId(), targetBlock.getX(), targetBlock.getY(), targetBlock.getZ());
-		player.sendMessage("You extend your target");
-		//player.sendMessage("Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
+		plugin.castMessage(player, "You extend your target");
+		//plugin.castMessage(player, "Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
 		
 		return true;
 	}
@@ -74,6 +74,6 @@ public class ExtendSpell extends Spell
 	@Override
 	public String getCategory() 
 	{
-		return "build";
+		return "construction";
 	}
 }

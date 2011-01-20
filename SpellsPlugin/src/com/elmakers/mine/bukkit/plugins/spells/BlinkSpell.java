@@ -38,7 +38,7 @@ public class BlinkSpell extends Spell
 			Location location = findPlaceToStand(player, false);
 			if (location != null) 
 			{
-				player.sendMessage("Blink down!");
+				plugin.castMessage(player, "Blink down!");
 				player.teleportTo(location);
 				return true;
 			}
@@ -49,7 +49,7 @@ public class BlinkSpell extends Spell
 			Location location = findPlaceToStand(player, true);
 			if (location != null) 
 			{
-				player.sendMessage("Blink up!");
+				plugin.castMessage(player, "Blink up!");
 				player.teleportTo(location);
 				return true;
 			}
@@ -57,12 +57,12 @@ public class BlinkSpell extends Spell
 		
 		if (target == null) 
 		{
-			player.sendMessage("Nowhere to blink to");
+			plugin.castMessage(player, "Nowhere to blink to");
 			return false;
 		}
 		if (maxRange > 0 && getDistance(player,target) > maxRange) 
 		{
-			player.sendMessage("Can't blink that far");
+			plugin.castMessage(player, "Can't blink that far");
 			return false;
 		}
 		
@@ -78,7 +78,7 @@ public class BlinkSpell extends Spell
 		&&  twoUp.getType() == Material.AIR
 		) 
 		{
-			player.sendMessage("Blink!");
+			plugin.castMessage(player, "Blink!");
 			player.teleportTo
 			(
 				new org.bukkit.Location
@@ -96,7 +96,7 @@ public class BlinkSpell extends Spell
 		else 
 		{
 			// no place to stand
-			player.sendMessage("Nowhere to stand there");
+			plugin.castMessage(player, "Nowhere to stand there");
 			return false;
 		}
 	}

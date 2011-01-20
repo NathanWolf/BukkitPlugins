@@ -11,14 +11,14 @@ public class DescendSpell extends Spell
 		Location location = findPlaceToStand(player, false);
 		if (location != null) 
 		{
-			player.sendMessage("Going down!");
+			plugin.castMessage(player, "Going down!");
 			player.teleportTo(location);
 			return true;
 		} 
 		else 
 		{		
 			// no spot found to ascend
-			player.sendMessage("Nowhere to go down");
+			plugin.castMessage(player, "Nowhere to go down");
 			return false;
 		}
 	}

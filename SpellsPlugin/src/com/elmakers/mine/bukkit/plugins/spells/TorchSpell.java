@@ -14,7 +14,7 @@ public class TorchSpell extends Spell
 	{
 		if (yRotation > 80 && allowDay)
 		{
-			player.sendMessage("FLAME ON!");
+			plugin.castMessage(player, "FLAME ON!");
 			setRelativeTime(0);
 			return true;
 		}
@@ -26,7 +26,7 @@ public class TorchSpell extends Spell
 			return false;
 		}
 		
-		player.sendMessage("Flame on!");
+		plugin.castMessage(player, "Flame on!");
 		
 		setFaceBlock(50);
 		return true;
@@ -47,7 +47,7 @@ public class TorchSpell extends Spell
 	@Override
 	public String getCategory() 
 	{
-		return "build";
+		return "construction";
 	}
 
 	@Override
