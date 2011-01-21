@@ -3,8 +3,8 @@ package com.elmakers.mine.bukkit.plugins.spells;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
-import com.elmakers.mine.bukkit.utilities.BlockList;
-import com.elmakers.mine.bukkit.utilities.UndoableBlock;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class TowerSpell extends Spell {
 

@@ -20,7 +20,7 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.elmakers.mine.bukkit.utilities.PluginProperties;
+import com.elmakers.mine.bukkit.plugins.wand.utilities.PluginProperties;
 
 public class WandPlugin extends JavaPlugin 
 {

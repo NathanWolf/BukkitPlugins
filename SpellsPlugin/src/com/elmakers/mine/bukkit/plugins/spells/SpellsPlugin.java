@@ -19,9 +19,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.elmakers.mine.bukkit.plugins.groups.Permissions;
 import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
-import com.elmakers.mine.bukkit.utilities.BlockList;
-import com.elmakers.mine.bukkit.utilities.MovementListener;
-import com.elmakers.mine.bukkit.utilities.PluginProperties;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.MovementListener;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class SpellsPlugin extends JavaPlugin implements MovementListener
 {
@@ -78,6 +78,7 @@ public class SpellsPlugin extends JavaPlugin implements MovementListener
 		addSpell(new ArrowSpell());
 		addSpell(new FrostSpell());
 		addSpell(new GillsSpell());
+		addSpell(new FamiliarSpell());
 	}
 	
 	protected void loadProperties()

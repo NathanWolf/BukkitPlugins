@@ -4,7 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
-import com.elmakers.mine.bukkit.utilities.PluginProperties;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class AbsorbSpell extends Spell 
 {

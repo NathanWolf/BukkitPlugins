@@ -5,8 +5,8 @@ import java.util.HashMap;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerMoveEvent;
 
-import com.elmakers.mine.bukkit.utilities.MovementListener;
-import com.elmakers.mine.bukkit.utilities.PluginProperties;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.MovementListener;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class GillsSpell extends Spell implements MovementListener
 {

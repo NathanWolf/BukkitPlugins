@@ -11,7 +11,7 @@ import org.bukkit.util.Vector;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 
-import com.elmakers.mine.bukkit.utilities.PluginProperties;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 /**
  * 

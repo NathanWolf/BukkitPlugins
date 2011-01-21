@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.utilities;
+package com.elmakers.mine.bukkit.plugins.spells.utilities;
 
 import org.bukkit.Material;
 import org.bukkit.World;

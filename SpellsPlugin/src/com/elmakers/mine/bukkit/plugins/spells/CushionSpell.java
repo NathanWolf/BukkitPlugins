@@ -5,9 +5,9 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftWorld;
 
-import com.elmakers.mine.bukkit.utilities.BlockList;
-import com.elmakers.mine.bukkit.utilities.PluginProperties;
-import com.elmakers.mine.bukkit.utilities.UndoableBlock;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class CushionSpell extends Spell
 {

@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.utilities;
+package com.elmakers.mine.bukkit.plugins.spells.utilities;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -112,5 +112,23 @@ public class PluginProperties extends Properties
 		put(key, csvList);
 		
 		return materials;
+	}
+	
+	public List<String> getStringList(String key, String csvList)
+	{
+		if (containsKey(key)) 
+		{
+			csvList = getProperty(key);
+		}
+		List<String> strings = new ArrayList<String>();
+		
+		String[] defaultStrings = csvList.split(",");
+		for (String defaultString : defaultStrings)
+		{
+			strings.add(defaultString);
+		}
+		put(key, csvList);
+		
+		return strings;
 	}
 }

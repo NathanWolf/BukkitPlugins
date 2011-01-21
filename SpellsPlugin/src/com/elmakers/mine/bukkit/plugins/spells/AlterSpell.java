@@ -7,9 +7,9 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
-import com.elmakers.mine.bukkit.utilities.BlockList;
-import com.elmakers.mine.bukkit.utilities.PluginProperties;
-import com.elmakers.mine.bukkit.utilities.UndoableBlock;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class AlterSpell extends Spell
 {

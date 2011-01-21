@@ -6,7 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 
-import com.elmakers.mine.bukkit.utilities.PluginProperties;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class BlinkSpell extends Spell
 {
