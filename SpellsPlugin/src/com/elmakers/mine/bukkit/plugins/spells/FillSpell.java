@@ -85,7 +85,7 @@ public class FillSpell extends Spell
 		{
 			target = targetBlock;
 			setTarget(target);
-			plugin.startMaterialUse(player, target.getType());
+			plugin.startMaterialUse(player, target.getType(), target.getData());
 			player.sendMessage("Cast again to fill with " + target.getType().name().toLowerCase());
 			return true;
 		}

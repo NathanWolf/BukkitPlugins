@@ -8,7 +8,7 @@ import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class TreeSpell extends Spell
 {
-	private TreeType	defaultTreeType = TreeType.BIG_TREE;
+	private TreeType	defaultTreeType = TreeType.BIG;
 	private boolean allowBig = true;
 	private boolean allowStandard = true;
 	private boolean allowUndoable = true;
@@ -16,47 +16,26 @@ public class TreeSpell extends Spell
 	
 	enum TreeType
 	{
-		STANDARD_TREE,
-		BIG_TREE,
-		NORMAL_TREE,
-		REDWOOD_TREE,
-		BIRCH_TREE;
+		STANDARD,
+		BIG,
+		NORMAL,
+		REDWOOD,
+		BIRCH;
 		
 		public String getTreeName()
 		{
-			switch (this)
-			{
-				case STANDARD_TREE: return "standard";
-				case BIG_TREE: return "big";
-				case NORMAL_TREE: return "normal";
-				case REDWOOD_TREE: return "redwood";
-				case BIRCH_TREE: return "birch";
-			}
-			return "unknown";
+			return name().toLowerCase();
 		}
 		
-		public static TreeType parseString(String t, TreeType defaultTreeType)
+		public static TreeType parseString(String s, TreeType defaultTreeType)
 		{
 			TreeType tree = defaultTreeType;
-			if (t.equalsIgnoreCase("standard"))
+			for (TreeType t : TreeType.values())
 			{
-				tree = TreeType.STANDARD_TREE;
-			}
-			else if (t.equalsIgnoreCase("big"))
-			{
-				tree = TreeType.BIG_TREE;
-			}
-			else if (t.equalsIgnoreCase("normal"))
-			{
-				tree = TreeType.NORMAL_TREE;
-			}
-			else if (t.equalsIgnoreCase("redwood"))
-			{
-				tree = TreeType.REDWOOD_TREE;
-			}
-			else if (t.equalsIgnoreCase("birch"))
-			{
-				tree = TreeType.BIRCH_TREE;
+				if (t.name().equalsIgnoreCase(s))
+				{
+					tree = t;
+				}
 			}
 			return tree;
 		}
@@ -84,19 +63,19 @@ public class TreeSpell extends Spell
 		if (parameters.length > 0)
 		{
 			treeType = TreeType.parseString(parameters[0], defaultTreeType);
-			if (!allowBig && treeType == TreeType.BIG_TREE) treeType = defaultTreeType;
-			if (!allowStandard && treeType == TreeType.STANDARD_TREE) treeType = defaultTreeType;
-			if (!allowUndoable && (treeType == TreeType.NORMAL_TREE || treeType == TreeType.BIRCH_TREE || treeType == TreeType.REDWOOD_TREE)) treeType = defaultTreeType;
+			if (!allowBig && treeType == TreeType.BIG) treeType = defaultTreeType;
+			if (!allowStandard && treeType == TreeType.STANDARD) treeType = defaultTreeType;
+			if (!allowUndoable && (treeType == TreeType.NORMAL || treeType == TreeType.BIRCH || treeType == TreeType.REDWOOD)) treeType = defaultTreeType;
 		}
 		
 		boolean result = false;
 		
 		switch (treeType)
 		{
-			case BIG_TREE:
+			case BIG:
 				result = player.getWorld().generateBigTree(treeLoc);
 				break;
-			case STANDARD_TREE:
+			case STANDARD:
 				result = player.getWorld().generateTree(treeLoc);
 				break;
 		}

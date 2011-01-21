@@ -79,6 +79,7 @@ public class SpellsPlugin extends JavaPlugin implements MovementListener
 		addSpell(new FrostSpell());
 		addSpell(new GillsSpell());
 		addSpell(new FamiliarSpell());
+		addSpell(new ConstructSpell());
 	}
 	
 	protected void loadProperties()
@@ -218,7 +219,7 @@ public class SpellsPlugin extends JavaPlugin implements MovementListener
 		return spells.get(name);
 	}
 	
-	public void setCurrentMaterialType(Player player, Material material)
+	public void setCurrentMaterialType(Player player, Material material, byte data)
 	{
 		PlayerSpells spells = getPlayerSpells(player);
 		if (spells.isUsingMaterial() && spells.getMaterial() != material)
@@ -226,12 +227,13 @@ public class SpellsPlugin extends JavaPlugin implements MovementListener
 			player.sendMessage("Now using " + material.name().toLowerCase());
 		}
 		spells.setMaterial(material);
+		spells.setData(data);
 	}
 	
-	public void startMaterialUse(Player player, Material material)
+	public void startMaterialUse(Player player, Material material, byte data)
 	{
 		PlayerSpells spells = getPlayerSpells(player);
-		spells.startMaterialUse(material);
+		spells.startMaterialUse(material, data);
 	}
 	
 	public Material finishMaterialUse(Player player)

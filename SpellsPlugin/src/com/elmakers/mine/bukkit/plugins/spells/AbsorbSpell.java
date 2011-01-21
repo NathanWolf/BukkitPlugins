@@ -3,6 +3,7 @@ package com.elmakers.mine.bukkit.plugins.spells;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
 
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
@@ -27,7 +28,9 @@ public class AbsorbSpell extends Spell
 		}
 		int amount = defaultAmount;
 		castMessage(player, "Absorbing some " + target.getType().name().toLowerCase());
-		player.getWorld().dropItem(player.getLocation(), new ItemStack(target.getType(), amount));
+		ItemStack itemStack = new ItemStack(target.getType(), amount);
+		itemStack.setData(new MaterialData(target.getType(), target.getData()));
+		player.getWorld().dropItem(player.getLocation(), itemStack);
 		return true;
 	}
 

@@ -17,7 +17,7 @@ public class AlterSpell extends Spell
 	static final String DEFAULT_RECURSABLES = "17,18,59";
 	
 	private List<Material> adjustableMaterials = new ArrayList<Material>();
-	private int recurseDistance = 16;
+	private int recurseDistance = 32;
 	private List<Material> recursableMaterials = new ArrayList<Material>();
 	
 	@Override
@@ -99,8 +99,9 @@ public class AlterSpell extends Spell
 	@Override
 	public void onLoad(PluginProperties properties)
 	{
-		adjustableMaterials = properties.getMaterials("spells-adjustable", DEFAULT_ADJUSTABLES);
-		recursableMaterials = properties.getMaterials("spells-recursable", DEFAULT_RECURSABLES);
+		recurseDistance = properties.getInteger("spells-alter-recursion-depth", recurseDistance);
+		adjustableMaterials = properties.getMaterials("spells-alter-adjustable", DEFAULT_ADJUSTABLES);
+		recursableMaterials = properties.getMaterials("spells-alter-recursable", DEFAULT_RECURSABLES);
 	}
 
 }

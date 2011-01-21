@@ -25,6 +25,7 @@ import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
 import org.bukkit.Location;
+import org.bukkit.Material;
 
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
@@ -106,6 +107,9 @@ public class FamiliarSpell extends Spell
 		}
 		else
 		{
+			noTargetThrough(Material.STATIONARY_WATER);
+			noTargetThrough(Material.WATER);
+			
 			Block target = getTargetBlock();
 			if (target == null)
 			{
@@ -134,7 +138,7 @@ public class FamiliarSpell extends Spell
 				famType = FamiliarType.parseString(defaultFamiliars.get(randomFamiliar));
 			}
 			
-			if (isUnderwater())
+			if (target.getType() == Material.WATER || target.getType() == Material.STATIONARY_WATER)
 			{
 				famType = FamiliarType.SQUID;
 			}

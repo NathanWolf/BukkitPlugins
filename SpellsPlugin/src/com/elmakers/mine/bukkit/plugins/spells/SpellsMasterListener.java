@@ -92,7 +92,7 @@ public class SpellsMasterListener
 		}
 		if (material.getId() != plugin.getWandTypeId())
 		{
-			plugin.setCurrentMaterialType(event.getPlayer(), material);
+			plugin.setCurrentMaterialType(event.getPlayer(), material, item.getData().getData());
 		}
     }
 	
