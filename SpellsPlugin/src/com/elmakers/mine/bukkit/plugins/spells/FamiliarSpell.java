@@ -72,7 +72,6 @@ public class FamiliarSpell extends Spell
 		SQUID,
 		ZOMBIE,
 		GHAST,
-		FISH,
 		UNKNOWN;
 		
 		public static FamiliarType parseString(String s)
