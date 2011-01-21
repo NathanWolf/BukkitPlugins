@@ -2,9 +2,6 @@ package com.elmakers.mine.bukkit.plugins.spells;
 
 import java.util.HashMap;
 
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerMoveEvent;
 
@@ -53,8 +50,8 @@ public class GillsSpell extends Spell implements MovementListener
 	}
 	
 	private int gillDuration = 60;
-	private int healFrequency = 5000;
-	private int healAmount = 1;
+	private int healFrequency = 1000;
+	private int healAmount = 4;
 	private HashMap<String, PlayerGills> gillPlayers = new HashMap<String, PlayerGills>();
 	
 	@Override
@@ -107,9 +104,7 @@ public class GillsSpell extends Spell implements MovementListener
 			if (gills.isTimeToHeal(healFrequency))
 			{
 					gills.heal();
-					Block playerBlock = getPlayerBlock();
-					playerBlock = playerBlock.getFace(BlockFace.UP);
-					if (playerBlock.getType() == Material.WATER || playerBlock.getType() == Material.STATIONARY_WATER)
+					if (isUnderwater())
 					{
 						int health = player.getHealth();
 						if (health < 20) 

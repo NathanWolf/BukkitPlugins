@@ -546,4 +546,11 @@ public abstract class Spell implements Comparable<Spell>
 		return new Vector((0 - Math.sin(Math.toRadians(playerLocation.getYaw()))), (0 - Math.sin(Math
 				.toRadians(playerLocation.getPitch()))), Math.cos(Math.toRadians(playerLocation.getYaw())));
 	}
+	
+	public boolean isUnderwater()
+	{
+		Block playerBlock = getPlayerBlock();
+		playerBlock = playerBlock.getFace(BlockFace.UP);
+		return (playerBlock.getType() == Material.WATER || playerBlock.getType() == Material.STATIONARY_WATER);
+	}
 }
