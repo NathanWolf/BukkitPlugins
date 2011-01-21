@@ -70,6 +70,8 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new StairsSpell());
 		addSpell(new BlastSpell());
 		addSpell(new MineSpell());
+		addSpell(new TreeSpell());
+		addSpell(new ArrowSpell());
 	}
 	
 	protected void loadProperties()

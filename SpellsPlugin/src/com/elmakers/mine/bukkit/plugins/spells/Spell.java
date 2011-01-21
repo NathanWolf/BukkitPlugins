@@ -5,6 +5,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 
@@ -438,5 +439,39 @@ public abstract class Spell implements Comparable<Spell>
 		{
 			player.sendMessage(message);
 		}
+	}
+	
+	public Location getSpawnLocation()
+	{
+		Block spawnBlock = getPlayerBlock();
+		
+		int height = 2;
+		double hLength = 2;
+		double xOffset = (hLength * Math.cos(Math.toRadians(xRotation)));
+		double zOffset = (hLength * Math.sin(Math.toRadians(xRotation)));
+
+		Vector aimVector = new Vector(xOffset + 0.5, height + 0.5, zOffset + 0.5);
+		
+		Location location = new Location
+		(
+				player.getWorld(), 
+				spawnBlock.getX() + aimVector.getX(), 
+				spawnBlock.getY() + aimVector.getY(), 
+				spawnBlock.getZ() + aimVector.getZ(), 
+				player.getLocation().getYaw(),
+				player.getLocation().getPitch()
+		);
+		
+		return location;
+	}
+	
+	public Vector getAimVector()
+	{
+		return new Vector
+		(
+				(0 - Math.sin(Math.toRadians(playerLocation.getYaw()))),
+				(0 - Math.sin(Math.toRadians(playerLocation.getPitch()))),
+				Math.cos(Math.toRadians(playerLocation.getYaw()))	
+		);
 	}
 }

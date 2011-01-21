@@ -9,6 +9,9 @@ import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
+import com.elmakers.mine.bukkit.utilities.MathHelper;
+import com.elmakers.mine.bukkit.utilities.Vec3D;
+
 public class FireballSpell extends Spell {
 
 	@Override

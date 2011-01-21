@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.spells;
+package com.elmakers.mine.bukkit.utilities;
 
 
 import java.util.ArrayList;
