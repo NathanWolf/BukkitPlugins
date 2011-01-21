@@ -74,6 +74,6 @@ public class ExtendSpell extends Spell
 	@Override
 	public String getCategory() 
 	{
-		return "construction";
+		return "WIP";
 	}
 }

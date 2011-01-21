@@ -147,7 +147,7 @@ public class TunnelSpell extends Spell
 	@Override
 	public String getCategory()
 	{
-		return "mining";
+		return "WIP";
 	}
 
 	@Override

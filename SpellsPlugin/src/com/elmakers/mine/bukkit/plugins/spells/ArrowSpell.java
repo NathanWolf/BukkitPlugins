@@ -1,7 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Arrow;
 import org.bukkit.util.Vector;
 

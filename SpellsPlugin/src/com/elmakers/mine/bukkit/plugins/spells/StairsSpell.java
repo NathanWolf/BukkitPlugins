@@ -152,7 +152,7 @@ public class StairsSpell extends Spell
 	@Override
 	public String getCategory()
 	{
-		return "construction";
+		return "WIP";
 	}
 
 	@Override
