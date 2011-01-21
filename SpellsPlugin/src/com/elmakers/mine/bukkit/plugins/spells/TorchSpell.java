@@ -3,7 +3,9 @@ package com.elmakers.mine.bukkit.plugins.spells;
 import org.bukkit.block.Block;
 import org.bukkit.Material;
 
+import com.elmakers.mine.bukkit.utilities.BlockList;
 import com.elmakers.mine.bukkit.utilities.PluginProperties;
+import com.elmakers.mine.bukkit.utilities.UndoableBlock;
 
 public class TorchSpell extends Spell 
 {
@@ -39,15 +41,21 @@ public class TorchSpell extends Spell
 		}
 		
 		castMessage(player, "Flame on!");
+		BlockList torchBlock = new BlockList();
+		UndoableBlock undoBlock = torchBlock.addBlock(face);
 		
 		if (isWater || isAttachmentSlippery)
 		{
-			setFaceBlock(89);
+			face.setType(Material.GLOWSTONE);
 		}
 		else
 		{
-			setFaceBlock(50);
+			face.setType(Material.TORCH);
 		}
+		
+		undoBlock.update();
+		plugin.addToUndoQueue(player, torchBlock);
+		
 		return true;
 	}
 

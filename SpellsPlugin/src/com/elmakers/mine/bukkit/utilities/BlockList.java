@@ -10,7 +10,7 @@ import org.bukkit.block.Block;
 public class BlockList 
 {
 	private final List<UndoableBlock> blocks = new ArrayList<UndoableBlock>();
-	private final HashMap<Long, UndoableBlock> blockLookup = new HashMap<Long, UndoableBlock>();
+	private final HashMap<Block, UndoableBlock> blockLookup = new HashMap<Block, UndoableBlock>();
 	private int timeToLive = 0;
 	private int timeRemaining = 0;
 	private int passesRemaining = 1;
@@ -64,14 +64,14 @@ public class BlockList
 	
 	public UndoableBlock addBlock(Block block)
 	{
-		UndoableBlock undoBlock = new UndoableBlock(block);
-		UndoableBlock searchBlock = blockLookup.get(undoBlock.getHash());
+		UndoableBlock searchBlock = blockLookup.get(block);
 		
 		if (searchBlock == null)
 		{
-			searchBlock = undoBlock;
-			blocks.add(undoBlock);
-			blockLookup.put(undoBlock.getHash(), undoBlock);
+			searchBlock = new UndoableBlock(block);
+;
+			blocks.add(searchBlock);
+			blockLookup.put(block, searchBlock);
 		}
 		return searchBlock;
 	}
@@ -86,7 +86,6 @@ public class BlockList
 
 	public boolean contains(Block block)
 	{
-		UndoableBlock undoBlock = new UndoableBlock(block);
-		return (blockLookup.get(undoBlock.getHash()) != null);
+		return (blockLookup.get(block) != null);
 	}
 }

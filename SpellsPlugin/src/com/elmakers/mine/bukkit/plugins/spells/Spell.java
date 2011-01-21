@@ -400,7 +400,7 @@ public abstract class Spell implements Comparable<Spell>
 		int y = (int) Math.round(playerLoc.getY() - 0.5);
 		int z = (int) Math.round(playerLoc.getZ() - 0.5);
 		int dy = 0;
-		while (dy > -3 && (playerBlock == null || playerBlock.getType() == Material.AIR))
+		while (dy > -3 && (playerBlock == null || isOkToStandIn(playerBlock.getType())))
 		{
 			playerBlock = player.getWorld().getBlockAt(x, y + dy, z);
 			dy--;
