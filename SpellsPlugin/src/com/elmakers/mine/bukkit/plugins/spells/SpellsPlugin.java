@@ -11,6 +11,7 @@ import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
@@ -19,9 +20,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.elmakers.mine.bukkit.plugins.groups.Permissions;
 import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
 import com.elmakers.mine.bukkit.utilities.BlockList;
+import com.elmakers.mine.bukkit.utilities.MovementListener;
 import com.elmakers.mine.bukkit.utilities.PluginProperties;
 
-public class SpellsPlugin extends JavaPlugin 
+public class SpellsPlugin extends JavaPlugin implements MovementListener
 {
 	private final String propertiesFile = "spells.properties";
 	private String permissionsFile = "spell-classes.txt";
@@ -45,6 +47,7 @@ public class SpellsPlugin extends JavaPlugin
 	private final SpellsEntityListener entityListener = new SpellsEntityListener();
 	private final HashMap<String, Spell> spells = new HashMap<String, Spell>();
 	private final HashMap<String, PlayerSpells> playerSpells = new HashMap<String, PlayerSpells>();
+	private final List<MovementListener> movementListeners = new ArrayList<MovementListener>();
 
 	public SpellsPlugin(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File dataFolder, File plugin, ClassLoader cLoader) 
 	{
@@ -74,6 +77,7 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new TreeSpell());
 		addSpell(new ArrowSpell());
 		addSpell(new FrostSpell());
+		addSpell(new GillsSpell());
 	}
 	
 	protected void loadProperties()
@@ -157,6 +161,7 @@ public class SpellsPlugin extends JavaPlugin
 	public void onDisable() 
 	{
 		forceCleanup();
+		movementListeners.clear();
 	}
 	
 	public void listSpells(Player player, PlayerPermissions playerPermissions)
@@ -324,5 +329,37 @@ public class SpellsPlugin extends JavaPlugin
 	public boolean isSilent()
 	{
 		return silent;
+	}
+	
+	public void onPlayerMove(PlayerMoveEvent event)
+	{
+		// Must allow listeners to remove themselves during the event!
+		List<MovementListener> active = new ArrayList<MovementListener>();
+		active.addAll(movementListeners);
+		for (MovementListener listener : active)
+		{
+			listener.onPlayerMove(event);
+		}
+	}
+	
+	public boolean isListeningTo(MovementListener me)
+	{
+		return movementListeners.contains(me);
+	}
+
+	public void listenTo(MovementListener me)
+	{
+		if (!isListeningTo(me))
+		{
+			movementListeners.add(me);
+		}
+	}
+	
+	public void stopListeningTo(MovementListener me)
+	{
+		if (isListeningTo(me))
+		{
+			movementListeners.remove(me);
+		}
 	}
 }

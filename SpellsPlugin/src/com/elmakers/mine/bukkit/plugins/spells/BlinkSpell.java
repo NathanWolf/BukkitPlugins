@@ -27,6 +27,7 @@ public class BlinkSpell extends Spell
 	@Override
 	public boolean onCast(String[] parameters)
 	{
+		targetThrough(Material.GLASS);
 		Block target = getTargetBlock();
 		Block face = getLastBlock();
 		
@@ -68,7 +69,7 @@ public class BlinkSpell extends Spell
 		// Don't drop the player too far, and make sure there is somewhere to stand
     	Block destination = face;
     	Block groundBlock = destination.getFace(BlockFace.DOWN);
-    	while (groundBlock.getType() == Material.AIR)
+    	while (!isOkToStandOn(groundBlock.getType()))
     	{
     		destination = groundBlock;
     		groundBlock = destination.getFace(BlockFace.DOWN);
@@ -76,13 +77,10 @@ public class BlinkSpell extends Spell
     	
 		Block oneUp = destination.getFace(BlockFace.UP);
 		Block twoUp = oneUp.getFace(BlockFace.UP);
-		if
-		(
-			oneUp.getType() != Material.AIR
-		||  twoUp.getType() != Material.AIR
-		) 
+		if (!isOkToStandIn(oneUp.getType()) || !isOkToStandIn(twoUp.getType()))
 		{
 			sendMessage(player, "You can't fit in there!");
+			return false;
 		}
 		castMessage(player, "Blink!");
 		player.teleportTo

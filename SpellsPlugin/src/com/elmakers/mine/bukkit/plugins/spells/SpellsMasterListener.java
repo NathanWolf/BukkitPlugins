@@ -104,6 +104,7 @@ public class SpellsMasterListener
     public void onPlayerMove(PlayerMoveEvent event) 
     {
     	plugin.cleanup();
+    	plugin.onPlayerMove(event);
     }
  
     /**

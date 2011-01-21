@@ -1,5 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
+import java.util.HashMap;
+
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.Location;
@@ -39,49 +41,74 @@ import com.elmakers.mine.bukkit.utilities.PluginProperties;
  */
 public abstract class Spell implements Comparable<Spell>
 {
-	protected Player player;
-	protected SpellsPlugin plugin;
+	protected Player							player;
+	protected SpellsPlugin						plugin;
 
-	protected int range = 200;
-	protected double viewHeight = 1.65;
-	protected double step = 0.2;
-	
-	protected Location playerLocation;	
-	protected double xRotation, yRotation;
-	protected double length, hLength;
-	protected double xOffset, yOffset, zOffset;
-	protected int lastX, lastY, lastZ;
-	protected int targetX, targetY, targetZ;
-	
+	protected int								range					= 200;
+	protected double							viewHeight				= 1.65;
+	protected double							step					= 0.2;
+
+	protected boolean							targetingComplete;
+	protected Location							playerLocation;
+	protected double							xRotation, yRotation;
+	protected double							length, hLength;
+	protected double							xOffset, yOffset, zOffset;
+	protected int								lastX, lastY, lastZ;
+	protected int								targetX, targetY, targetZ;
+	protected final HashMap<Material, Boolean>	targetThroughMaterials	= new HashMap<Material, Boolean>();
+
 	// Begin override methods
-	
+
 	public abstract boolean onCast(String[] parameters);
+
 	public abstract String getName();
+
 	public abstract String getCategory();
+
 	public abstract String getDescription();
-	
+
 	public void onLoad(PluginProperties properties)
 	{
-		
+
 	}
-	
+
 	public void onCancel()
 	{
-		
+
 	}
-	
+
 	// End override methods
-	
+
 	public void cast(String[] parameters, SpellsPlugin plugin, Player player)
 	{
 		this.player = player;
 		this.plugin = plugin;
-		
-		getTargets(player);
-        
-        onCast(parameters);
+
+		targetThrough(Material.AIR);
+		targetThrough(Material.WATER);
+		targetThrough(Material.STATIONARY_WATER);
+
+		initializeTargeting(player);
+
+		onCast(parameters);
+	}
+
+	protected void targetThrough(Material mat)
+	{
+		targetThroughMaterials.put(mat, true);
+	}
+
+	protected void noTargetThrough(Material mat)
+	{
+		targetThroughMaterials.put(mat, false);
 	}
 	
+	protected boolean isTargetable(Material mat)
+	{
+		Boolean checkMat = targetThroughMaterials.get(mat);
+		return (checkMat == null || !checkMat);
+	}
+
 	public void cancel(SpellsPlugin plugin, Player player)
 	{
 		this.player = player;
@@ -89,250 +116,308 @@ public abstract class Spell implements Comparable<Spell>
 
 		onCancel();
 	}
-	
-	public void getTargets(Player player)
+
+	public void initializeTargeting(Player player)
 	{
 		playerLocation = player.getLocation();
-        length = 0;
-        xRotation = (playerLocation.getYaw() + 90) % 360;
-        yRotation = playerLocation.getPitch() * -1;
+		length = 0;
+		xRotation = (playerLocation.getYaw() + 90) % 360;
+		yRotation = playerLocation.getPitch() * -1;
 
-        targetX = (int) Math.floor(playerLocation.getX());
-        targetY = (int) Math.floor(playerLocation.getY() + viewHeight);
-        targetZ = (int) Math.floor(playerLocation.getZ());
-        lastX = targetX;
-        lastY = targetY;
-        lastZ = targetZ;
+		targetX = (int) Math.floor(playerLocation.getX());
+		targetY = (int) Math.floor(playerLocation.getY() + viewHeight);
+		targetZ = (int) Math.floor(playerLocation.getZ());
+		lastX = targetX;
+		lastY = targetY;
+		lastZ = targetZ;
+		targetingComplete = false;
 	}
-    
 
-    /**
-     * Returns the block at the cursor, or null if out of range
-     * 
-     * @return Block
-     */
-    public Block getTargetBlock() {
-        while ((getNextBlock() != null) && (getCurBlock().getType() == Material.AIR));
-        return getCurBlock();
-    }
+	protected void findTargetBlock()
+	{
+		if (targetingComplete)
+		{
+			return;
+		}
 
-    /**
-     * Sets the type of the block at the cursor
-     * 
-     * @param type
-     */
-    public void setTargetBlock(int type) {
-        while ((getNextBlock() != null) && (getCurBlock().getType() == Material.AIR));
-        if (getCurBlock() != null) {
-            //plugin.getServer().setBlockAt(type, target_x, target_y, target_z);
-        }
-    }
+		while (getNextBlock() != null)
+		{
+			if (isTargetable(getCurBlock().getType()))
+			{
+				break;
+			}
+		}
+		targetingComplete = true;
+	}
 
-    /**
-     * Returns the block attached to the face at the cursor, or null if out of
-     * range
-     * 
-     * @return Block
-     */
-    public Block getFaceBlock() {
-        while ((getNextBlock() != null) && (getCurBlock().getType() == Material.AIR));
-        if (getCurBlock() != null) {
-            return getLastBlock();
-        } else {
-            return null;
-        }
-    }
+	/**
+	 * Returns the block at the cursor, or null if out of range
+	 * 
+	 * @return Block
+	 */
+	public Block getTargetBlock()
+	{
+		findTargetBlock();
+		return getCurBlock();
+	}
 
-    /**
-     * Sets the type of the block attached to the face at the cursor
-     * 
-     * @param type
-     */
-    public void setFaceBlock(int type) {
-        while ((getNextBlock() != null) && (getCurBlock().getType() == Material.AIR));
-        if (getCurBlock() != null) {
-            setBlockAt(type, lastX, lastY, lastZ);
-        }
-    }
+	/**
+	 * Sets the type of the block at the cursor
+	 * 
+	 * @param type
+	 */
+	public void setTargetBlock(int type)
+	{
+		findTargetBlock();
+		if (getCurBlock() != null)
+		{
+			setBlockAt(type, targetX, targetY, targetZ);
+		}
+	}
 
-    /**
-     * Returns STEPS forward along line of vision and returns block
-     * 
-     * @return Block
-     */
-    public Block getNextBlock() {
-        lastX = targetX;
-        lastY = targetY;
-        lastZ = targetZ;
+	/**
+	 * Returns the block attached to the face at the cursor, or null if out of
+	 * range
+	 * 
+	 * @return Block
+	 */
+	public Block getFaceBlock()
+	{
+		findTargetBlock();
+		if (getCurBlock() != null)
+		{
+			return getLastBlock();
+		}
+		else
+		{
+			return null;
+		}
+	}
 
-        do {
-            length += step;
+	/**
+	 * Sets the type of the block attached to the face at the cursor
+	 * 
+	 * @param type
+	 */
+	public void setFaceBlock(int type)
+	{
+		findTargetBlock();
+		if (getCurBlock() != null)
+		{
+			setBlockAt(type, lastX, lastY, lastZ);
+		}
+	}
 
-            hLength = (length * Math.cos(Math.toRadians(yRotation)));
-            yOffset = (length * Math.sin(Math.toRadians(yRotation)));
-            xOffset = (hLength * Math.cos(Math.toRadians(xRotation)));
-            zOffset = (hLength * Math.sin(Math.toRadians(xRotation)));
+	/**
+	 * Returns STEPS forward along line of vision and returns block
+	 * 
+	 * @return Block
+	 */
+	public Block getNextBlock()
+	{
+		lastX = targetX;
+		lastY = targetY;
+		lastZ = targetZ;
 
-            targetX = (int) Math.floor(xOffset + playerLocation.getX());
-            targetY = (int) Math.floor(yOffset + playerLocation.getY() + viewHeight);
-            targetZ = (int) Math.floor(zOffset + playerLocation.getZ());
+		do
+		{
+			length += step;
 
-        } while ((length <= range) && ((targetX == lastX) && (targetY == lastY) && (targetZ == lastZ)));
+			hLength = (length * Math.cos(Math.toRadians(yRotation)));
+			yOffset = (length * Math.sin(Math.toRadians(yRotation)));
+			xOffset = (hLength * Math.cos(Math.toRadians(xRotation)));
+			zOffset = (hLength * Math.sin(Math.toRadians(xRotation)));
 
-        if (length > range) {
-            return null;
-        }
+			targetX = (int) Math.floor(xOffset + playerLocation.getX());
+			targetY = (int) Math.floor(yOffset + playerLocation.getY() + viewHeight);
+			targetZ = (int) Math.floor(zOffset + playerLocation.getZ());
 
-        return getBlockAt(targetX, targetY, targetZ);
-    }
+		}
+		while ((length <= range) && ((targetX == lastX) && (targetY == lastY) && (targetZ == lastZ)));
 
-    /**
-     * Returns the current block along the line of vision
-     * 
-     * @return Block
-     */
-    public Block getCurBlock() {
-        if (length > range) {
-            return null;
-        } else {
-            return getBlockAt(targetX, targetY, targetZ);
-        }
-    }
+		if (length > range)
+		{
+			return null;
+		}
 
-    /**
-     * Sets current block type id
-     * 
-     * @param type
-     */
-    public void setCurBlock(int type) {
-        if (getCurBlock() != null) {
-            setBlockAt(type, targetX, targetY, targetZ);
-        }
-    }
+		return getBlockAt(targetX, targetY, targetZ);
+	}
 
-    /**
-     * Returns the previous block along the line of vision
-     * 
-     * @return Block
-     */
-    public Block getLastBlock() {
-        return getBlockAt(lastX, lastY, lastZ);
-    }
+	/**
+	 * Returns the current block along the line of vision
+	 * 
+	 * @return Block
+	 */
+	public Block getCurBlock()
+	{
+		if (length > range)
+		{
+			return null;
+		}
+		else
+		{
+			return getBlockAt(targetX, targetY, targetZ);
+		}
+	}
 
-    /**
-     * Sets previous block type id
-     * 
-     * @param type
-     */
-    public void setLastBlock(int type) {
-        if (getLastBlock() != null) {
-            setBlockAt(type, lastX, lastY, lastZ);
-        }
-    }
-    
-    /**
-     * Sets the block type at the specified location
-     * 
-     * @param blockType
-     * @param x
-     * @param y
-     * @param z
-     * @return true if successful
-     */
-    public boolean setBlockAt(int blockType, int x, int y, int z) {
-    	World world = player.getWorld();
-    	Block block = world.getBlockAt(x, y, z);
-    	block.setTypeId(blockType);
-    	CraftWorld craftWorld = (CraftWorld)world;
-    	craftWorld.updateBlock(x, y, z);
-        return block.getTypeId() == blockType;
-    }
-    
-    /**
-    * Returns the block at the specified location
-    * 
-    * @param x
-    * @param y
-    * @param z
-    * @return block
-    */
-   public Block getBlockAt(int x, int y, int z) 
-   {
-	   World world = player.getWorld();
-	   return world.getBlockAt(x, y, z);
-   }
-   
-   public Location findPlaceToStand(Location playerLoc, boolean goUp) 
-   {
+	/**
+	 * Sets current block type id
+	 * 
+	 * @param type
+	 */
+	public void setCurBlock(int type)
+	{
+		if (getCurBlock() != null)
+		{
+			setBlockAt(type, targetX, targetY, targetZ);
+		}
+	}
+
+	/**
+	 * Returns the previous block along the line of vision
+	 * 
+	 * @return Block
+	 */
+	public Block getLastBlock()
+	{
+		return getBlockAt(lastX, lastY, lastZ);
+	}
+
+	/**
+	 * Sets previous block type id
+	 * 
+	 * @param type
+	 */
+	public void setLastBlock(int type)
+	{
+		if (getLastBlock() != null)
+		{
+			setBlockAt(type, lastX, lastY, lastZ);
+		}
+	}
+
+	/**
+	 * Sets the block type at the specified location
+	 * 
+	 * @param blockType
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return true if successful
+	 */
+	public boolean setBlockAt(int blockType, int x, int y, int z)
+	{
+		World world = player.getWorld();
+		Block block = world.getBlockAt(x, y, z);
+		block.setTypeId(blockType);
+		CraftWorld craftWorld = (CraftWorld) world;
+		craftWorld.updateBlock(x, y, z);
+		return block.getTypeId() == blockType;
+	}
+
+	/**
+	 * Returns the block at the specified location
+	 * 
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @return block
+	 */
+	public Block getBlockAt(int x, int y, int z)
+	{
+		World world = player.getWorld();
+		return world.getBlockAt(x, y, z);
+	}
+
+	public boolean isOkToStandIn(Material mat)
+	{
+		return (mat == Material.AIR || mat == Material.WATER || mat == Material.STATIONARY_WATER);
+	}
+
+	public boolean isOkToStandOn(Material mat)
+	{
+		return (mat != Material.AIR && mat != Material.LAVA && mat != Material.STATIONARY_LAVA);
+	}
+	
+	public Location findPlaceToStand(Location playerLoc, boolean goUp)
+	{
 		int step;
-		if (goUp) 
+		if (goUp)
 		{
 			step = 1;
-		} 
+		}
 		else
 		{
 			step = -1;
 		}
-		
+
 		// get player position
-		int x = (int)Math.round(playerLoc.getX() - 0.5);
-		int y = (int)Math.round(playerLoc.getY() + step + step);
-		int z = (int)Math.round(playerLoc.getZ() - 0.5);
-		
+		int x = (int) Math.round(playerLoc.getX() - 0.5);
+		int y = (int) Math.round(playerLoc.getY() + step + step);
+		int z = (int) Math.round(playerLoc.getZ() - 0.5);
+
 		World world = player.getWorld();
-				
+
 		// search for a spot to stand
-		while (2 < y && y < 255) 
+		while (2 < y && y < 255)
 		{
 			Block block = world.getBlockAt(x, y, z);
 			Block blockOneUp = world.getBlockAt(x, y + 1, z);
 			Block blockTwoUp = world.getBlockAt(x, y + 2, z);
-			if (block.getTypeId() != 0 && blockOneUp.getTypeId() == 0 && blockTwoUp.getTypeId() == 0) 
+			if 
+			(
+				isOkToStandOn(block.getType())
+			&&	isOkToStandIn(blockOneUp.getType())
+			&& 	isOkToStandIn(blockTwoUp.getType())
+			)
 			{
 				// spot found - return location
-				return new Location(world, (double)x + 0.5,(double)y + 1, (double)z + 0.5, playerLoc.getYaw(), playerLoc.getPitch());
+				return new Location(world, (double) x + 0.5, (double) y + 1, (double) z + 0.5, playerLoc.getYaw(),
+						playerLoc.getPitch());
 			}
 			y += step;
 		}
-		
+
 		// no spot found
 		return null;
 	}
-   
+
 	public float getPlayerRotation()
 	{
 		float playerRot = player.getLocation().getYaw();
-		while (playerRot < 0) playerRot += 360;
-		while (playerRot > 360) playerRot -= 360;
+		while (playerRot < 0)
+			playerRot += 360;
+		while (playerRot > 360)
+			playerRot -= 360;
 		return playerRot;
 	}
-	
+
 	public Block getPlayerBlock()
 	{
 		Block playerBlock = null;
 		Location playerLoc = player.getLocation();
-		int x = (int)Math.round(playerLoc.getX() - 0.5);
-		int y = (int)Math.round(playerLoc.getY() - 0.5);
-		int z = (int)Math.round(playerLoc.getZ() - 0.5);
+		int x = (int) Math.round(playerLoc.getX() - 0.5);
+		int y = (int) Math.round(playerLoc.getY() - 0.5);
+		int z = (int) Math.round(playerLoc.getZ() - 0.5);
 		int dy = 0;
 		while (dy > -3 && (playerBlock == null || playerBlock.getType() == Material.AIR))
 		{
 			playerBlock = player.getWorld().getBlockAt(x, y + dy, z);
 			dy--;
-		}			
+		}
 		return playerBlock;
 	}
-	
+
 	@Override
-	public int compareTo(Spell other) 
+	public int compareTo(Spell other)
 	{
 		return getName().compareTo(other.getName());
 	}
-	
+
 	public BlockFace getPlayerFacing()
 	{
 		float playerRot = getPlayerRotation();
-		
+
 		BlockFace direction = BlockFace.NORTH;
 		if (playerRot <= 45 || playerRot > 315)
 		{
@@ -350,10 +435,10 @@ public abstract class Spell implements Comparable<Spell>
 		{
 			direction = BlockFace.SOUTH;
 		}
-		
+
 		return direction;
 	}
-	
+
 	// Should go in BlockFace?
 	// Also, there's probably some better matrix-y, math-y way to do this.
 	public BlockFace goLeft(BlockFace direction)
@@ -371,6 +456,7 @@ public abstract class Spell implements Comparable<Spell>
 		}
 		return direction;
 	}
+
 	public BlockFace goRight(BlockFace direction)
 	{
 		switch (direction)
@@ -384,47 +470,43 @@ public abstract class Spell implements Comparable<Spell>
 			case NORTH:
 				return BlockFace.EAST;
 		}
-		return direction;		
+		return direction;
 	}
-	
+
 	/**
 	 * Sets the current server time
-	 *
+	 * 
 	 * @param time
 	 *            time (0-24000)
 	 */
-	public void setRelativeTime(long time) 
+	public void setRelativeTime(long time)
 	{
-	    long margin = (time - getTime()) % 24000;
-	    // Java modulus is stupid.
-	    if (margin < 0) 
-	    {
-	        margin += 24000;
-	    }
-	   plugin.getServer().setTime(getTime() + margin);
+		long margin = (time - getTime()) % 24000;
+		// Java modulus is stupid.
+		if (margin < 0)
+		{
+			margin += 24000;
+		}
+		plugin.getServer().setTime(getTime() + margin);
 	}
 
 	/**
-     * Returns actual server time (-2^63 to 2^63-1)
-     *
-     * @return time server time
-     */
-    public long getTime() 
-    {
-        return plugin.getServer().getTime();
-    }
+	 * Returns actual server time (-2^63 to 2^63-1)
+	 * 
+	 * @return time server time
+	 */
+	public long getTime()
+	{
+		return plugin.getServer().getTime();
+	}
 
-	public double getDistance(Player player, Block target) 
+	public double getDistance(Player player, Block target)
 	{
 		Location loc = player.getLocation();
-		return Math.sqrt
-		(
-				Math.pow(loc.getX() - target.getX(), 2) 
-		+ 		Math.pow(loc.getY() - target.getY(), 2) 
-		+ 		Math.pow(loc.getZ() - target.getZ(), 2)
-		);
+		return Math.sqrt(Math.pow(loc.getX() - target.getX(), 2) + Math.pow(loc.getY() - target.getY(), 2)
+				+ Math.pow(loc.getZ() - target.getZ(), 2));
 	}
-	
+
 	public void castMessage(Player player, String message)
 	{
 		if (!plugin.isQuiet() && !plugin.isSilent())
@@ -432,46 +514,36 @@ public abstract class Spell implements Comparable<Spell>
 			player.sendMessage(message);
 		}
 	}
-	
+
 	public void sendMessage(Player player, String message)
-	{	
+	{
 		if (!plugin.isSilent())
 		{
 			player.sendMessage(message);
 		}
 	}
-	
+
 	public Location getSpawnLocation()
 	{
 		Block spawnBlock = getPlayerBlock();
-		
+
 		int height = 2;
 		double hLength = 2;
 		double xOffset = (hLength * Math.cos(Math.toRadians(xRotation)));
 		double zOffset = (hLength * Math.sin(Math.toRadians(xRotation)));
 
 		Vector aimVector = new Vector(xOffset + 0.5, height + 0.5, zOffset + 0.5);
-		
-		Location location = new Location
-		(
-				player.getWorld(), 
-				spawnBlock.getX() + aimVector.getX(), 
-				spawnBlock.getY() + aimVector.getY(), 
-				spawnBlock.getZ() + aimVector.getZ(), 
-				player.getLocation().getYaw(),
-				player.getLocation().getPitch()
-		);
-		
+
+		Location location = new Location(player.getWorld(), spawnBlock.getX() + aimVector.getX(), spawnBlock.getY()
+				+ aimVector.getY(), spawnBlock.getZ() + aimVector.getZ(), player.getLocation().getYaw(), player
+				.getLocation().getPitch());
+
 		return location;
 	}
-	
+
 	public Vector getAimVector()
 	{
-		return new Vector
-		(
-				(0 - Math.sin(Math.toRadians(playerLocation.getYaw()))),
-				(0 - Math.sin(Math.toRadians(playerLocation.getPitch()))),
-				Math.cos(Math.toRadians(playerLocation.getYaw()))	
-		);
+		return new Vector((0 - Math.sin(Math.toRadians(playerLocation.getYaw()))), (0 - Math.sin(Math
+				.toRadians(playerLocation.getPitch()))), Math.cos(Math.toRadians(playerLocation.getYaw())));
 	}
 }

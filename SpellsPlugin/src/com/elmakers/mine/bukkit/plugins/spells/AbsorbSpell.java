@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
@@ -12,6 +13,8 @@ public class AbsorbSpell extends Spell
 	@Override
 	public boolean onCast(String[] parameters) 
 	{
+		noTargetThrough(Material.STATIONARY_WATER);
+		noTargetThrough(Material.WATER);
 		Block target = getTargetBlock();
 		
 		if (target == null) 

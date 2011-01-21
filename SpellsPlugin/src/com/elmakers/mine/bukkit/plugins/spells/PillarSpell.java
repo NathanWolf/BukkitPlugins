@@ -1,6 +1,5 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
@@ -30,13 +29,13 @@ public class PillarSpell extends Spell
 		Block targetBlock = attachBlock.getFace(direction);
 		int distance = 0;
 		
-		while (targetBlock.getType() != Material.AIR && distance <= MAX_SEARCH_DISTANCE)
+		while (isTargetable(targetBlock.getType()) && distance <= MAX_SEARCH_DISTANCE)
 		{
 			distance++;
 			attachBlock = targetBlock;
 			targetBlock = attachBlock.getFace(direction);
 		}
-		if (targetBlock.getType() != Material.AIR)
+		if (isTargetable(targetBlock.getType()))
 		{
 			player.sendMessage("Can't pillar any further");
 			return false;
