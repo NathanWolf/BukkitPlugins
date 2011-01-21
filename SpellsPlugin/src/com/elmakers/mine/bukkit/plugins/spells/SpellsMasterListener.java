@@ -86,13 +86,15 @@ public class SpellsMasterListener
 		// What we really need is a way to tell what are blocks, or a whitelist.
 		ItemStack item = event.getPlayer().getInventory().getItemInHand();
 		Material material = Material.AIR;
+		byte data = 0;
 		if (item != null)
 		{
 			material = item.getType();
+			data = item.getData().getData();
 		}
 		if (material.getId() != plugin.getWandTypeId())
 		{
-			plugin.setCurrentMaterialType(event.getPlayer(), material, item.getData().getData());
+			plugin.setCurrentMaterialType(event.getPlayer(), material, data);
 		}
     }
 	
