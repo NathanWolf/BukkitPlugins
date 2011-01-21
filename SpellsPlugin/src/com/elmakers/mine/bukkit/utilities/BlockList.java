@@ -1,15 +1,16 @@
-package com.elmakers.mine.bukkit.plugins.spells;
+package com.elmakers.mine.bukkit.utilities;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.block.Block;
 
-import com.elmakers.mine.bukkit.utilities.UndoableBlock;
 
 public class BlockList 
 {
 	private final List<UndoableBlock> blocks = new ArrayList<UndoableBlock>();
+	private final HashMap<Long, UndoableBlock> blockLookup = new HashMap<Long, UndoableBlock>();
 	private int timeToLive = 0;
 	private int timeRemaining = 0;
 	private int passesRemaining = 1;
@@ -64,8 +65,15 @@ public class BlockList
 	public UndoableBlock addBlock(Block block)
 	{
 		UndoableBlock undoBlock = new UndoableBlock(block);
-		blocks.add(undoBlock);
-		return undoBlock;
+		UndoableBlock searchBlock = blockLookup.get(undoBlock.getHash());
+		
+		if (searchBlock == null)
+		{
+			searchBlock = undoBlock;
+			blocks.add(undoBlock);
+			blockLookup.put(undoBlock.getHash(), undoBlock);
+		}
+		return searchBlock;
 	}
 	
 	public void undo()
@@ -78,13 +86,7 @@ public class BlockList
 
 	public boolean contains(Block block)
 	{
-		for (UndoableBlock undo : blocks)
-		{
-			if (undo.getBlock() == block)
-			{
-				return true;
-			}
-		}
-		return false;
+		UndoableBlock undoBlock = new UndoableBlock(block);
+		return (blockLookup.get(undoBlock.getHash()) != null);
 	}
 }

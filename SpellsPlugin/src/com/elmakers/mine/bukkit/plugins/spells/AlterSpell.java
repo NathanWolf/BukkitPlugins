@@ -5,15 +5,20 @@ import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 
+import com.elmakers.mine.bukkit.utilities.BlockList;
 import com.elmakers.mine.bukkit.utilities.PluginProperties;
 import com.elmakers.mine.bukkit.utilities.UndoableBlock;
 
 public class AlterSpell extends Spell
 {
-	static final String DEFAULT_ADJUSTABLES = "6,8,9,10,11,17,18,35,50,53,54,55,58,59,60,61,62,63,64,67,69,71,75,76,77,81,83";
+	static final String DEFAULT_ADJUSTABLES = "6,8,9,10,11,17,18,35,50,52,53,54,55,58,59,60,61,62,63,64,65,66,67,69,71,75,76,77,81,83,85,86";
+	static final String DEFAULT_RECURSABLES = "17,18,59";
 	
 	private List<Material> adjustableMaterials = new ArrayList<Material>();
+	private int recurseDistance = 16;
+	private List<Material> recursableMaterials = new ArrayList<Material>();
 	
 	@Override
 	public boolean onCast(String[] parameters)
@@ -31,13 +36,12 @@ public class AlterSpell extends Spell
 		}
 		
 		BlockList undoList = new BlockList();
-		
-		UndoableBlock undoBlock = undoList.addBlock(targetBlock);
 		byte originalData = targetBlock.getData();
 		byte data = originalData;
 		data = (byte)((data + 1) % 16);
-		targetBlock.setData(data);
-		undoBlock.update();
+		boolean recursive = recursableMaterials.contains(targetBlock.getType());
+		
+		adjust(targetBlock, data, undoList, recursive, 0);
 		
 		plugin.addToUndoQueue(player, undoList);
 		
@@ -45,7 +49,35 @@ public class AlterSpell extends Spell
 		
 		return true;
 	}
-
+	
+	protected void adjust(Block block, byte dataValue, BlockList adjustedBlocks, boolean recursive, int rDepth)
+	{
+		UndoableBlock undoBlock = adjustedBlocks.addBlock(block);
+		block.setData(dataValue);
+		undoBlock.update();
+		
+		if (recursive && rDepth < recurseDistance)
+		{
+			Material targetMaterial = block.getType();
+			tryAdjust(block.getFace(BlockFace.NORTH), dataValue,targetMaterial, adjustedBlocks, rDepth + 1);
+			tryAdjust(block.getFace(BlockFace.WEST), dataValue,targetMaterial, adjustedBlocks, rDepth + 1);
+			tryAdjust(block.getFace(BlockFace.SOUTH), dataValue,targetMaterial, adjustedBlocks, rDepth + 1);
+			tryAdjust(block.getFace(BlockFace.EAST), dataValue,targetMaterial, adjustedBlocks, rDepth + 1);
+			tryAdjust(block.getFace(BlockFace.UP), dataValue,targetMaterial, adjustedBlocks, rDepth + 1);
+			tryAdjust(block.getFace(BlockFace.DOWN), dataValue,targetMaterial, adjustedBlocks, rDepth + 1);			
+		}
+	}
+	
+	protected void tryAdjust(Block target, byte dataValue, Material targetMaterial, BlockList adjustedBlocks, int rDepth)
+	{
+		if (target.getType() != targetMaterial || adjustedBlocks.contains(target))
+		{
+			return;
+		}
+		
+		adjust(target, dataValue, adjustedBlocks, true, rDepth);
+	}
+	
 	@Override
 	public String getName()
 	{
@@ -68,6 +100,7 @@ public class AlterSpell extends Spell
 	public void onLoad(PluginProperties properties)
 	{
 		adjustableMaterials = properties.getMaterials("spells-adjustable", DEFAULT_ADJUSTABLES);
+		recursableMaterials = properties.getMaterials("spells-recursable", DEFAULT_RECURSABLES);
 	}
 
 }

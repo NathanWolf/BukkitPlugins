@@ -1,38 +1,44 @@
 package com.elmakers.mine.bukkit.utilities;
 
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftWorld;
 
 public class UndoableBlock
 {	
-	private Block block;
+	private World world;
+	private int x;
+	private int y;
+	private int z;
 	private final byte originalData;
 	private final Material originalMaterial;
 	
+	public long getHash()
+	{
+		long hash = (long)x | ((long)z << 24) | (long)y << 48;
+		return hash;
+ 	}
+	
 	public UndoableBlock(Block b)
 	{
-		block = b;
+		world = b.getWorld();
+		x = b.getX();
+		y = b.getY();
+		z = b.getZ();
 		originalData = b.getData();
 		originalMaterial = b.getType();
 	}
 	
-	public Block getBlock()
-	{
-		return block;
-	}
-	
 	public void update()
 	{
-		CraftWorld world = (CraftWorld)block.getWorld();
-		world.updateBlock(block.getX(), block.getY(), block.getZ());
+		CraftWorld craftWorld = (CraftWorld)world;
+		craftWorld.updateBlock(x, y, z);
 	}
 	
 	public void undo()
 	{
-		CraftWorld world = (CraftWorld)block.getWorld();
-	
-		block = world.getBlockAt(block.getX(), block.getY(), block.getZ());
+		Block block = world.getBlockAt(x, y, z);
 		if (block.getType() != originalMaterial || block.getData() != originalData)
 		{
 			block.setType(originalMaterial);

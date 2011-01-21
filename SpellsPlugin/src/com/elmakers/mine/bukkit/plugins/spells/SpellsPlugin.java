@@ -18,6 +18,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.elmakers.mine.bukkit.plugins.groups.Permissions;
 import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
+import com.elmakers.mine.bukkit.utilities.BlockList;
 import com.elmakers.mine.bukkit.utilities.PluginProperties;
 
 public class SpellsPlugin extends JavaPlugin 

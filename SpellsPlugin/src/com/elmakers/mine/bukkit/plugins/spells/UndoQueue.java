@@ -2,6 +2,8 @@ package com.elmakers.mine.bukkit.plugins.spells;
 
 import java.util.LinkedList;
 
+import com.elmakers.mine.bukkit.utilities.BlockList;
+
 public class UndoQueue
 {
 	private final LinkedList<BlockList> blockQueue = new LinkedList<BlockList>();
