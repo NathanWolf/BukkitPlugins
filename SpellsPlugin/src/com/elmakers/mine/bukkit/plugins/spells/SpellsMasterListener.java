@@ -9,6 +9,7 @@ import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerItemEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
 
 import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
 
@@ -90,7 +91,11 @@ public class SpellsMasterListener
 		if (item != null)
 		{
 			material = item.getType();
-			data = item.getData().getData();
+			MaterialData mData = item.getData();
+			if (mData != null)
+			{
+				data = mData.getData();
+			}
 		}
 		if (material.getId() != plugin.getWandTypeId())
 		{

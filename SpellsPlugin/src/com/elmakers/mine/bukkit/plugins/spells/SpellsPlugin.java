@@ -222,7 +222,11 @@ public class SpellsPlugin extends JavaPlugin implements MovementListener
 	public void setCurrentMaterialType(Player player, Material material, byte data)
 	{
 		PlayerSpells spells = getPlayerSpells(player);
-		if (spells.isUsingMaterial() && spells.getMaterial() != material)
+		if 
+		(
+				spells.isUsingMaterial() 
+		&& 		(spells.getMaterial() != material || spells.getData() != data)
+		)
 		{
 			player.sendMessage("Now using " + material.name().toLowerCase());
 		}
@@ -240,6 +244,12 @@ public class SpellsPlugin extends JavaPlugin implements MovementListener
 	{
 		PlayerSpells spells = getPlayerSpells(player);
 		return spells.finishMaterialUse();
+	}
+	
+	public byte getMaterialData(Player player)
+	{
+		PlayerSpells spells = getPlayerSpells(player);
+		return spells.getData();
 	}
 
 	public void cleanup()

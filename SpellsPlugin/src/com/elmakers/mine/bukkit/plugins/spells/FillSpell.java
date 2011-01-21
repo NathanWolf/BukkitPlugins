@@ -20,6 +20,7 @@ public class FillSpell extends Spell
 	{
 		Block targetBlock = getTargetBlock();
 		Material material = plugin.finishMaterialUse(player);
+		byte data = plugin.getMaterialData(player);
 		if (targetBlock == null) 
 		{
 			castMessage(player, "No target");
@@ -72,6 +73,7 @@ public class FillSpell extends Spell
 						Block block = getBlockAt(x + ix * dx, y + iy * dy, z + iz * dz);
 						UndoableBlock undoBlock = filledBlocks.addBlock(block);
 						block.setType(material);
+						block.setData(data);
 						undoBlock.update();
 					}
 				}
