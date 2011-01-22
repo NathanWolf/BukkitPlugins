@@ -7,6 +7,8 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.util.Vector;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -76,13 +78,33 @@ public abstract class Spell implements Comparable<Spell>
 	{
 
 	}
+	
+	// Begin listener methods- you must register to recieve these
+	public void onPlayerMove(PlayerMoveEvent event)
+	{
+		
+	}
+	
+	public void onMaterialChoose(Player player)
+	{
+		
+	}
+	
+	public void onPlayerQuit(PlayerEvent event)
+	{
+
+	}
 
 	// End override methods
 
-	public void cast(String[] parameters, SpellsPlugin plugin, Player player)
+	public void setPlugin(SpellsPlugin plugin)
+	{
+		this.plugin = plugin;
+	}
+	
+	public void cast(String[] parameters, Player player)
 	{
 		this.player = player;
-		this.plugin = plugin;
 
 		targetThrough(Material.AIR);
 		targetThrough(Material.WATER);

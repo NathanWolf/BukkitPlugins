@@ -31,4 +31,10 @@ public class UndoQueue
 	{
 		maxSize = size;
 	}
+	
+	public BlockList getLast()
+	{
+		if (blockQueue.isEmpty()) return null;
+		return blockQueue.getLast();
+	}
 }

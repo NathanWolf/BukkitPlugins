@@ -5,10 +5,9 @@ import java.util.HashMap;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerMoveEvent;
 
-import com.elmakers.mine.bukkit.plugins.spells.utilities.MovementListener;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
-public class GillsSpell extends Spell implements MovementListener
+public class GillsSpell extends Spell
 {
 	class PlayerGills
 	{
@@ -77,11 +76,11 @@ public class GillsSpell extends Spell implements MovementListener
 	{
 		if (gillPlayers.size() == 0)
 		{
-			plugin.stopListeningTo(this);
+			plugin.unregisterEvent(SpellEventType.PLAYER_MOVE, this);
 		}
 		else
 		{
-			plugin.listenTo(this);
+			plugin.registerEvent(SpellEventType.PLAYER_MOVE, this);
 		}
 	}
 	

@@ -20,6 +20,22 @@ public class UndoableBlock
 		return hash;
  	}
 	
+	public UndoableBlock(UndoableBlock ub)
+	{
+		world = ub.world;
+		Block b = world.getBlockAt(x, y, z);
+		x = b.getX();
+		y = b.getY();
+		z = b.getZ();
+		originalData = b.getData();
+		originalMaterial = b.getType();
+	}
+	
+	public Block getBlock()
+	{
+		return world.getBlockAt(x, y, z);
+	}
+	
 	public UndoableBlock(Block b)
 	{
 		world = b.getWorld();

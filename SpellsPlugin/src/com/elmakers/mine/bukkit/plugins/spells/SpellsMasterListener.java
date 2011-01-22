@@ -6,6 +6,7 @@ import org.bukkit.event.entity.EntityEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.event.player.PlayerChatEvent;
+import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerItemEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
@@ -67,7 +68,7 @@ public class SpellsMasterListener
     		parameters[i - 2] = split[i];
     	}
     	
-    	spell.cast(parameters, plugin, event.getPlayer());
+    	spell.cast(parameters, event.getPlayer());
     }
     
 
@@ -132,4 +133,9 @@ public class SpellsMasterListener
     {
     	// TODO!
     }
+    
+    public void onPlayerQuit(PlayerEvent event)
+	{
+		plugin.onPlayerQuit(event);
+	}
 }

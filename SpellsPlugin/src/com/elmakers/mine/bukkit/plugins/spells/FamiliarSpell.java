@@ -24,6 +24,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.entity.CraftLivingEntity;
+import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.Location;
 import org.bukkit.Material;
 
@@ -103,6 +104,7 @@ public class FamiliarSpell extends Spell
 		{
 			fam.releaseFamiliar();
 			castMessage(player, "You release your familiar");
+			checkListener();
 			return true;
 		}
 		else
@@ -151,18 +153,18 @@ public class FamiliarSpell extends Spell
 			}
 			castMessage(player, "You create a " + famType.name().toLowerCase() + " familiar!");
 			fam.setFamiliar(entity);
+			checkListener();
 			return true;
 		}
 	}
 		
 	protected EntityLiving spawnFamiliar(Block target, FamiliarType famType)
 	{
-		Location targetLocation = new Location(player.getWorld(), target.getX(), target.getY(), target.getZ(), player.getLocation().getYaw(), player.getLocation().getPitch());
+		Location location = new Location(player.getWorld(), target.getX(), target.getY(), target.getZ(), player.getLocation().getYaw(), player.getLocation().getPitch());
+		EntityLiving e = null;
 		CraftPlayer craftPlayer = (CraftPlayer)player;
 		CraftWorld craftWorld = (CraftWorld)craftPlayer.getWorld();
 		World world = craftWorld.getHandle();
-		
-		EntityLiving e = null;
 		
 		switch (famType)
 		{
@@ -182,10 +184,9 @@ public class FamiliarSpell extends Spell
 		
 		if (e != null)
 		{
-			((CraftWorld)player.getWorld()).getHandle().a(e);
-			e.getBukkitEntity().teleportTo(targetLocation);
+			e.getBukkitEntity().teleportTo(location);
+	        world.a(e);
 		}
-		
 		return e;
 	}
 
@@ -198,7 +199,29 @@ public class FamiliarSpell extends Spell
 			familiars.put(playerName, familiar);
 		}
 		return familiar;
-	}	
+	}
+	
+	
+	protected void checkListener()
+	{
+		boolean anyFamiliars = false;
+		for (PlayerFamiliar familiar : familiars.values())
+		{
+			if (familiar.hasFamiliar())
+			{
+				anyFamiliars = true;
+				break;
+			}
+		}
+		if (anyFamiliars)
+		{
+			plugin.registerEvent(SpellEventType.PLAYER_QUIT, this);
+		}
+		else
+		{
+			plugin.unregisterEvent(SpellEventType.PLAYER_QUIT, this);
+		}
+	}
 	
 	@Override
 	public String getName()
@@ -209,7 +232,7 @@ public class FamiliarSpell extends Spell
 	@Override
 	public String getCategory()
 	{
-		return "WIP";
+		return "farming";
 	}
 
 	@Override
@@ -222,6 +245,16 @@ public class FamiliarSpell extends Spell
 	public void onLoad(PluginProperties properties)
 	{
 		defaultFamiliars = properties.getStringList("spells-familiar-animals", DEFAULT_FAMILIARS);
+	}
+	
+	public void onPlayerQuit(PlayerEvent event)
+	{
+		PlayerFamiliar fam = getFamiliar(event.getPlayer().getName());
+		if (fam.hasFamiliar())
+		{
+			fam.releaseFamiliar();
+			checkListener();
+		}
 	}
 	
 }

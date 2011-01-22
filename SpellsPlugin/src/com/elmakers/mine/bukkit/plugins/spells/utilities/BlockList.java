@@ -21,7 +21,10 @@ public class BlockList
 	
 	public BlockList(BlockList other)
 	{
-		blocks.addAll(other.blocks);
+		for (UndoableBlock block : other.blocks)
+		{
+			blocks.add(new UndoableBlock(block));
+		}
 		timeToLive = other.timeToLive;
 	}
 	
@@ -69,7 +72,6 @@ public class BlockList
 		if (searchBlock == null)
 		{
 			searchBlock = new UndoableBlock(block);
-;
 			blocks.add(searchBlock);
 			blockLookup.put(block, searchBlock);
 		}
@@ -87,5 +89,10 @@ public class BlockList
 	public boolean contains(Block block)
 	{
 		return (blockLookup.get(block) != null);
+	}
+	
+	public List<UndoableBlock> getBlocks()
+	{
+		return blocks;
 	}
 }

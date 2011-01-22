@@ -11,6 +11,7 @@ import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
+import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
@@ -20,10 +21,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.elmakers.mine.bukkit.plugins.groups.Permissions;
 import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.MovementListener;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
-public class SpellsPlugin extends JavaPlugin implements MovementListener
+public class SpellsPlugin extends JavaPlugin
 {
 	private final String propertiesFile = "spells.properties";
 	private String permissionsFile = "spell-classes.txt";
@@ -47,7 +47,9 @@ public class SpellsPlugin extends JavaPlugin implements MovementListener
 	private final SpellsEntityListener entityListener = new SpellsEntityListener();
 	private final HashMap<String, Spell> spells = new HashMap<String, Spell>();
 	private final HashMap<String, PlayerSpells> playerSpells = new HashMap<String, PlayerSpells>();
-	private final List<MovementListener> movementListeners = new ArrayList<MovementListener>();
+	private final List<Spell> movementListeners = new ArrayList<Spell>();
+	private final List<Spell> materialListeners = new ArrayList<Spell>();
+	private final List<Spell> quitListeners = new ArrayList<Spell>();
 
 	public SpellsPlugin(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File dataFolder, File plugin, ClassLoader cLoader) 
 	{
@@ -80,6 +82,7 @@ public class SpellsPlugin extends JavaPlugin implements MovementListener
 		addSpell(new GillsSpell());
 		addSpell(new FamiliarSpell());
 		addSpell(new ConstructSpell());
+		addSpell(new TransmuteSpell());
 	}
 	
 	protected void loadProperties()
@@ -130,6 +133,7 @@ public class SpellsPlugin extends JavaPlugin implements MovementListener
 	private void addSpell(Spell spell)
 	{
 		spells.put(spell.getName(), spell);
+		spell.setPlugin(this);
 	}
 	
 	@Override
@@ -146,6 +150,7 @@ public class SpellsPlugin extends JavaPlugin implements MovementListener
         pm.registerEvent(Type.PLAYER_ITEM, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_ANIMATION, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_MOVE, playerListener, Priority.Normal, this);
+        pm.registerEvent(Type.PLAYER_QUIT, playerListener, Priority.Normal, this);
         /*
         pm.registerEvent(Type.ENTITY_DAMAGED, entityListener, Priority.Normal, this);
         pm.registerEvent(Type.ENTITY_COMBUST, entityListener, Priority.Normal, this);
@@ -164,6 +169,8 @@ public class SpellsPlugin extends JavaPlugin implements MovementListener
 	{
 		forceCleanup();
 		movementListeners.clear();
+		materialListeners.clear();
+		quitListeners.clear();
 	}
 	
 	public void listSpells(Player player, PlayerPermissions playerPermissions)
@@ -228,10 +235,18 @@ public class SpellsPlugin extends JavaPlugin implements MovementListener
 		&& 		(spells.getMaterial() != material || spells.getData() != data)
 		)
 		{
+			spells.setMaterial(material);
+			spells.setData(data);
 			player.sendMessage("Now using " + material.name().toLowerCase());
+			// Must allow listeners to remove themselves during the event!
+			List<Spell> active = new ArrayList<Spell>();
+			active.addAll(materialListeners);
+			for (Spell listener : active)
+			{
+				listener.onMaterialChoose(player);
+			}
 		}
-		spells.setMaterial(material);
-		spells.setData(data);
+
 	}
 	
 	public void startMaterialUse(Player player, Material material, byte data)
@@ -333,6 +348,12 @@ public class SpellsPlugin extends JavaPlugin implements MovementListener
 		UndoQueue queue = getUndoQueue(playerName);
 		return queue.undo();
 	}
+	
+	public BlockList getLastBlockList(String playerName)
+	{
+		UndoQueue queue = getUndoQueue(playerName);
+		return queue.getLast();
+	}
 
 	public boolean isQuiet()
 	{
@@ -347,32 +368,53 @@ public class SpellsPlugin extends JavaPlugin implements MovementListener
 	public void onPlayerMove(PlayerMoveEvent event)
 	{
 		// Must allow listeners to remove themselves during the event!
-		List<MovementListener> active = new ArrayList<MovementListener>();
+		List<Spell> active = new ArrayList<Spell>();
 		active.addAll(movementListeners);
-		for (MovementListener listener : active)
+		for (Spell listener : active)
 		{
 			listener.onPlayerMove(event);
 		}
 	}
 	
-	public boolean isListeningTo(MovementListener me)
+	public void registerEvent(SpellEventType type, Spell spell)
 	{
-		return movementListeners.contains(me);
-	}
-
-	public void listenTo(MovementListener me)
-	{
-		if (!isListeningTo(me))
+		switch (type)
 		{
-			movementListeners.add(me);
+			case PLAYER_MOVE:
+				if (!movementListeners.contains(spell)) movementListeners.add(spell);
+				break;
+			case MATERIAL_CHANGE:
+				if (!materialListeners.contains(spell)) materialListeners.add(spell);
+				break;
+			case PLAYER_QUIT:
+				if (!quitListeners.contains(spell)) quitListeners.add(spell);
+				break;		}
+	}
+	
+	public void unregisterEvent(SpellEventType type, Spell spell)
+	{
+		switch (type)
+		{
+			case PLAYER_MOVE:
+				movementListeners.remove(spell);
+				break;
+			case MATERIAL_CHANGE:
+				materialListeners.remove(spell);
+				break;
+			case PLAYER_QUIT:
+				quitListeners.remove(spell);
+				break;
 		}
 	}
 	
-	public void stopListeningTo(MovementListener me)
+	public void onPlayerQuit(PlayerEvent event)
 	{
-		if (isListeningTo(me))
+		// Must allow listeners to remove themselves during the event!
+		List<Spell> active = new ArrayList<Spell>();
+		active.addAll(quitListeners);
+		for (Spell listener : active)
 		{
-			movementListeners.remove(me);
+			listener.onPlayerQuit(event);
 		}
 	}
 }
