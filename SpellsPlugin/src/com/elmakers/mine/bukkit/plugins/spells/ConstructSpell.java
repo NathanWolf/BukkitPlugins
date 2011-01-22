@@ -12,7 +12,7 @@ import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class ConstructSpell extends Spell
 {
-	static final String		DEFAULT_DESTRUCTIBLES	= "1,2,3,10,11,12,13";
+	static final String		DEFAULT_DESTRUCTIBLES	= "1,2,3,8,9,10,11,12,13";
 
 	private List<Material>	destructibleMaterials	= new ArrayList<Material>();
 	private ConstructionType defaultConstructionType = ConstructionType.SPHERE;
