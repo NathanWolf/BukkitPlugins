@@ -13,6 +13,7 @@ public class BlinkSpell extends Spell
 	private int maxRange = 0;
 	private boolean allowAscend = true;
 	private boolean allowDescend = true;
+	private boolean allowPassthrough = true;
 	
 	public String getName()
 	{
@@ -27,10 +28,6 @@ public class BlinkSpell extends Spell
 	@Override
 	public boolean onCast(String[] parameters)
 	{
-		targetThrough(Material.GLASS);
-		Block target = getTargetBlock();
-		Block face = getLastBlock();
-		
 		if (yRotation < -80 && allowDescend)
 		{
 			Location location = findPlaceToStand(player.getLocation(), false);
@@ -53,6 +50,23 @@ public class BlinkSpell extends Spell
 			}
 		}
 		
+		if (allowPassthrough)
+		{
+			Block firstBlock = getNextBlock();
+			if (firstBlock.getType() != Material.AIR)
+			{
+				reverseTargeting = true;
+				targetThrough(Material.AIR);
+			}
+			else
+			{
+				targetThrough(Material.GLASS);
+			}
+		}
+		
+		Block target = getTargetBlock();
+		Block face = getLastBlock();
+		
 		if (target == null) 
 		{
 			castMessage(player, "Nowhere to blink to");
@@ -68,6 +82,10 @@ public class BlinkSpell extends Spell
 		
 		// Don't drop the player too far, and make sure there is somewhere to stand
     	Block destination = face;
+    	if (reverseTargeting)
+    	{
+    		destination = target;
+    	}
     	Block groundBlock = destination.getFace(BlockFace.DOWN);
     	while (!isOkToStandOn(groundBlock.getType()))
     	{
@@ -110,5 +128,6 @@ public class BlinkSpell extends Spell
 		maxRange = properties.getInteger("spells-blink-range", maxRange);
 		allowAscend = properties.getBoolean("spells-blink-allow-ascend", allowAscend);
 		allowDescend = properties.getBoolean("spells-blink-allow-ascend", allowDescend);
+		allowPassthrough = properties.getBoolean("spells-blink-allow-ascend", allowPassthrough);
 	}
 }

@@ -58,6 +58,7 @@ public abstract class Spell implements Comparable<Spell>
 	protected int								lastX, lastY, lastZ;
 	protected int								targetX, targetY, targetZ;
 	protected final HashMap<Material, Boolean>	targetThroughMaterials	= new HashMap<Material, Boolean>();
+	protected boolean							reverseTargeting = false;
 
 	// Begin override methods
 
@@ -128,6 +129,10 @@ public abstract class Spell implements Comparable<Spell>
 	protected boolean isTargetable(Material mat)
 	{
 		Boolean checkMat = targetThroughMaterials.get(mat);
+		if (reverseTargeting)
+		{
+			return(checkMat != null && checkMat);
+		}
 		return (checkMat == null || !checkMat);
 	}
 
@@ -145,6 +150,7 @@ public abstract class Spell implements Comparable<Spell>
 		length = 0;
 		xRotation = (playerLocation.getYaw() + 90) % 360;
 		yRotation = playerLocation.getPitch() * -1;
+		reverseTargeting = false;
 
 		targetX = (int) Math.floor(playerLocation.getX());
 		targetY = (int) Math.floor(playerLocation.getY() + viewHeight);
