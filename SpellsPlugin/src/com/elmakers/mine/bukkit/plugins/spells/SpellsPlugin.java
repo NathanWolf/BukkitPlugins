@@ -28,9 +28,12 @@ public class SpellsPlugin extends JavaPlugin
 {
 	// Public API
 		
-	public SpellVariant getSpell(Material material)
+	public SpellVariant getSpell(Material material, String playerName)
 	{
-		return spellsByMaterial.get(material);
+		PlayerPermissions permissions = getPermissions(playerName);
+		SpellVariant spell = spellsByMaterial.get(material);
+		if (spell != null && !permissions.hasPermission(spell.getName())) return null;
+		return spell;
 	}
 	
 	public PlayerPermissions getPermissions(String playerName)
@@ -38,8 +41,10 @@ public class SpellsPlugin extends JavaPlugin
 		return permissions.getPlayerPermissions(playerName);
 	}
 	
-	public SpellVariant getSpell(String name)
+	public SpellVariant getSpell(String name, String playerName)
 	{
+		PlayerPermissions permissions= getPermissions(playerName);
+		if (!permissions.hasPermission(name)) return null;
 		return spellVariants.get(name);
 	}
 	
