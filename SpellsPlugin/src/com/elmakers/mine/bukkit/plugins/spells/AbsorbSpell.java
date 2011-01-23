@@ -57,4 +57,10 @@ public class AbsorbSpell extends Spell
 	{
 		defaultAmount = properties.getInteger("spells-absorb-amount", defaultAmount);
 	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.BUCKET;
+	}
 }

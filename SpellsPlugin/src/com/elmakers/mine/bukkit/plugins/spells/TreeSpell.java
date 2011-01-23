@@ -118,4 +118,10 @@ public class TreeSpell extends Spell
 		allowUndoable = properties.getBoolean("spells-tree-allow-undoable", allowUndoable);
 		requireSapling = properties.getBoolean("spells-tree-require-sapling", requireSapling);
 	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.SAPLING;
+	}
 }

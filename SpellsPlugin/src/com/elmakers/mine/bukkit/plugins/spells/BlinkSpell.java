@@ -130,4 +130,10 @@ public class BlinkSpell extends Spell
 		allowDescend = properties.getBoolean("spells-blink-allow-ascend", allowDescend);
 		allowPassthrough = properties.getBoolean("spells-blink-allow-ascend", allowPassthrough);
 	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.FEATHER;
+	}
 }

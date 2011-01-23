@@ -3,5 +3,8 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Bukkit"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/CraftBukkit"/>
+	<classpathentry kind="lib" path="/Users/nathan/Documents/Code/Eclipse/Bukkit/minecraft-server-1.2_01.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SpellsPlugin"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -115,4 +115,10 @@ public class MineSpell extends Spell
 		mineableMaterials = properties.getMaterials("spells-mine-mineable", DEFAULT_MINEABLE);
 		maxRecursion = properties.getInteger("spells-mine-recursion", maxRecursion);
 	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.GOLD_PICKAXE;
+	}
 }

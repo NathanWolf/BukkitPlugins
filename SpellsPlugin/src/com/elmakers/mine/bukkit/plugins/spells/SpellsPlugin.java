@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bukkit.Material;
@@ -25,6 +26,30 @@ import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class SpellsPlugin extends JavaPlugin
 {
+	// Public API
+		
+	public SpellVariant getSpell(Material material)
+	{
+		return spellsByMaterial.get(material);
+	}
+	
+	public PlayerPermissions getPermissions(String playerName)
+	{
+		return permissions.getPlayerPermissions(playerName);
+	}
+	
+	public SpellVariant getSpell(String name)
+	{
+		return spellVariants.get(name);
+	}
+	
+	public boolean castSpell(SpellVariant spell, Player player)
+	{
+		return spell.cast(player);
+	}
+	
+	// End Public API
+	
 	private final String propertiesFile = "spells.properties";
 	private String permissionsFile = "spell-classes.txt";
 	
@@ -38,6 +63,7 @@ public class SpellsPlugin extends JavaPlugin
 	private int undoQueueDepth = 256;
 	private boolean silent = false;
 	private boolean quiet = false;
+	private boolean allowCommands = true;
 	private HashMap<String, UndoQueue> playerUndoQueues =  new HashMap<String, UndoQueue>();
 	
 	private final Logger log = Logger.getLogger("Minecraft");
@@ -45,7 +71,9 @@ public class SpellsPlugin extends JavaPlugin
 	private final SpellsMasterListener listener = new SpellsMasterListener();
 	private final SpellsPlayerListener playerListener = new SpellsPlayerListener();
 	private final SpellsEntityListener entityListener = new SpellsEntityListener();
-	private final HashMap<String, Spell> spells = new HashMap<String, Spell>();
+	private final HashMap<String, SpellVariant> spellVariants = new HashMap<String, SpellVariant>();
+	private final HashMap<Material, SpellVariant> spellsByMaterial = new HashMap<Material, SpellVariant>();
+	private final List<Spell> spells = new ArrayList<Spell>();
 	private final HashMap<String, PlayerSpells> playerSpells = new HashMap<String, PlayerSpells>();
 	private final List<Spell> movementListeners = new ArrayList<Spell>();
 	private final List<Spell> materialListeners = new ArrayList<Spell>();
@@ -68,7 +96,6 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new AbsorbSpell());
 		addSpell(new FillSpell());
 		addSpell(new TimeSpell());
-		addSpell(new ReloadSpell());
 		addSpell(new CushionSpell());
 		addSpell(new TunnelSpell());
 		addSpell(new UndoSpell());
@@ -94,10 +121,11 @@ public class SpellsPlugin extends JavaPlugin
 		undoQueueDepth = properties.getInteger("spells-general-undo-depth", undoQueueDepth);
 		silent = properties.getBoolean("spells-general-silent", silent);
 		quiet = properties.getBoolean("spells-general-quiet", quiet);
+		allowCommands = properties.getBoolean("spells-general-allow-commands", allowCommands);
 		
 		permissions.load(permissionsFile);
 		
-		for (Spell spell : spells.values())
+		for (Spell spell : spells)
 		{
 			spell.onLoad(properties);
 		}
@@ -132,7 +160,30 @@ public class SpellsPlugin extends JavaPlugin
 	
 	private void addSpell(Spell spell)
 	{
-		spells.put(spell.getName(), spell);
+		List<SpellVariant> variants = spell.getVariants();
+		for (SpellVariant variant : variants)
+		{
+			SpellVariant conflict = spellVariants.get(variant.getName());
+			if (conflict != null)
+			{
+				log.log(Level.WARNING, "Duplicate spell name: '" + conflict.getName() + "'");
+			}
+			else
+			{
+				spellVariants.put(variant.getName(), variant);
+			}
+			conflict = spellsByMaterial.get(variant.getMaterial());
+			if (conflict != null)
+			{
+				log.log(Level.WARNING, "Duplicate spell material: '" + conflict.getMaterial().name() + "'");
+			}
+			else
+			{
+				spellsByMaterial.put(variant.getMaterial(), variant);
+			}
+		}
+		
+		spells.add(spell);
 		spell.setPlugin(this);
 	}
 	
@@ -179,7 +230,7 @@ public class SpellsPlugin extends JavaPlugin
 		class SpellGroup implements Comparable<SpellGroup>
 		{
 			public String groupName;
-			public List<Spell> spells = new ArrayList<Spell>();
+			public List<SpellVariant> spells = new ArrayList<SpellVariant>();
 			
 			@Override
 			public int compareTo(SpellGroup other) 
@@ -189,7 +240,7 @@ public class SpellsPlugin extends JavaPlugin
 		}
 		HashMap<String, SpellGroup> spellGroups = new HashMap<String, SpellGroup>();
 	
-		for (Spell spell : spells.values())
+		for (SpellVariant spell : spellVariants.values())
 		{
 			SpellGroup group = spellGroups.get(spell.getCategory());
 			if (group == null)
@@ -209,21 +260,11 @@ public class SpellsPlugin extends JavaPlugin
 		{
 			player.sendMessage(group.groupName + ":");
 			Collections.sort(group.spells);
-			for (Spell spell : group.spells)
+			for (SpellVariant spell : group.spells)
 			{
-				player.sendMessage(" " + spell.getName() + " : " + spell.getDescription());
+				player.sendMessage(" " + spell.getName() + " [" + spell.getMaterial().name().toLowerCase() + "] : " + spell.getDescription());
 			}
 		}
-	}
-	
-	public PlayerPermissions getPermissions(String playerName)
-	{
-		return permissions.getPlayerPermissions(playerName);
-	}
-	
-	public Spell getSpell(String name)
-	{
-		return spells.get(name);
 	}
 	
 	public void setCurrentMaterialType(Player player, Material material, byte data)
@@ -319,7 +360,7 @@ public class SpellsPlugin extends JavaPlugin
 	
 	public void cancel(Player player)
 	{
-		for (Spell spell : spells.values())
+		for (Spell spell : spells)
 		{
 			spell.cancel(this, player);
 		}
@@ -416,5 +457,10 @@ public class SpellsPlugin extends JavaPlugin
 		{
 			listener.onPlayerQuit(event);
 		}
+	}
+	
+	public boolean allowCommandUse()
+	{
+		return allowCommands;
 	}
 }

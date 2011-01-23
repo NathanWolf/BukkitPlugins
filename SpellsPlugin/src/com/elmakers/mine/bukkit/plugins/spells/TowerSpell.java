@@ -90,4 +90,10 @@ public class TowerSpell extends Spell {
 	{
 		return "construction";
 	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.LADDER;
+	}
 }

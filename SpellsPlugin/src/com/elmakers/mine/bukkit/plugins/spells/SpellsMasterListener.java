@@ -34,19 +34,36 @@ public class SpellsMasterListener
     {
     	String[] split = event.getMessage().split(" ");
     	String commandString = split[0];
-    	
-    	if (!commandString.equalsIgnoreCase("/cast"))
-    	{
-    		return;
-    	}
-    	
+       	
     	PlayerPermissions permissions = plugin.getPermissions(event.getPlayer().getName());
     	
     	if (permissions == null)
     	{
     		return;
     	}
+   	
+    	if (commandString.equalsIgnoreCase("/spells"))
+    	{
+    		if (!permissions.isAdministrator() || split.length < 2 || !split[1].equalsIgnoreCase("reload"))
+    		{
+    			plugin.listSpells(event.getPlayer(), permissions);
+    			return;
+    		}
+    		plugin.load();
+    		event.getPlayer().sendMessage("Configuration reloaded.");
+    		return;
+    	}
     	
+    	if (plugin.allowCommandUse())
+    	{
+    		return;
+    	}
+    	
+    	if (!commandString.equalsIgnoreCase("/cast"))
+    	{
+    		return;
+    	}
+   	
     	if (split.length < 2)
     	{
     		plugin.listSpells(event.getPlayer(), permissions);
@@ -55,7 +72,7 @@ public class SpellsMasterListener
    
     	String spellName = split[1];
     	
-    	Spell spell = plugin.getSpell(spellName);
+    	SpellVariant spell = plugin.getSpell(spellName);
     	if (spell == null || spellName.equalsIgnoreCase("help") || spellName.equalsIgnoreCase("list") || !permissions.hasPermission(spell.getName()))
     	{
     		plugin.listSpells(event.getPlayer(), permissions);
@@ -68,7 +85,7 @@ public class SpellsMasterListener
     		parameters[i - 2] = split[i];
     	}
     	
-    	spell.cast(parameters, event.getPlayer());
+    	spell.getSpell().cast(parameters, event.getPlayer());
     }
     
 

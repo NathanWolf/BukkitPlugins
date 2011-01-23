@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
+import org.bukkit.Material;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.util.Vector;
 
@@ -34,6 +35,12 @@ public class FlingSpell extends Spell
 	public String getDescription()
 	{
 		return "Sends you flying in the target direction";
+	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.LEATHER_BOOTS;
 	}
 
 }

@@ -1,5 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
+import org.bukkit.Material;
+
 import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
 
 public class UndoSpell extends Spell
@@ -43,6 +45,12 @@ public class UndoSpell extends Spell
 	public String getDescription()
 	{
 		return "Undoes your last action";
+	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.WATCH;
 	}
 
 }

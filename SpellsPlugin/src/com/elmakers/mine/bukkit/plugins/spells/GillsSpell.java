@@ -2,6 +2,7 @@ package com.elmakers.mine.bukkit.plugins.spells;
 
 import java.util.HashMap;
 
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerMoveEvent;
 
@@ -141,6 +142,12 @@ public class GillsSpell extends Spell
 		gillDuration = properties.getInteger("spells-gills-duration", gillDuration);
 		healFrequency = properties.getInteger("spells-gills-heal-frequency", healFrequency);
 		healAmount = properties.getInteger("spells-gills-heal-amount", healAmount);
+	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.BOAT;
 	}
 
 }

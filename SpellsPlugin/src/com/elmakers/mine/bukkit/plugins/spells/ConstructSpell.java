@@ -175,4 +175,10 @@ public class ConstructSpell extends Spell
 		defaultSearchDistance = properties.getInteger("spells-constructs-search-distance", defaultSearchDistance);
 	}
 
+	@Override
+	public Material getMaterial()
+	{
+		return Material.WOOD_PICKAXE;
+	}
+
 }

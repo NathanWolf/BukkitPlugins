@@ -4,6 +4,7 @@ import net.minecraft.server.EntityFireball;
 import net.minecraft.server.EntityLiving;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
@@ -87,5 +88,11 @@ public class FireballSpell extends Spell {
 	public String getCategory() 
 	{
 		return "combat";
+	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.NETHERRACK;
 	}
 }

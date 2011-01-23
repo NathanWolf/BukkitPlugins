@@ -1,6 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 
 public class DescendSpell extends Spell 
 {
@@ -40,4 +41,12 @@ public class DescendSpell extends Spell
 	{
 		return "movement";
 	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.BROWN_MUSHROOM;
+	}
+	
+	
 }

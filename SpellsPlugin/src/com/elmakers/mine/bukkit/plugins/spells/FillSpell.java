@@ -138,4 +138,10 @@ public class FillSpell extends Spell
 		maxDimension = properties.getInteger("spells-fill-max-dimension", maxDimension);
 		maxVolume = properties.getInteger("spells-fill-max-volume", maxVolume);
 	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.WATER_BUCKET;
+	}
 }

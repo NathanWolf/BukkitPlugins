@@ -121,4 +121,10 @@ public class TransmuteSpell extends Spell
 		return "Modify the material of the last thing you built";
 	}
 
+	@Override
+	public Material getMaterial()
+	{
+		return Material.GOLD_INGOT;
+	}
+
 }

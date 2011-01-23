@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.wand;
 
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
@@ -7,6 +8,13 @@ import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerItemEvent;
 import org.bukkit.event.player.PlayerListener;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+
+import org.bukkit.craftbukkit.entity.CraftPlayer;
+
+import com.elmakers.mine.bukkit.plugins.spells.SpellVariant;
+
 
 public class WandPlayerListener extends PlayerListener 
 {
@@ -35,6 +43,19 @@ public class WandPlayerListener extends PlayerListener
 					return;
 				}
 				
+				Inventory inventory = event.getPlayer().getInventory();
+				ItemStack[] contents = inventory.getContents();
+				
+				if (contents[0].getType() != Material.AIR)
+				{
+					SpellVariant spell = plugin.getSpells().getSpell(contents[0].getType());
+					if (spell != null)
+					{
+						spell.cast(event.getPlayer());
+					}
+				}
+				
+				/*
 				PlayerWandList wands = plugin.getPlayerWands(event.getPlayer());
 				Wand wand = wands.getCurrentWand();
 				if (wand == null)
@@ -42,6 +63,7 @@ public class WandPlayerListener extends PlayerListener
 					return;
 				}
 				wand.use(plugin, event.getPlayer());
+				*/
 			}
 		}
     }
@@ -62,6 +84,7 @@ public class WandPlayerListener extends PlayerListener
 				return;
 			}
 			
+			/*
 			PlayerWandList wands = plugin.getPlayerWands(event.getPlayer());
 			Wand wand = wands.getCurrentWand();
 			if (wand == null)
@@ -70,6 +93,40 @@ public class WandPlayerListener extends PlayerListener
 			}
 			wand.nextCommand();
 			event.getPlayer().sendMessage(" " + wand.getName() + " : " + wand.getCurrentCommand().getName());
+			*/
+			
+			Inventory inventory = event.getPlayer().getInventory();
+			ItemStack[] contents = inventory.getContents();
+			ItemStack[] active = new ItemStack[9];
+			
+			for (int i = 0; i < 9; i++) { active[i] = contents[i]; }
+			
+			for (int i = 0; i < 9; i++)
+			{
+				if (contents[i].getTypeId() != plugin.getWandTypeId())
+				{
+					for (int di = 1; di < 8; di++)
+					{
+						int ni = (i + di) % 9;
+						if (active[ni].getTypeId() != plugin.getWandTypeId())
+						{
+							contents[i] = active[ni];
+							break;
+						}
+					}
+				}
+			}
+			
+			/*
+			for (int i = 0; i < 8; i ++)
+			{
+				event.getPlayer().sendMessage("@" + i + " = " + active[i].getType().name().toLowerCase() + " : " + contents[i].getType().name().toLowerCase());
+			}
+			*/
+			
+			inventory.setContents(contents);
+			CraftPlayer cPlayer = ((CraftPlayer)event.getPlayer());
+			cPlayer.getHandle().l();
 		}
     }
 	

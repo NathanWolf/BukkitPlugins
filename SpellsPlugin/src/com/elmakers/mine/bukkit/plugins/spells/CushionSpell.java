@@ -103,4 +103,10 @@ public class CushionSpell extends Spell
 		cushionHeight = properties.getInteger("spells-cushion-height", cushionHeight);
 		airBubble = properties.getInteger("spells-air-bubble-thickness", airBubble);
 	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.BOWL;
+	}
 }

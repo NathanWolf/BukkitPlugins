@@ -256,5 +256,11 @@ public class FamiliarSpell extends Spell
 			checkListener();
 		}
 	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.EGG;
+	}
 	
 }

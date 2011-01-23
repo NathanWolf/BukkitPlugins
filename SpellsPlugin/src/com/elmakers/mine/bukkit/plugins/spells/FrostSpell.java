@@ -166,4 +166,10 @@ public class FrostSpell extends Spell
 		verticalSearchDistance = properties.getInteger("spells-frost-vertical-search-distance", verticalSearchDistance);
 	}
 
+	@Override
+	public Material getMaterial()
+	{
+		return Material.SNOW_BALL;
+	}
+
 }

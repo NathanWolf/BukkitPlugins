@@ -104,4 +104,10 @@ public class AlterSpell extends Spell
 		recursableMaterials = properties.getMaterials("spells-alter-recursable", DEFAULT_RECURSABLES);
 	}
 
+	@Override
+	public Material getMaterial()
+	{
+		return Material.REDSTONE_TORCH_ON;
+	}
+
 }

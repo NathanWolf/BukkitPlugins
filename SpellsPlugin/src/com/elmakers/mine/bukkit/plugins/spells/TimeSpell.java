@@ -1,5 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
+import org.bukkit.Material;
+
 public class TimeSpell extends Spell {
 
 	@Override
@@ -52,6 +54,12 @@ public class TimeSpell extends Spell {
 	public String getDescription() 
 	{
 		return "Changes the time of day";
+	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.FLINT;
 	}
 
 }

@@ -2,6 +2,8 @@ package com.elmakers.mine.bukkit.plugins.spells;
 
 import java.util.HashMap;
 
+import org.bukkit.Material;
+
 
 // TODO WIP!!
 public class InvincibleSpell extends Spell 
@@ -31,6 +33,12 @@ public class InvincibleSpell extends Spell
 	public String getDescription() 
 	{
 		return "Makes you impervious to damage";
+	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.GOLDEN_APPLE;
 	}
 
 }

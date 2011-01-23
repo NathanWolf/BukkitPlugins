@@ -1,5 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
+import org.bukkit.Material;
+
 public class HealSpell extends Spell 
 {
 	@Override
@@ -26,5 +28,11 @@ public class HealSpell extends Spell
 	public String getCategory() 
 	{
 		return "help";
+	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.APPLE;
 	}
 }

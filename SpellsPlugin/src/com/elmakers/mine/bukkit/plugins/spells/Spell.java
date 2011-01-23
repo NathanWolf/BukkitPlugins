@@ -1,6 +1,8 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -42,7 +44,7 @@ import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
  * @author Ho0ber
  */
 public abstract class Spell implements Comparable<Spell>
-{
+{	
 	protected Player							player;
 	protected SpellsPlugin						plugin;
 
@@ -59,16 +61,19 @@ public abstract class Spell implements Comparable<Spell>
 	protected int								targetX, targetY, targetZ;
 	protected final HashMap<Material, Boolean>	targetThroughMaterials	= new HashMap<Material, Boolean>();
 	protected boolean							reverseTargeting = false;
+	protected final List<SpellVariant>			variants = new ArrayList<SpellVariant>();
 
 	// Begin override methods
 
 	public abstract boolean onCast(String[] parameters);
 
-	public abstract String getName();
+	protected abstract String getName();
 
 	public abstract String getCategory();
 
 	public abstract String getDescription();
+	
+	public abstract Material getMaterial();
 
 	public void onLoad(PluginProperties properties)
 	{
@@ -80,7 +85,7 @@ public abstract class Spell implements Comparable<Spell>
 
 	}
 	
-	// Begin listener methods- you must register to recieve these
+	// Begin listener methods- you must register to receive these
 	public void onPlayerMove(PlayerMoveEvent event)
 	{
 		
@@ -95,15 +100,31 @@ public abstract class Spell implements Comparable<Spell>
 	{
 
 	}
+	
+	// Constructor - override to add variants
+	public Spell()
+	{
+		variants.add(new SpellVariant(this));
+	}
 
 	// End override methods
 
+	public List<SpellVariant> getVariants()
+	{
+		return variants;
+	}
+	
+	protected void addVariant(String name, Material material, String category, String description, String[] parameters)
+	{
+		variants.add(new SpellVariant(this, name, material, category, description, parameters));
+	}
+	
 	public void setPlugin(SpellsPlugin plugin)
 	{
 		this.plugin = plugin;
 	}
 	
-	public void cast(String[] parameters, Player player)
+	public boolean cast(String[] parameters, Player player)
 	{
 		this.player = player;
 
@@ -113,7 +134,7 @@ public abstract class Spell implements Comparable<Spell>
 
 		initializeTargeting(player);
 
-		onCast(parameters);
+		return onCast(parameters);
 	}
 
 	protected void targetThrough(Material mat)

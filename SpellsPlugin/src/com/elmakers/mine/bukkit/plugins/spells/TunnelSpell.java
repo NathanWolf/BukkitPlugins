@@ -157,4 +157,10 @@ public class TunnelSpell extends Spell
 		return "Create a tunnel through common materials";
 	}
 
+	@Override
+	public Material getMaterial()
+	{
+		return Material.GOLD_AXE;
+	}
+
 }

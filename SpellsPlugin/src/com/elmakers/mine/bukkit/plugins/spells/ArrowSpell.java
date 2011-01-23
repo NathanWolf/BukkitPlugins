@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
+import org.bukkit.Material;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Arrow;
 
@@ -37,6 +38,12 @@ public class ArrowSpell extends Spell
 	public String getDescription()
 	{
 		return "Throws a magic arrow";
+	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.ARROW;
 	}
 
 }

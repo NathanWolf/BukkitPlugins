@@ -1,0 +1,81 @@
+package com.elmakers.mine.bukkit.plugins.spells;
+
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+
+public class SpellVariant implements Comparable<SpellVariant>
+{
+	private String name;
+	private String description;
+	private String category;
+	private String[] parameters;
+	private Spell spell;
+	private Material material;
+	
+	public SpellVariant(Spell spell)
+	{
+		this.spell = spell;
+		this.name = spell.getName();
+		this.category = spell.getCategory();
+		this.description = spell.getDescription();
+		this.material = spell.getMaterial();
+		this.parameters = new String[0];
+	}
+	
+	public SpellVariant(Spell spell, String name, Material material, String category, String description, String[] parameters)
+	{
+		this.spell = spell;
+		this.name = name;
+		this.category = category;
+		this.description = description;
+		this.parameters = parameters;
+		this.material = material;
+	}
+	
+	public String getName()
+	{
+		return name;
+	}
+	
+	public String getDescription()
+	{
+		return description;
+	}
+	
+	public String getCategory()
+	{
+		return category;
+	}
+	
+	public String[] getParameters()
+	{
+		return parameters;
+	}
+	
+	public boolean isMatch(String spell, String[] params)
+	{
+		if (params == null) params = new String[0];
+		return (name.equalsIgnoreCase(spell) && parameters.equals(params));
+	}
+	
+	public Spell getSpell()
+	{
+		return spell;
+	}
+	
+	@Override
+	public int compareTo(SpellVariant other)
+	{
+		return getName().compareTo(other.getName());
+	}
+	
+	public Material getMaterial()
+	{
+		return material;
+	}
+	
+	public boolean cast(Player player)
+	{
+		return spell.cast(parameters, player);
+	}
+}

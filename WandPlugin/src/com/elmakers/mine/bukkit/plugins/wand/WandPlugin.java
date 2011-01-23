@@ -15,11 +15,13 @@ import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.elmakers.mine.bukkit.plugins.spells.SpellsPlugin;
 import com.elmakers.mine.bukkit.plugins.wand.utilities.PluginProperties;
 
 public class WandPlugin extends JavaPlugin 
@@ -33,6 +35,7 @@ public class WandPlugin extends JavaPlugin
 	private final HashMap<String, WandPermissions> permissions = new HashMap<String, WandPermissions>();
 	private final WandPlayerListener playerListener = new WandPlayerListener();
 	private final HashMap<String, PlayerWandList> playerWands = new HashMap<String, PlayerWandList>();
+	private SpellsPlugin spells = null;
 	
 	private boolean allCanUse = true;
 	private boolean allCanAdminister = true;
@@ -49,6 +52,8 @@ public class WandPlugin extends JavaPlugin
 	public void onEnable() 
 	{
 		load();
+		
+		bindSpellsPlugin();
 		
 		playerListener.setPlugin(this);
 		
@@ -68,6 +73,24 @@ public class WandPlugin extends JavaPlugin
 	public void onDisable() 
 	{
 		save();
+	}
+	
+	public void bindSpellsPlugin() 
+	{
+		Plugin test = this.getServer().getPluginManager().getPlugin("Spells");
+
+		if(spells == null) 
+		{
+		    if(test != null) 
+		    {
+		    	this.spells = (SpellsPlugin)test;
+		    } 
+		    else 
+		    {
+		    	log.warning("The Wand plugin depends on the Spells plugin (for now) - please install it!");
+		    	this.getServer().getPluginManager().disablePlugin(this);
+		    }
+		}
 	}
 	
 	public void loadProperties()
@@ -326,5 +349,10 @@ public class WandPlugin extends JavaPlugin
 	public int getWandTypeId()
 	{
 		return wandTypeId;
+	}
+	
+	public SpellsPlugin getSpells()
+	{
+		return spells;
 	}
 }

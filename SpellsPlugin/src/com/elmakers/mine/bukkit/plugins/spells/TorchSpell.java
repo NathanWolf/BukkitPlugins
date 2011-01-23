@@ -83,4 +83,10 @@ public class TorchSpell extends Spell
 		allowDay = properties.getBoolean("spells-torch-allow-day", allowDay);
 		allowLightstone = properties.getBoolean("spells-torch-allow-lightstone", allowLightstone);
 	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.TORCH;
+	}
 }

@@ -141,4 +141,10 @@ public class BlastSpell extends Spell
 		defaultSearchDistance = properties.getInteger("spells-blast-search-distance", defaultSearchDistance);
 		torchFrequency = properties.getInteger("spells-blast-torch-frequency", torchFrequency);
 	}
+
+	@Override
+	public Material getMaterial()
+	{
+			return Material.SULPHUR;
+	}
 }

@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
@@ -65,5 +66,11 @@ public class BridgeSpell extends Spell
 	public String getCategory() 
 	{
 		return "construction";
+	}
+
+	@Override
+	public Material getMaterial()
+	{
+		return Material.WOOD_SPADE;
 	}
 }

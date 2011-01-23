@@ -172,4 +172,10 @@ public class StairsSpell extends Spell
 		torchFrequency = properties.getInteger("spells-stairs-torch-frequency", torchFrequency);
 	}
 
+	@Override
+	public Material getMaterial()
+	{
+		return Material.COBBLESTONE_STAIRS;
+	}
+
 }
