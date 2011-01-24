@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.wand;
+package com.elmakers.mine.bukkit.plugins.wandmin;
 
 public class WandPermissions 
 {
@@ -24,6 +24,11 @@ public class WandPermissions
 	public void setCanAdminister(boolean admin) 
 	{
 		this.admin = admin;
+		if (admin)
+		{
+			this.use = true;
+			this.modify = true;
+		}
 	}
 	
 	public boolean canModify() 
@@ -34,5 +39,9 @@ public class WandPermissions
 	public void setCanModify(boolean modify) 
 	{
 		this.modify = modify;
+		if (modify)
+		{
+			this.use = true;
+		}
 	}
 }

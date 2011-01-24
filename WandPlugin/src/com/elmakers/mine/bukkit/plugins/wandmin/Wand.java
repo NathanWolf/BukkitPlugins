@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.wand;
+package com.elmakers.mine.bukkit.plugins.wandmin;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.wand;
+package com.elmakers.mine.bukkit.plugins.wandmin;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Type;

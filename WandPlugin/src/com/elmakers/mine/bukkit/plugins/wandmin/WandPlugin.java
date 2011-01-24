@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.wand;
+package com.elmakers.mine.bukkit.plugins.wandmin;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -20,14 +20,15 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.elmakers.mine.bukkit.plugins.wand.utilities.PluginProperties;
+import com.elmakers.mine.bukkit.plugins.wandmin.utilities.PluginProperties;
 
 public class WandPlugin extends JavaPlugin 
 {
-	private final String propertiesFile = "wand.properties";
+	private final String propertiesFile = "wandmin.properties";
 
 	private int wandTypeId = 280;
-	private String commandFile = "wand-commands.txt";	
+	private String commandFile = "wand-commands.txt";
+	private String wandCommand = "wandmin";
 	
 	private final Logger log = Logger.getLogger("Minecraft");
 	private final HashMap<String, WandPermissions> permissions = new HashMap<String, WandPermissions>();
@@ -77,6 +78,7 @@ public class WandPlugin extends JavaPlugin
 		
 		// Get and set all properties
 		commandFile = properties.getString("wand-commands-file", commandFile);
+		wandCommand = properties.getString("wand-command", wandCommand);
 		wandTypeId = properties.getInteger("wand-type-id", wandTypeId);
 		String wandDefault = properties.getString("wand-default", "");
 		String wandUsers = properties.getString("wand-users", "");
@@ -97,27 +99,24 @@ public class WandPlugin extends JavaPlugin
 		List<String> wandMods = parseUserList(wandModString);
 		List<String> wandAdmins = parseUserList(wandAdminString);
 		
-		allCanUse = true;
-		allCanAdminister = true;
-		allCanModify = true;
+		allCanUse = false;
+		allCanAdminister = false;
+		allCanModify = false;
 		
 		for (String user : wandUsers)
 		{
-			allCanUse = false;
 			WandPermissions player = getPermissions(user);
 			player.setCanUse(true);
 		}
 		
 		for (String mod : wandMods)
 		{
-			allCanModify = false;
 			WandPermissions player = getPermissions(mod);
 			player.setCanModify(true);
 		}
 		
 		for (String admin : wandAdmins)
 		{
-			allCanAdminister = false;
 			WandPermissions player = getPermissions(admin);
 			player.setCanAdminister(true);
 		}
@@ -326,5 +325,10 @@ public class WandPlugin extends JavaPlugin
 	public int getWandTypeId()
 	{
 		return wandTypeId;
+	}
+	
+	public String getWandCommand()
+	{
+		return wandCommand;
 	}
 }

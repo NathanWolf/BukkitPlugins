@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.wand;
+package com.elmakers.mine.bukkit.plugins.wandmin;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerAnimationEvent;
@@ -77,7 +77,7 @@ public class WandPlayerListener extends PlayerListener
 	{
 		Player player = wands.getPlayer();
 		WandPermissions permissions = plugin.getPermissions(player.getName());
-		player.sendMessage("Usage: \\wand [command] [parameters]");
+		player.sendMessage("Usage: /"  + plugin.getWandCommand() + " [command] [parameters]");
 		player.sendMessage(" spells : List the spells bound to your wand");
 		player.sendMessage(" wands : List all of your wands");
 		player.sendMessage(" next : Switch to the next wand");
@@ -117,7 +117,7 @@ public class WandPlayerListener extends PlayerListener
     	String[] split = event.getMessage().split(" ");
     	String commandString = split[0];
     	
-    	if (!commandString.equalsIgnoreCase("/wand"))
+    	if (!commandString.equalsIgnoreCase("/" + plugin.getWandCommand()))
     	{
     		return;
     	}

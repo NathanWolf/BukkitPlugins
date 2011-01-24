@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.wand.utilities;
+package com.elmakers.mine.bukkit.plugins.wandmin.utilities;
 
 import java.io.File;
 import java.io.FileInputStream;
