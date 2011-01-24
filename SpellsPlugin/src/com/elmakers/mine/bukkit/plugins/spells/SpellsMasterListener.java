@@ -63,7 +63,7 @@ public class SpellsMasterListener
 
     	}
     	
-    	if (plugin.allowCommandUse())
+    	if (!plugin.allowCommandUse())
     	{
     		return;
     	}
