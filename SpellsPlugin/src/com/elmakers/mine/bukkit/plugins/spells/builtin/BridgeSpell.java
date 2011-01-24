@@ -72,6 +72,6 @@ public class BridgeSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.WOOD_SPADE;
+		return Material.GOLD_SPADE;
 	}
 }

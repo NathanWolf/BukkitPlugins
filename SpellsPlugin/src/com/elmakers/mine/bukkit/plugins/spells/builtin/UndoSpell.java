@@ -25,7 +25,7 @@ public class UndoSpell extends Spell
 		}
 		else
 		{
-			player.sendMessage("There is nothing to undo");
+			castMessage(player, "There is nothing to undo");
 		}
 		return undone;
 	}

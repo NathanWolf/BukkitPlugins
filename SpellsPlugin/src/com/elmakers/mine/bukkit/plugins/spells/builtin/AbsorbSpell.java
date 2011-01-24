@@ -62,6 +62,6 @@ public class AbsorbSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.BUCKET;
+		return Material.SPONGE;
 	}
 }

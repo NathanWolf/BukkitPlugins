@@ -179,7 +179,7 @@ public class ConstructSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.WOOD_PICKAXE;
+		return Material.GOLD_AXE;
 	}
 
 }

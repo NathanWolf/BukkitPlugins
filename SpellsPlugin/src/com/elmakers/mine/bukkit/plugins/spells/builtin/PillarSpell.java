@@ -12,6 +12,11 @@ public class PillarSpell extends Spell
 {
 	int MAX_SEARCH_DISTANCE = 255;
 	
+	public PillarSpell()
+	{
+		addVariant("stalactite", Material.WOOD_PICKAXE, "construction", "Create a downward pillar", "down");
+	}
+	
 	@Override
 	public boolean onCast(String[] parameters) 
 	{
@@ -77,6 +82,6 @@ public class PillarSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.GOLD_SPADE;
+		return Material.WOOD_SPADE;
 	}
 }

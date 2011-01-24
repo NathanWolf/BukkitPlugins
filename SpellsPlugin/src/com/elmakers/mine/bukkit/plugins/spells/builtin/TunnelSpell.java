@@ -161,7 +161,7 @@ public class TunnelSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.GOLD_AXE;
+		return Material.STONE_PICKAXE;
 	}
 
 }
