@@ -32,7 +32,6 @@ public abstract class Spell implements Comparable<Spell>
 	 */
 	protected Player							player;
 	protected SpellsPlugin						plugin;
-
 	
 	/*
 	 * Spell abstract interface- you must override these.
@@ -109,20 +108,40 @@ public abstract class Spell implements Comparable<Spell>
 		return (checkMat == null || !checkMat);
 	}
 
+	protected void setReverseTargeting(boolean reverse)
+	{
+		reverseTargeting = reverse;
+	}
+	
+	protected boolean isReverseTargeting()
+	{
+		return reverseTargeting;
+	}
+	
+	protected void setTargetHeightRequired(int height)
+	{
+		targetHeightRequired = height;
+	}
+	
+	protected int getTargetHeightRequired()
+	{
+		return targetHeightRequired;
+	}
+	
 	/*
 	 * Ground / location search and test function functions
 	 */
-	public boolean isOkToStandIn(Material mat)
+	protected boolean isOkToStandIn(Material mat)
 	{
 		return (mat == Material.AIR || mat == Material.WATER || mat == Material.STATIONARY_WATER);
 	}
 
-	public boolean isOkToStandOn(Material mat)
+	protected boolean isOkToStandOn(Material mat)
 	{
 		return (mat != Material.AIR && mat != Material.LAVA && mat != Material.STATIONARY_LAVA);
 	}
 	
-	public Location findPlaceToStand(Location playerLoc, boolean goUp)
+	protected Location findPlaceToStand(Location playerLoc, boolean goUp)
 	{
 		int step;
 		if (goUp)
@@ -165,7 +184,7 @@ public abstract class Spell implements Comparable<Spell>
 		return null;
 	}
 	
-	public double getDistance(Player player, Block target)
+	protected double getDistance(Player player, Block target)
 	{
 		Location loc = player.getLocation();
 		return Math.sqrt(Math.pow(loc.getX() - target.getX(), 2) + Math.pow(loc.getY() - target.getY(), 2)
@@ -176,7 +195,7 @@ public abstract class Spell implements Comparable<Spell>
 	 * Player location / rotation querying
 	 */
 
-	public float getPlayerRotation()
+	protected float getPlayerRotation()
 	{
 		float playerRot = player.getLocation().getYaw();
 		while (playerRot < 0)
@@ -186,7 +205,7 @@ public abstract class Spell implements Comparable<Spell>
 		return playerRot;
 	}
 
-	public Block getPlayerBlock()
+	protected Block getPlayerBlock()
 	{
 		Block playerBlock = null;
 		Location playerLoc = player.getLocation();
@@ -203,7 +222,7 @@ public abstract class Spell implements Comparable<Spell>
 	}
 
 
-	public BlockFace getPlayerFacing()
+	protected BlockFace getPlayerFacing()
 	{
 		float playerRot = getPlayerRotation();
 
@@ -234,7 +253,7 @@ public abstract class Spell implements Comparable<Spell>
 
 	// Should go in BlockFace?
 	// Also, there's probably some better matrix-y, math-y way to do this.
-	public BlockFace goLeft(BlockFace direction)
+	protected BlockFace goLeft(BlockFace direction)
 	{
 		switch (direction)
 		{
@@ -250,7 +269,7 @@ public abstract class Spell implements Comparable<Spell>
 		return direction;
 	}
 
-	public BlockFace goRight(BlockFace direction)
+	protected BlockFace goRight(BlockFace direction)
 	{
 		switch (direction)
 		{
@@ -273,7 +292,7 @@ public abstract class Spell implements Comparable<Spell>
 	/*
 	 * Find a good location to spawn a projectile, such as a fireball.
 	 */
-	public Location getSpawnLocation()
+	protected Location getProjectileSpawnLocation()
 	{
 		Block spawnBlock = getPlayerBlock();
 
@@ -291,7 +310,7 @@ public abstract class Spell implements Comparable<Spell>
 		return location;
 	}
 
-	public Vector getAimVector()
+	protected Vector getAimVector()
 	{
 		return new Vector((0 - Math.sin(Math.toRadians(playerLocation.getYaw()))), (0 - Math.sin(Math
 				.toRadians(playerLocation.getPitch()))), Math.cos(Math.toRadians(playerLocation.getYaw())));
@@ -306,12 +325,33 @@ public abstract class Spell implements Comparable<Spell>
 
 		while (getNextBlock() != null)
 		{
-			if (isTargetable(getCurBlock().getType()))
+			Block block = getCurBlock();
+			if (isTargetable(block.getType()))
 			{
-				break;
+				boolean enoughSpace = true;
+				for (int i = 1; i < targetHeightRequired; i++)
+				{
+					block = block.getFace(BlockFace.UP);
+					if (!isTargetable(block.getType()))
+					{
+						enoughSpace = false;
+						break;
+					}
+				}
+				if (enoughSpace) break;
 			}
 		}
 		targetingComplete = true;
+	}
+	
+	protected double getYRotation()
+	{
+		return yRotation;
+	}
+	
+	protected double getXRotation()
+	{
+		return xRotation;
 	}
 	
 	/*
@@ -323,7 +363,7 @@ public abstract class Spell implements Comparable<Spell>
 	 * 
 	 * @return Block
 	 */
-	public Block getTargetBlock()
+	protected Block getTargetBlock()
 	{
 		findTargetBlock();
 		return getCurBlock();
@@ -334,7 +374,7 @@ public abstract class Spell implements Comparable<Spell>
 	 * 
 	 * @param type
 	 */
-	public void setTargetBlock(int type)
+	protected void setTargetBlock(int type)
 	{
 		findTargetBlock();
 		if (getCurBlock() != null)
@@ -349,7 +389,7 @@ public abstract class Spell implements Comparable<Spell>
 	 * 
 	 * @return Block
 	 */
-	public Block getFaceBlock()
+	protected Block getFaceBlock()
 	{
 		findTargetBlock();
 		if (getCurBlock() != null)
@@ -367,7 +407,7 @@ public abstract class Spell implements Comparable<Spell>
 	 * 
 	 * @param type
 	 */
-	public void setFaceBlock(int type)
+	protected void setFaceBlock(int type)
 	{
 		findTargetBlock();
 		if (getCurBlock() != null)
@@ -381,7 +421,7 @@ public abstract class Spell implements Comparable<Spell>
 	 * 
 	 * @return Block
 	 */
-	public Block getNextBlock()
+	protected Block getNextBlock()
 	{
 		lastX = targetX;
 		lastY = targetY;
@@ -416,7 +456,7 @@ public abstract class Spell implements Comparable<Spell>
 	 * 
 	 * @return Block
 	 */
-	public Block getCurBlock()
+	protected Block getCurBlock()
 	{
 		if (length > range)
 		{
@@ -433,7 +473,7 @@ public abstract class Spell implements Comparable<Spell>
 	 * 
 	 * @param type
 	 */
-	public void setCurBlock(int type)
+	protected void setCurBlock(int type)
 	{
 		if (getCurBlock() != null)
 		{
@@ -446,7 +486,7 @@ public abstract class Spell implements Comparable<Spell>
 	 * 
 	 * @return Block
 	 */
-	public Block getLastBlock()
+	protected Block getLastBlock()
 	{
 		return getBlockAt(lastX, lastY, lastZ);
 	}
@@ -456,7 +496,7 @@ public abstract class Spell implements Comparable<Spell>
 	 * 
 	 * @param type
 	 */
-	public void setLastBlock(int type)
+	protected void setLastBlock(int type)
 	{
 		if (getLastBlock() != null)
 		{
@@ -473,7 +513,7 @@ public abstract class Spell implements Comparable<Spell>
 	 * @param z
 	 * @return true if successful
 	 */
-	public boolean setBlockAt(int blockType, int x, int y, int z)
+	protected boolean setBlockAt(int blockType, int x, int y, int z)
 	{
 		World world = player.getWorld();
 		Block block = world.getBlockAt(x, y, z);
@@ -491,18 +531,35 @@ public abstract class Spell implements Comparable<Spell>
 	 * @param z
 	 * @return block
 	 */
-	public Block getBlockAt(int x, int y, int z)
+	protected Block getBlockAt(int x, int y, int z)
 	{
 		World world = player.getWorld();
 		return world.getBlockAt(x, y, z);
 	}	
 	
-	@Override
-	public int compareTo(Spell other)
+	/*
+	 * Functions to send text to player- use these to respect "quiet" and "silent" modes.
+	 */
+	
+	public void castMessage(Player player, String message)
 	{
-		return getName().compareTo(other.getName());
+		if (!plugin.isQuiet() && !plugin.isSilent())
+		{
+			player.sendMessage(message);
+		}
 	}
 
+	public void sendMessage(Player player, String message)
+	{
+		if (!plugin.isSilent())
+		{
+			player.sendMessage(message);
+		}
+	}
+
+	/*
+	 * Time functions
+	 */
 
 	/**
 	 * Sets the current server time
@@ -530,24 +587,6 @@ public abstract class Spell implements Comparable<Spell>
 	{
 		return plugin.getServer().getTime();
 	}
-
-
-	public void castMessage(Player player, String message)
-	{
-		if (!plugin.isQuiet() && !plugin.isSilent())
-		{
-			player.sendMessage(message);
-		}
-	}
-
-	public void sendMessage(Player player, String message)
-	{
-		if (!plugin.isSilent())
-		{
-			player.sendMessage(message);
-		}
-	}
-
 	
 	/*
 	 * Helper functions
@@ -570,6 +609,13 @@ public abstract class Spell implements Comparable<Spell>
 	
 	protected void addVariant(String name, Material material, String category, String description, String[] parameters)
 	{
+		variants.add(new SpellVariant(this, name, material, category, description, parameters));
+	}
+	
+	protected void addVariant(String name, Material material, String category, String description, String parameter)
+	{
+		String[] parameters = new String[1];
+		parameters[0] = parameter;
 		variants.add(new SpellVariant(this, name, material, category, description, parameters));
 	}
 	
@@ -599,10 +645,11 @@ public abstract class Spell implements Comparable<Spell>
 		onCancel();
 	}
 
-	public void initializeTargeting(Player player)
+	protected void initializeTargeting(Player player)
 	{
 		playerLocation = player.getLocation();
 		length = 0;
+		targetHeightRequired = 1;
 		xRotation = (playerLocation.getYaw() + 90) % 360;
 		yRotation = playerLocation.getPitch() * -1;
 		reverseTargeting = false;
@@ -616,23 +663,30 @@ public abstract class Spell implements Comparable<Spell>
 		targetingComplete = false;
 	}
 	
+	@Override
+	public int compareTo(Spell other)
+	{
+		return getName().compareTo(other.getName());
+	}
+	
 	/*
-	 * protected data that should be left alone, and may be made private in the future...
+	 * private data
 	 */
 
-	protected int								range					= 200;
-	protected double							viewHeight				= 1.65;
-	protected double							step					= 0.2;
+	private int									range					= 200;
+	private double								viewHeight				= 1.65;
+	private double								step					= 0.2;
 
-	protected boolean							targetingComplete;
-	protected Location							playerLocation;
-	protected double							xRotation, yRotation;
-	protected double							length, hLength;
-	protected double							xOffset, yOffset, zOffset;
-	protected int								lastX, lastY, lastZ;
-	protected int								targetX, targetY, targetZ;
-	protected final HashMap<Material, Boolean>	targetThroughMaterials	= new HashMap<Material, Boolean>();
-	protected boolean							reverseTargeting = false;
-	protected final List<SpellVariant>			variants = new ArrayList<SpellVariant>();
+	private boolean								targetingComplete;
+	private int									targetHeightRequired	= 1;
+	private Location							playerLocation;
+	private double								xRotation, yRotation;
+	private double								length, hLength;
+	private double								xOffset, yOffset, zOffset;
+	private int									lastX, lastY, lastZ;
+	private int									targetX, targetY, targetZ;
+	private final HashMap<Material, Boolean>	targetThroughMaterials	= new HashMap<Material, Boolean>();
+	private boolean								reverseTargeting		= false;
+	private final List<SpellVariant>			variants				= new ArrayList<SpellVariant>();
 
 }

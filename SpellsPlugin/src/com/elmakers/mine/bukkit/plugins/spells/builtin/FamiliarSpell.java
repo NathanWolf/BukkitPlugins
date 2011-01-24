@@ -17,6 +17,7 @@ import net.minecraft.server.EntitySpider;
 import net.minecraft.server.EntitySquid;
 import net.minecraft.server.EntityZombie;
 import net.minecraft.server.EntityLiving;
+import net.minecraft.server.EntityZombieSimple;
 import net.minecraft.server.World;
 
 import org.bukkit.block.Block;
@@ -35,7 +36,10 @@ import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 public class FamiliarSpell extends Spell
 {
 	private String DEFAULT_FAMILIARS = "chicken,sheep,cow,pig";
+	private String DEFAULT_MONSTERS = "creeper,pigzombie,skeleton,spider,squid,zombie,ghast,giant";
+	
 	private List<String> defaultFamiliars = new ArrayList<String>();
+	private List<String> defaultMonsters = new ArrayList<String>();
 	private final Random rand = new Random();
 	private HashMap<String, PlayerFamiliar> familiars = new HashMap<String, PlayerFamiliar>();
 	
@@ -76,6 +80,9 @@ public class FamiliarSpell extends Spell
 		SQUID,
 		ZOMBIE,
 		GHAST,
+		GIANT,
+		//FISH,
+		//SLIME,
 		UNKNOWN;
 		
 		public static FamiliarType parseString(String s)
@@ -97,6 +104,11 @@ public class FamiliarSpell extends Spell
 		}
 		
 	};
+	
+	public FamiliarSpell()
+	{
+		addVariant("monster", Material.PUMPKIN, "combat", "Call a monster to your side", "monster");
+	}
 	
 	@Override
 	public boolean onCast(String[] parameters)
@@ -129,6 +141,11 @@ public class FamiliarSpell extends Spell
 				{
 					int randomFamiliar = rand.nextInt(FamiliarType.values().length - 1);
 					famType = FamiliarType.values()[randomFamiliar];
+				}
+				else if (parameters[0].equalsIgnoreCase("monster"))
+				{
+					int randomFamiliar = rand.nextInt(defaultMonsters.size());
+					famType = FamiliarType.parseString(defaultMonsters.get(randomFamiliar));
 				}
 				else
 				{
@@ -181,6 +198,8 @@ public class FamiliarSpell extends Spell
 			case SQUID: e = new EntitySquid(world); break;
 			case GHAST: e = new EntityGhast(world); break;
 			case ZOMBIE: e = new EntityZombie(world); break;
+			case GIANT: e = new EntityZombieSimple(world); break;
+			//case SLIME: e = new EntitySlime(world); break;
 			//case FISH: e = new EntityFish(world); break;
 		}
 		
@@ -247,6 +266,7 @@ public class FamiliarSpell extends Spell
 	public void onLoad(PluginProperties properties)
 	{
 		defaultFamiliars = properties.getStringList("spells-familiar-animals", DEFAULT_FAMILIARS);
+		defaultMonsters = properties.getStringList("spells-familiar-monsters", DEFAULT_MONSTERS);
 	}
 	
 	public void onPlayerQuit(PlayerEvent event)

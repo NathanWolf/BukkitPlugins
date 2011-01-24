@@ -16,7 +16,7 @@ public class TorchSpell extends Spell
 	@Override
 	public boolean onCast(String[] parameters) 
 	{
-		if (yRotation > 80 && allowDay)
+		if (getYRotation() > 80 && allowDay)
 		{
 			castMessage(player, "FLAME ON!");
 			setRelativeTime(0);

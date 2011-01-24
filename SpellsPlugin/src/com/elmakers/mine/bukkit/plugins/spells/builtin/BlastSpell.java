@@ -21,6 +21,11 @@ public class BlastSpell extends Spell
 	private int				defaultSearchDistance	= 32;
 	private int				torchFrequency			= 4;
 
+	public BlastSpell()
+	{
+		addVariant("superblast", Material.TNT, "mining", "Mine out a very large area", "16");
+	}
+	
 	@Override
 	public boolean onCast(String[] parameters)
 	{

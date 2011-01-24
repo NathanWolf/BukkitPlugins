@@ -29,7 +29,7 @@ public class BlinkSpell extends Spell
 	@Override
 	public boolean onCast(String[] parameters)
 	{
-		if (yRotation < -80 && allowDescend)
+		if (getYRotation() < -80 && allowDescend)
 		{
 			Location location = findPlaceToStand(player.getLocation(), false);
 			if (location != null) 
@@ -40,7 +40,7 @@ public class BlinkSpell extends Spell
 			}
 		}
 		
-		if (yRotation > 80 && allowAscend)
+		if (getYRotation() > 80 && allowAscend)
 		{
 			Location location = findPlaceToStand(player.getLocation(), true);
 			if (location != null) 
@@ -56,7 +56,8 @@ public class BlinkSpell extends Spell
 			Block firstBlock = getNextBlock();
 			if (firstBlock.getType() != Material.AIR)
 			{
-				reverseTargeting = true;
+				setReverseTargeting(true);
+				setTargetHeightRequired(2);
 				targetThrough(Material.AIR);
 			}
 			else
@@ -75,7 +76,7 @@ public class BlinkSpell extends Spell
 		}
 		if (maxRange > 0 && getDistance(player,target) > maxRange) 
 		{
-			sendMessage(player, "Can't blink that far");
+			castMessage(player, "Can't blink that far");
 			return false;
 		}
 		
@@ -83,7 +84,7 @@ public class BlinkSpell extends Spell
 		
 		// Don't drop the player too far, and make sure there is somewhere to stand
     	Block destination = face;
-    	if (reverseTargeting)
+    	if (isReverseTargeting())
     	{
     		destination = target;
     	}
@@ -98,7 +99,7 @@ public class BlinkSpell extends Spell
 		Block twoUp = oneUp.getFace(BlockFace.UP);
 		if (!isOkToStandIn(oneUp.getType()) || !isOkToStandIn(twoUp.getType()))
 		{
-			sendMessage(player, "You can't fit in there!");
+			castMessage(player, "You can't fit in there!");
 			return false;
 		}
 		castMessage(player, "Blink!");
