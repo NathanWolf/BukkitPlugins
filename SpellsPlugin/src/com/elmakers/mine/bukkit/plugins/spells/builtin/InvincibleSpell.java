@@ -1,8 +1,10 @@
-package com.elmakers.mine.bukkit.plugins.spells;
+package com.elmakers.mine.bukkit.plugins.spells.builtin;
 
 import java.util.HashMap;
 
 import org.bukkit.Material;
+
+import com.elmakers.mine.bukkit.plugins.spells.Spell;
 
 
 // TODO WIP!!

@@ -19,52 +19,24 @@ import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 /**
  * 
- * Base class for spells. Handles finding player location, targetting, and other
+ * Base class for spells. Handles finding player location, targeting, and other
  * common spell activities.
  * 
- * Lots of code taken from:
- * 
- * HitBlox.java - Class for getting blocks along line of sight
- * 
- * NOTES: This class is designed to handle the annoying parts of the seemingly
- * simple task of getting the coordinates of the block a player is currently
- * aimed at. This class abstracts the simpler tasks of finding the current
- * target block and the adjacent unoccupied block to their own methods, but it
- * also provides a public getNextBlock method for processing the entire
- * line-of-sight from the player for more specialized tasks. This method can be
- * used exactly as it is in getTargetBlock, for instance.
- * 
- * WARNING: Servers with map coordinate bugs may experience a one or more block
- * inaccuracy when in affected parts of the world. A good way to test areas for
- * the offset bug is to use Chrisinajar's Magic Carpet plugin.
- * 
- * Contact: For questions, contact Ho0ber@gmail.com or channel #hey0 on
- * irc.esper.net
- * 
- * @author Ho0ber
+ * Original targeting code ported from: HitBlox.java, Ho0ber@gmail.com 
+ *
  */
 public abstract class Spell implements Comparable<Spell>
 {	
+	/*
+	 * protected members that are helpful to use
+	 */
 	protected Player							player;
 	protected SpellsPlugin						plugin;
 
-	protected int								range					= 200;
-	protected double							viewHeight				= 1.65;
-	protected double							step					= 0.2;
-
-	protected boolean							targetingComplete;
-	protected Location							playerLocation;
-	protected double							xRotation, yRotation;
-	protected double							length, hLength;
-	protected double							xOffset, yOffset, zOffset;
-	protected int								lastX, lastY, lastZ;
-	protected int								targetX, targetY, targetZ;
-	protected final HashMap<Material, Boolean>	targetThroughMaterials	= new HashMap<Material, Boolean>();
-	protected boolean							reverseTargeting = false;
-	protected final List<SpellVariant>			variants = new ArrayList<SpellVariant>();
-
-	// Begin override methods
-
+	
+	/*
+	 * Spell abstract interface- you must override these.
+	 */
 	public abstract boolean onCast(String[] parameters);
 
 	protected abstract String getName();
@@ -75,6 +47,9 @@ public abstract class Spell implements Comparable<Spell>
 	
 	public abstract Material getMaterial();
 
+	/*
+	 * Spell optional interface- you may override these.
+	 */
 	public void onLoad(PluginProperties properties)
 	{
 
@@ -85,7 +60,9 @@ public abstract class Spell implements Comparable<Spell>
 
 	}
 	
-	// Begin listener methods- you must register to receive these
+	/*
+	 *  Listener methods- you must register to receive these
+	 */
 	public void onPlayerMove(PlayerMoveEvent event)
 	{
 		
@@ -101,42 +78,17 @@ public abstract class Spell implements Comparable<Spell>
 
 	}
 	
-	// Constructor - override to add variants
+	/*
+	 * Constructor - override to add additional spell variants
+	 */
 	public Spell()
 	{
 		variants.add(new SpellVariant(this));
 	}
 
-	// End override methods
-
-	public List<SpellVariant> getVariants()
-	{
-		return variants;
-	}
-	
-	protected void addVariant(String name, Material material, String category, String description, String[] parameters)
-	{
-		variants.add(new SpellVariant(this, name, material, category, description, parameters));
-	}
-	
-	public void setPlugin(SpellsPlugin plugin)
-	{
-		this.plugin = plugin;
-	}
-	
-	public boolean cast(String[] parameters, Player player)
-	{
-		this.player = player;
-
-		targetThrough(Material.AIR);
-		targetThrough(Material.WATER);
-		targetThrough(Material.STATIONARY_WATER);
-
-		initializeTargeting(player);
-
-		return onCast(parameters);
-	}
-
+	/*
+	 * Targeting modification functions
+	 */
 	protected void targetThrough(Material mat)
 	{
 		targetThroughMaterials.put(mat, true);
@@ -157,29 +109,192 @@ public abstract class Spell implements Comparable<Spell>
 		return (checkMat == null || !checkMat);
 	}
 
-	public void cancel(SpellsPlugin plugin, Player player)
+	/*
+	 * Ground / location search and test function functions
+	 */
+	public boolean isOkToStandIn(Material mat)
 	{
-		this.player = player;
-		this.plugin = plugin;
-
-		onCancel();
+		return (mat == Material.AIR || mat == Material.WATER || mat == Material.STATIONARY_WATER);
 	}
 
-	public void initializeTargeting(Player player)
+	public boolean isOkToStandOn(Material mat)
 	{
-		playerLocation = player.getLocation();
-		length = 0;
-		xRotation = (playerLocation.getYaw() + 90) % 360;
-		yRotation = playerLocation.getPitch() * -1;
-		reverseTargeting = false;
+		return (mat != Material.AIR && mat != Material.LAVA && mat != Material.STATIONARY_LAVA);
+	}
+	
+	public Location findPlaceToStand(Location playerLoc, boolean goUp)
+	{
+		int step;
+		if (goUp)
+		{
+			step = 1;
+		}
+		else
+		{
+			step = -1;
+		}
 
-		targetX = (int) Math.floor(playerLocation.getX());
-		targetY = (int) Math.floor(playerLocation.getY() + viewHeight);
-		targetZ = (int) Math.floor(playerLocation.getZ());
-		lastX = targetX;
-		lastY = targetY;
-		lastZ = targetZ;
-		targetingComplete = false;
+		// get player position
+		int x = (int) Math.round(playerLoc.getX() - 0.5);
+		int y = (int) Math.round(playerLoc.getY() + step + step);
+		int z = (int) Math.round(playerLoc.getZ() - 0.5);
+
+		World world = player.getWorld();
+
+		// search for a spot to stand
+		while (2 < y && y < 255)
+		{
+			Block block = world.getBlockAt(x, y, z);
+			Block blockOneUp = world.getBlockAt(x, y + 1, z);
+			Block blockTwoUp = world.getBlockAt(x, y + 2, z);
+			if 
+			(
+				isOkToStandOn(block.getType())
+			&&	isOkToStandIn(blockOneUp.getType())
+			&& 	isOkToStandIn(blockTwoUp.getType())
+			)
+			{
+				// spot found - return location
+				return new Location(world, (double) x + 0.5, (double) y + 1, (double) z + 0.5, playerLoc.getYaw(),
+						playerLoc.getPitch());
+			}
+			y += step;
+		}
+
+		// no spot found
+		return null;
+	}
+	
+	public double getDistance(Player player, Block target)
+	{
+		Location loc = player.getLocation();
+		return Math.sqrt(Math.pow(loc.getX() - target.getX(), 2) + Math.pow(loc.getY() - target.getY(), 2)
+				+ Math.pow(loc.getZ() - target.getZ(), 2));
+	}
+	
+	/*
+	 * Player location / rotation querying
+	 */
+
+	public float getPlayerRotation()
+	{
+		float playerRot = player.getLocation().getYaw();
+		while (playerRot < 0)
+			playerRot += 360;
+		while (playerRot > 360)
+			playerRot -= 360;
+		return playerRot;
+	}
+
+	public Block getPlayerBlock()
+	{
+		Block playerBlock = null;
+		Location playerLoc = player.getLocation();
+		int x = (int) Math.round(playerLoc.getX() - 0.5);
+		int y = (int) Math.round(playerLoc.getY() - 0.5);
+		int z = (int) Math.round(playerLoc.getZ() - 0.5);
+		int dy = 0;
+		while (dy > -3 && (playerBlock == null || isOkToStandIn(playerBlock.getType())))
+		{
+			playerBlock = player.getWorld().getBlockAt(x, y + dy, z);
+			dy--;
+		}
+		return playerBlock;
+	}
+
+
+	public BlockFace getPlayerFacing()
+	{
+		float playerRot = getPlayerRotation();
+
+		BlockFace direction = BlockFace.NORTH;
+		if (playerRot <= 45 || playerRot > 315)
+		{
+			direction = BlockFace.WEST;
+		}
+		else if (playerRot > 45 && playerRot <= 135)
+		{
+			direction = BlockFace.NORTH;
+		}
+		else if (playerRot > 135 && playerRot <= 225)
+		{
+			direction = BlockFace.EAST;
+		}
+		else if (playerRot > 225 && playerRot <= 315)
+		{
+			direction = BlockFace.SOUTH;
+		}
+
+		return direction;
+	}
+	
+	/*
+	 * Block navigation helpers- for moving in direction relative to a current direction
+	 */
+
+	// Should go in BlockFace?
+	// Also, there's probably some better matrix-y, math-y way to do this.
+	public BlockFace goLeft(BlockFace direction)
+	{
+		switch (direction)
+		{
+			case EAST:
+				return BlockFace.NORTH;
+			case NORTH:
+				return BlockFace.WEST;
+			case WEST:
+				return BlockFace.SOUTH;
+			case SOUTH:
+				return BlockFace.EAST;
+		}
+		return direction;
+	}
+
+	public BlockFace goRight(BlockFace direction)
+	{
+		switch (direction)
+		{
+			case EAST:
+				return BlockFace.SOUTH;
+			case SOUTH:
+				return BlockFace.WEST;
+			case WEST:
+				return BlockFace.NORTH;
+			case NORTH:
+				return BlockFace.EAST;
+		}
+		return direction;
+	}
+	
+	/*
+	 * Aiming and projectile functions
+	 */
+	
+	/*
+	 * Find a good location to spawn a projectile, such as a fireball.
+	 */
+	public Location getSpawnLocation()
+	{
+		Block spawnBlock = getPlayerBlock();
+
+		int height = 2;
+		double hLength = 2;
+		double xOffset = (hLength * Math.cos(Math.toRadians(xRotation)));
+		double zOffset = (hLength * Math.sin(Math.toRadians(xRotation)));
+
+		Vector aimVector = new Vector(xOffset + 0.5, height + 0.5, zOffset + 0.5);
+
+		Location location = new Location(player.getWorld(), spawnBlock.getX() + aimVector.getX(), spawnBlock.getY()
+				+ aimVector.getY(), spawnBlock.getZ() + aimVector.getZ(), player.getLocation().getYaw(), player
+				.getLocation().getPitch());
+
+		return location;
+	}
+
+	public Vector getAimVector()
+	{
+		return new Vector((0 - Math.sin(Math.toRadians(playerLocation.getYaw()))), (0 - Math.sin(Math
+				.toRadians(playerLocation.getPitch()))), Math.cos(Math.toRadians(playerLocation.getYaw())));
 	}
 
 	protected void findTargetBlock()
@@ -198,6 +313,10 @@ public abstract class Spell implements Comparable<Spell>
 		}
 		targetingComplete = true;
 	}
+	
+	/*
+	 * HitBlox-ported code
+	 */
 
 	/**
 	 * Returns the block at the cursor, or null if out of range
@@ -376,151 +495,14 @@ public abstract class Spell implements Comparable<Spell>
 	{
 		World world = player.getWorld();
 		return world.getBlockAt(x, y, z);
-	}
-
-	public boolean isOkToStandIn(Material mat)
-	{
-		return (mat == Material.AIR || mat == Material.WATER || mat == Material.STATIONARY_WATER);
-	}
-
-	public boolean isOkToStandOn(Material mat)
-	{
-		return (mat != Material.AIR && mat != Material.LAVA && mat != Material.STATIONARY_LAVA);
-	}
+	}	
 	
-	public Location findPlaceToStand(Location playerLoc, boolean goUp)
-	{
-		int step;
-		if (goUp)
-		{
-			step = 1;
-		}
-		else
-		{
-			step = -1;
-		}
-
-		// get player position
-		int x = (int) Math.round(playerLoc.getX() - 0.5);
-		int y = (int) Math.round(playerLoc.getY() + step + step);
-		int z = (int) Math.round(playerLoc.getZ() - 0.5);
-
-		World world = player.getWorld();
-
-		// search for a spot to stand
-		while (2 < y && y < 255)
-		{
-			Block block = world.getBlockAt(x, y, z);
-			Block blockOneUp = world.getBlockAt(x, y + 1, z);
-			Block blockTwoUp = world.getBlockAt(x, y + 2, z);
-			if 
-			(
-				isOkToStandOn(block.getType())
-			&&	isOkToStandIn(blockOneUp.getType())
-			&& 	isOkToStandIn(blockTwoUp.getType())
-			)
-			{
-				// spot found - return location
-				return new Location(world, (double) x + 0.5, (double) y + 1, (double) z + 0.5, playerLoc.getYaw(),
-						playerLoc.getPitch());
-			}
-			y += step;
-		}
-
-		// no spot found
-		return null;
-	}
-
-	public float getPlayerRotation()
-	{
-		float playerRot = player.getLocation().getYaw();
-		while (playerRot < 0)
-			playerRot += 360;
-		while (playerRot > 360)
-			playerRot -= 360;
-		return playerRot;
-	}
-
-	public Block getPlayerBlock()
-	{
-		Block playerBlock = null;
-		Location playerLoc = player.getLocation();
-		int x = (int) Math.round(playerLoc.getX() - 0.5);
-		int y = (int) Math.round(playerLoc.getY() - 0.5);
-		int z = (int) Math.round(playerLoc.getZ() - 0.5);
-		int dy = 0;
-		while (dy > -3 && (playerBlock == null || isOkToStandIn(playerBlock.getType())))
-		{
-			playerBlock = player.getWorld().getBlockAt(x, y + dy, z);
-			dy--;
-		}
-		return playerBlock;
-	}
-
 	@Override
 	public int compareTo(Spell other)
 	{
 		return getName().compareTo(other.getName());
 	}
 
-	public BlockFace getPlayerFacing()
-	{
-		float playerRot = getPlayerRotation();
-
-		BlockFace direction = BlockFace.NORTH;
-		if (playerRot <= 45 || playerRot > 315)
-		{
-			direction = BlockFace.WEST;
-		}
-		else if (playerRot > 45 && playerRot <= 135)
-		{
-			direction = BlockFace.NORTH;
-		}
-		else if (playerRot > 135 && playerRot <= 225)
-		{
-			direction = BlockFace.EAST;
-		}
-		else if (playerRot > 225 && playerRot <= 315)
-		{
-			direction = BlockFace.SOUTH;
-		}
-
-		return direction;
-	}
-
-	// Should go in BlockFace?
-	// Also, there's probably some better matrix-y, math-y way to do this.
-	public BlockFace goLeft(BlockFace direction)
-	{
-		switch (direction)
-		{
-			case EAST:
-				return BlockFace.NORTH;
-			case NORTH:
-				return BlockFace.WEST;
-			case WEST:
-				return BlockFace.SOUTH;
-			case SOUTH:
-				return BlockFace.EAST;
-		}
-		return direction;
-	}
-
-	public BlockFace goRight(BlockFace direction)
-	{
-		switch (direction)
-		{
-			case EAST:
-				return BlockFace.SOUTH;
-			case SOUTH:
-				return BlockFace.WEST;
-			case WEST:
-				return BlockFace.NORTH;
-			case NORTH:
-				return BlockFace.EAST;
-		}
-		return direction;
-	}
 
 	/**
 	 * Sets the current server time
@@ -549,12 +531,6 @@ public abstract class Spell implements Comparable<Spell>
 		return plugin.getServer().getTime();
 	}
 
-	public double getDistance(Player player, Block target)
-	{
-		Location loc = player.getLocation();
-		return Math.sqrt(Math.pow(loc.getX() - target.getX(), 2) + Math.pow(loc.getY() - target.getY(), 2)
-				+ Math.pow(loc.getZ() - target.getZ(), 2));
-	}
 
 	public void castMessage(Player player, String message)
 	{
@@ -572,29 +548,10 @@ public abstract class Spell implements Comparable<Spell>
 		}
 	}
 
-	public Location getSpawnLocation()
-	{
-		Block spawnBlock = getPlayerBlock();
-
-		int height = 2;
-		double hLength = 2;
-		double xOffset = (hLength * Math.cos(Math.toRadians(xRotation)));
-		double zOffset = (hLength * Math.sin(Math.toRadians(xRotation)));
-
-		Vector aimVector = new Vector(xOffset + 0.5, height + 0.5, zOffset + 0.5);
-
-		Location location = new Location(player.getWorld(), spawnBlock.getX() + aimVector.getX(), spawnBlock.getY()
-				+ aimVector.getY(), spawnBlock.getZ() + aimVector.getZ(), player.getLocation().getYaw(), player
-				.getLocation().getPitch());
-
-		return location;
-	}
-
-	public Vector getAimVector()
-	{
-		return new Vector((0 - Math.sin(Math.toRadians(playerLocation.getYaw()))), (0 - Math.sin(Math
-				.toRadians(playerLocation.getPitch()))), Math.cos(Math.toRadians(playerLocation.getYaw())));
-	}
+	
+	/*
+	 * Helper functions
+	 */
 	
 	public boolean isUnderwater()
 	{
@@ -602,4 +559,80 @@ public abstract class Spell implements Comparable<Spell>
 		playerBlock = playerBlock.getFace(BlockFace.UP);
 		return (playerBlock.getType() == Material.WATER || playerBlock.getType() == Material.STATIONARY_WATER);
 	}
+	
+	/*
+	 * Internal functions - do not call
+	 */
+	public List<SpellVariant> getVariants()
+	{
+		return variants;
+	}
+	
+	protected void addVariant(String name, Material material, String category, String description, String[] parameters)
+	{
+		variants.add(new SpellVariant(this, name, material, category, description, parameters));
+	}
+	
+	public void setPlugin(SpellsPlugin plugin)
+	{
+		this.plugin = plugin;
+	}
+	
+	public boolean cast(String[] parameters, Player player)
+	{
+		this.player = player;
+
+		targetThrough(Material.AIR);
+		targetThrough(Material.WATER);
+		targetThrough(Material.STATIONARY_WATER);
+
+		initializeTargeting(player);
+
+		return onCast(parameters);
+	}
+
+	public void cancel(SpellsPlugin plugin, Player player)
+	{
+		this.player = player;
+		this.plugin = plugin;
+
+		onCancel();
+	}
+
+	public void initializeTargeting(Player player)
+	{
+		playerLocation = player.getLocation();
+		length = 0;
+		xRotation = (playerLocation.getYaw() + 90) % 360;
+		yRotation = playerLocation.getPitch() * -1;
+		reverseTargeting = false;
+
+		targetX = (int) Math.floor(playerLocation.getX());
+		targetY = (int) Math.floor(playerLocation.getY() + viewHeight);
+		targetZ = (int) Math.floor(playerLocation.getZ());
+		lastX = targetX;
+		lastY = targetY;
+		lastZ = targetZ;
+		targetingComplete = false;
+	}
+	
+	/*
+	 * protected data that should be left alone, and may be made private in the future...
+	 */
+
+	protected int								range					= 200;
+	protected double							viewHeight				= 1.65;
+	protected double							step					= 0.2;
+
+	protected boolean							targetingComplete;
+	protected Location							playerLocation;
+	protected double							xRotation, yRotation;
+	protected double							length, hLength;
+	protected double							xOffset, yOffset, zOffset;
+	protected int								lastX, lastY, lastZ;
+	protected int								targetX, targetY, targetZ;
+	protected final HashMap<Material, Boolean>	targetThroughMaterials	= new HashMap<Material, Boolean>();
+	protected boolean							reverseTargeting = false;
+	protected final List<SpellVariant>			variants = new ArrayList<SpellVariant>();
+
 }

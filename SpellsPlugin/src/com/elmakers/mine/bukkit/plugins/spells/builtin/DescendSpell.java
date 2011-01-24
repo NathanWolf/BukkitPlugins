@@ -1,25 +1,27 @@
-package com.elmakers.mine.bukkit.plugins.spells;
+package com.elmakers.mine.bukkit.plugins.spells.builtin;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
 
-public class AscendSpell extends Spell 
-{
+import com.elmakers.mine.bukkit.plugins.spells.Spell;
 
+public class DescendSpell extends Spell 
+{
+	
 	@Override
 	public boolean onCast(String[] parameters) 
 	{
-		Location location = findPlaceToStand(player.getLocation(), true);
+		Location location = findPlaceToStand(player.getLocation(), false);
 		if (location != null) 
 		{
-			castMessage(player, "Going up!");
+			castMessage(player, "Going down!");
 			player.teleportTo(location);
 			return true;
 		} 
 		else 
 		{		
 			// no spot found to ascend
-			castMessage(player, "Nowhere to go up");
+			castMessage(player, "Nowhere to go down");
 			return false;
 		}
 	}
@@ -27,13 +29,13 @@ public class AscendSpell extends Spell
 	@Override
 	public String getName() 
 	{
-		return "ascend";
+		return "descend";
 	}
 
 	@Override
 	public String getDescription() 
 	{
-		return "Go up to the nearest safe spot";
+		return "Go down to the nearest safe spot";
 	}
 
 	@Override
@@ -45,6 +47,8 @@ public class AscendSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.RED_MUSHROOM;
+		return Material.BROWN_MUSHROOM;
 	}
+	
+	
 }

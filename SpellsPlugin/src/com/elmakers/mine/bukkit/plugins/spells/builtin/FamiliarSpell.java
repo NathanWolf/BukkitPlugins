@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.spells;
+package com.elmakers.mine.bukkit.plugins.spells.builtin;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +28,8 @@ import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.Location;
 import org.bukkit.Material;
 
+import com.elmakers.mine.bukkit.plugins.spells.Spell;
+import com.elmakers.mine.bukkit.plugins.spells.SpellEventType;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class FamiliarSpell extends Spell

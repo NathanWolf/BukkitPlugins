@@ -1,8 +1,9 @@
-package com.elmakers.mine.bukkit.plugins.spells;
+package com.elmakers.mine.bukkit.plugins.spells.builtin;
 
 import org.bukkit.Material;
 
 import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
+import com.elmakers.mine.bukkit.plugins.spells.Spell;
 
 public class UndoSpell extends Spell
 {

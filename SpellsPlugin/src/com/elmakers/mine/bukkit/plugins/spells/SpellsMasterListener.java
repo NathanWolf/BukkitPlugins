@@ -45,14 +45,22 @@ public class SpellsMasterListener
    	
     	if (commandString.equalsIgnoreCase("/spells"))
     	{
-    		if (!permissions.isAdministrator() || split.length < 2 || !split[1].equalsIgnoreCase("reload"))
+    		if (split.length < 2)
     		{
-    			plugin.listSpells(player, permissions);
+    			plugin.listCategories(player, permissions);
     			return;
     		}
-    		plugin.load();
-    		event.getPlayer().sendMessage("Configuration reloaded.");
-    		return;
+    		
+    		if (split[1].equalsIgnoreCase("reload") && permissions.isAdministrator())
+    		{
+        		plugin.load();
+        		event.getPlayer().sendMessage("Configuration reloaded.");
+        		return;    			
+    		}
+    		
+    		String category = split[1];
+    		plugin.listSpellsByCategory(player, category, permissions);
+
     	}
     	
     	if (plugin.allowCommandUse())

@@ -1,8 +1,10 @@
-package com.elmakers.mine.bukkit.plugins.spells;
+package com.elmakers.mine.bukkit.plugins.spells.builtin;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+
+import com.elmakers.mine.bukkit.plugins.spells.Spell;
 
 public class ExtendSpell extends Spell 
 {
