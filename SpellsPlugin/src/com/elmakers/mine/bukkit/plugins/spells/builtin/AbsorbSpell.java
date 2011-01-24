@@ -50,7 +50,7 @@ public class AbsorbSpell extends Spell
 	@Override
 	public String getCategory() 
 	{
-		return "build";
+		return "construction";
 	}
 	
 	@Override

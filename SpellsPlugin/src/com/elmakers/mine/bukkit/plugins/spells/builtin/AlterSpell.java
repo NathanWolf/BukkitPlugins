@@ -94,7 +94,7 @@ public class AlterSpell extends Spell
 	@Override
 	public String getDescription()
 	{
-		return "Alter certain objects, such as stairs or wool";
+		return "Alter certain objects";
 	}
 	
 	@Override

@@ -28,7 +28,7 @@ public class InvincibleSpell extends Spell
 	@Override
 	public String getCategory() 
 	{
-		return "WIP";
+		return "wip";
 	}
 
 	@Override

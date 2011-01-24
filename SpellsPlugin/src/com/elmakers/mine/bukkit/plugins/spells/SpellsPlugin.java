@@ -24,13 +24,11 @@ import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.AbsorbSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.AlterSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.ArrowSpell;
-import com.elmakers.mine.bukkit.plugins.spells.builtin.AscendSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.BlastSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.BlinkSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.BridgeSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.ConstructSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.CushionSpell;
-import com.elmakers.mine.bukkit.plugins.spells.builtin.DescendSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.ExtendSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.FamiliarSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.FillSpell;
@@ -41,13 +39,15 @@ import com.elmakers.mine.bukkit.plugins.spells.builtin.HealSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.MineSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.PillarSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.StairsSpell;
-import com.elmakers.mine.bukkit.plugins.spells.builtin.TimeSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.TorchSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.TowerSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.TransmuteSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.TreeSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.TunnelSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.UndoSpell;
+import com.elmakers.mine.bukkit.plugins.spells.builtin.deprecated.AscendSpell;
+import com.elmakers.mine.bukkit.plugins.spells.builtin.deprecated.DescendSpell;
+import com.elmakers.mine.bukkit.plugins.spells.builtin.deprecated.TimeSpell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoQueue;
@@ -346,11 +346,60 @@ public class SpellsPlugin extends JavaPlugin
 
 	public void listSpellsByCategory(Player player, String category, PlayerPermissions playerPermissions)
 	{
+		List<SpellVariant> spells = new ArrayList<SpellVariant>();
+		
+		for (SpellVariant spell : spellVariants.values())
+		{
+			if (spell.getCategory().equalsIgnoreCase(category) && playerPermissions.hasPermission(spell.getName()))
+			{
+				spells.add(spell);
+			}
+		}
+		
+		if (spells.size() == 0)
+		{
+			player.sendMessage("You don't know any spells");
+			return;
+		}
+		
+		Collections.sort(spells);
+		for (SpellVariant spell : spells)
+		{
+			player.sendMessage(spell.getName() + " [" + spell.getMaterial().name().toLowerCase() + "] : " + spell.getDescription());
+		}
 	}
 	
 	public void listCategories(Player player, PlayerPermissions playerPermissions)
 	{
-	
+		HashMap<String, Integer> spellCounts = new HashMap<String, Integer>();
+		List<String> spellGroups = new ArrayList<String>();
+		
+		for (SpellVariant spell : spellVariants.values())
+		{
+			if (!playerPermissions.hasPermission(spell.getName())) continue;
+			
+			Integer spellCount = spellCounts.get(spell.getCategory());
+			if (spellCount == null || spellCount == 0)
+			{
+				spellCounts.put(spell.getCategory(), 1);
+				spellGroups.add(spell.getCategory());
+			}
+			else
+			{
+				spellCounts.put(spell.getCategory(), spellCount + 1);
+			}
+		}
+		if (spellGroups.size() == 0)
+		{
+			player.sendMessage("You don't know any spells");
+			return;
+		}
+		
+		Collections.sort(spellGroups);
+		for (String group : spellGroups)
+		{
+			player.sendMessage(group + " [" + spellCounts.get(group) + "]");
+		}
 	}
 	
 	public void listSpells(Player player, PlayerPermissions playerPermissions)
@@ -379,7 +428,10 @@ public class SpellsPlugin extends JavaPlugin
 			Collections.sort(group.spells);
 			for (SpellVariant spell : group.spells)
 			{
-				player.sendMessage(" " + spell.getName() + " [" + spell.getMaterial().name().toLowerCase() + "] : " + spell.getDescription());
+				if (playerPermissions.hasPermission(spell.getName()))
+				{
+					player.sendMessage(" " + spell.getName() + " [" + spell.getMaterial().name().toLowerCase() + "] : " + spell.getDescription());
+				}
 			}
 		}
 	}

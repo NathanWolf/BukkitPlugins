@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.spells.builtin;
+package com.elmakers.mine.bukkit.plugins.spells.builtin.deprecated;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -41,7 +41,7 @@ public class AscendSpell extends Spell
 	@Override
 	public String getCategory() 
 	{
-		return "movement";
+		return "deprecated";
 	}
 
 	@Override

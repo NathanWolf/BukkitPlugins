@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.spells.builtin;
+package com.elmakers.mine.bukkit.plugins.spells.builtin.deprecated;
 
 import org.bukkit.Material;
 
@@ -49,7 +49,7 @@ public class TimeSpell extends Spell {
 	@Override
 	public String getCategory() 
 	{
-		return "help";
+		return "deprecated";
 	}
 
 	@Override
