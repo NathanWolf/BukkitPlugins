@@ -75,11 +75,10 @@ public class WandPlugin extends JavaPlugin
 		    } 
 		    else 
 		    {
-		    	log.warning("The Wand plugin depends on the Spells plugin (for now) - please install it!");
+		    	log.warning("The Wand plugin depends on Spells v0.50 or higher - please install it!");
 		    	this.getServer().getPluginManager().disablePlugin(this);
 		    }
 		}
-		
 	}
 	
 	public void loadProperties()

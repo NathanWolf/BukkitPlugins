@@ -11,6 +11,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import org.bukkit.craftbukkit.entity.CraftPlayer;
+import org.bukkit.craftbukkit.inventory.CraftInventory;
 
 import com.elmakers.mine.bukkit.plugins.spells.SpellVariant;
 import com.elmakers.mine.bukkit.plugins.spells.SpellsPlugin;
@@ -47,14 +48,25 @@ public class WandPlayerListener extends PlayerListener
 				Inventory inventory = player.getInventory();
 				ItemStack[] contents = inventory.getContents();
 				
-				if (contents[0].getType() != Material.AIR)
+				SpellVariant spell = null;
+				for (int i = 0; i < 9; i++)
 				{
-					SpellVariant spell = plugin.getSpells().getSpell(contents[0].getType(), player.getName());
+					if (contents[i].getType() == Material.AIR || contents[i].getTypeId() == plugin.getWandTypeId())
+					{
+						continue;
+					}
+					spell = plugin.getSpells().getSpell(contents[i].getType(), player.getName());
 					if (spell != null)
 					{
-						plugin.getSpells().castSpell(spell, player);
+						break;
 					}
 				}
+				
+				if (spell != null)
+				{
+					plugin.getSpells().castSpell(spell, player);
+				}
+				
 			}
 		}
     }
@@ -85,31 +97,48 @@ public class WandPlayerListener extends PlayerListener
 			for (int i = 0; i < 9; i++) { active[i] = contents[i]; }
 			
 			int maxSpellSlot = 0;
+			int firstSpellSlot = -1;
 			for (int i = 0; i < 9; i++)
 			{
-				if (active[i].getType() == Material.AIR) break;
-				if (active[i].getTypeId() != plugin.getWandTypeId()) 
+				boolean isWand = active[i].getTypeId() == plugin.getWandTypeId();
+				boolean isSpell = false;
+				if (active[i].getType() != Material.AIR)
 				{
 					SpellVariant spell = spells.getSpell(active[i].getType(), player.getName());
-					if (spell == null) break;
-					maxSpellSlot++;
+					isSpell = spell != null;
 				}
+				
+				if (isSpell)
+				{
+					if (firstSpellSlot < 0) firstSpellSlot = i;
+					maxSpellSlot = i;
+				}
+				else
+				{
+					if (!isWand && firstSpellSlot >= 0)
+					{
+						break;
+					}
+				}
+				
 			}
 			
-			if (maxSpellSlot < 2)
+			int numSpellSlots = firstSpellSlot < 0 ? 0 : maxSpellSlot - firstSpellSlot + 1;
+			
+			if (numSpellSlots < 2)
 			{
 				return;
 			}
 			
-			maxSpellSlot++;
-			
-			for (int i = 0; i < maxSpellSlot; i++)
+			for (int ddi = 0; ddi < numSpellSlots; ddi++)
 			{
+				int i = ddi + firstSpellSlot;
 				if (contents[i].getTypeId() != plugin.getWandTypeId())
 				{
-					for (int di = 1; di < maxSpellSlot - 1; di++)
+					for (int di = 1; di < numSpellSlots; di++)
 					{
-						int ni = (i + di) % maxSpellSlot;
+						int dni = (ddi + di) % numSpellSlots;
+						int ni = dni + firstSpellSlot;
 						if (active[ni].getTypeId() != plugin.getWandTypeId())
 						{
 							contents[i] = active[ni];
@@ -184,6 +213,16 @@ public class WandPlayerListener extends PlayerListener
     	
     	if (split.length <= 1 || !permissions.canModify())
     	{
+    		if (permissions.canModify())
+    		{
+    			Inventory inventory = player.getInventory();
+    			CraftInventory cInventory = (CraftInventory)inventory;
+    			if (!cInventory.contains(plugin.getWandTypeId()))
+    			{
+    				ItemStack itemStack = new ItemStack(Material.getMaterial(plugin.getWandTypeId()), 1);
+    				player.getWorld().dropItem(player.getLocation(), itemStack);
+    			}
+    		}
     		showHelp(player);
     		return;
     	}
