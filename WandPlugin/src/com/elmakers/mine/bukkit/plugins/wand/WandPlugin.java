@@ -65,13 +65,13 @@ public class WandPlugin extends JavaPlugin
 	
 	public void bindSpellsPlugin() 
 	{
-		Plugin test = this.getServer().getPluginManager().getPlugin("Spells");
+		Plugin checkForSpells = this.getServer().getPluginManager().getPlugin("Spells");
 
-		if(spells == null) 
+		if (spells == null) 
 		{
-		    if(test != null) 
+		    if(checkForSpells != null) 
 		    {
-		    	this.spells = (SpellsPlugin)test;
+		    	this.spells = (SpellsPlugin)checkForSpells;
 		    } 
 		    else 
 		    {
@@ -79,6 +79,7 @@ public class WandPlugin extends JavaPlugin
 		    	this.getServer().getPluginManager().disablePlugin(this);
 		    }
 		}
+		
 	}
 	
 	public void loadProperties()
@@ -147,14 +148,14 @@ public class WandPlugin extends JavaPlugin
 			{
 				continue;
 			}
-			users.add(userName);
+			users.add(userName.toLowerCase());
 		}
 		return users;
 	}
 	
 	public WandPermissions getPermissions(String playerName)
 	{
-		WandPermissions player = permissions.get(playerName);
+		WandPermissions player = permissions.get(playerName.toLowerCase());
 		
 		if (player == null)
 		{

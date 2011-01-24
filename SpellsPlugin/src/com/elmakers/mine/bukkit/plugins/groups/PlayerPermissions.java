@@ -22,6 +22,8 @@ public class PlayerPermissions
 		playerName = pieces[0];
 		if (playerName.length() < 1) return false;
 		
+		playerName = playerName.toLowerCase();
+		
 		String[] groupString = pieces[1].split(",");
 		
 		for (int i = 0; i < groupString.length; i++)

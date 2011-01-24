@@ -53,6 +53,35 @@ public class SpellsPlugin extends JavaPlugin
 		return spell.cast(player);
 	}
 	
+	public void addSpell(Spell spell)
+	{
+		List<SpellVariant> variants = spell.getVariants();
+		for (SpellVariant variant : variants)
+		{
+			SpellVariant conflict = spellVariants.get(variant.getName());
+			if (conflict != null)
+			{
+				log.log(Level.WARNING, "Duplicate spell name: '" + conflict.getName() + "'");
+			}
+			else
+			{
+				spellVariants.put(variant.getName(), variant);
+			}
+			conflict = spellsByMaterial.get(variant.getMaterial());
+			if (conflict != null)
+			{
+				log.log(Level.WARNING, "Duplicate spell material: '" + conflict.getMaterial().name() + "'");
+			}
+			else
+			{
+				spellsByMaterial.put(variant.getMaterial(), variant);
+			}
+		}
+		
+		spells.add(spell);
+		spell.setPlugin(this);
+	}
+	
 	// End Public API
 	
 	private final String propertiesFile = "spells.properties";
@@ -161,35 +190,6 @@ public class SpellsPlugin extends JavaPlugin
 			playerSpells.put(player.getName(), spells);
 		}
 		return spells;
-	}
-	
-	private void addSpell(Spell spell)
-	{
-		List<SpellVariant> variants = spell.getVariants();
-		for (SpellVariant variant : variants)
-		{
-			SpellVariant conflict = spellVariants.get(variant.getName());
-			if (conflict != null)
-			{
-				log.log(Level.WARNING, "Duplicate spell name: '" + conflict.getName() + "'");
-			}
-			else
-			{
-				spellVariants.put(variant.getName(), variant);
-			}
-			conflict = spellsByMaterial.get(variant.getMaterial());
-			if (conflict != null)
-			{
-				log.log(Level.WARNING, "Duplicate spell material: '" + conflict.getMaterial().name() + "'");
-			}
-			else
-			{
-				spellsByMaterial.put(variant.getMaterial(), variant);
-			}
-		}
-		
-		spells.add(spell);
-		spell.setPlugin(this);
 	}
 	
 	@Override
