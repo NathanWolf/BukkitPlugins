@@ -1,7 +1,7 @@
 CHANGELOG:
 
 0.58
- - Fix the "allow-command-use" flag, which was backwards!
+- Fix the "allow-command-use" flag, which was backwards!
 
 0.57
 - Added a transformation list to "mine", so it can convert diamond ore to diamonds and coal ore to coal.
@@ -20,24 +20,24 @@ CHANGELOG:
 - Each spell variant is associated with a unique material
 
 0.41
- - Update "blink", add awesomeness
+- Update "blink", add awesomeness
 
 0.40
- - Fix "familiar"
- - Add "transmute"
+- Fix "familiar"
+- Add "transmute"
 
 0.38
- - Lots of bug fixes
- - Added "construct"
+- Lots of bug fixes
+- Added "construct"
 
 0.36
- - Added "familiar"
+- Added "familiar"
 
 0.33
- - Added "gills" spell, made lots of spells work well underwater
+- Added "gills" spell, made lots of spells work well underwater
 
 0.32
- - Made "alter" recurse
+- Made "alter" recurse
 
 0.31
 - Added "frost"
@@ -52,10 +52,10 @@ CHANGELOG:
 - Added "quiet" and "silent" plugin options
 
 0.28
- - Added "blast"
+- Added "blast"
 
 0.27
- - Added "rewind" and undo system
+- Added "rewind" and undo system
 
 0.26
 - Adopted player animation hook, requires Bukkit update.
@@ -70,10 +70,10 @@ CHANGELOG:
 - Permissions system implemented
 
 0.17
- - Added "fill" and "time"
+- Added "fill" and "time"
 
 0.16
- - Got "fireball" working
- - Added "absorb"
- - Renamed "extend" to "bridge"
- - Shelving "tower"
+- Got "fireball" working
+- Added "absorb"
+- Renamed "extend" to "bridge"
+- Shelving "tower"
