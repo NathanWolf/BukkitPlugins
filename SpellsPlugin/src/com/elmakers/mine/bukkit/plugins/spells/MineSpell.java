@@ -37,16 +37,16 @@ public class MineSpell extends Spell
 		}
 		
 		BlockList minedBlocks = new BlockList();
-		Material fillMaterial = target.getType();
-		mine(target, fillMaterial, minedBlocks);
+		Material mineMaterial = target.getType();
+		mine(target, mineMaterial, minedBlocks);
 		
 		World world = player.getWorld();
 		Location itemDrop = new Location(world, target.getX(), target.getY(), target.getZ(), 0, 0);
-		player.getWorld().dropItemNaturally(itemDrop, new ItemStack(fillMaterial, minedBlocks.getCount()));
+		player.getWorld().dropItemNaturally(itemDrop, new ItemStack(mineMaterial, minedBlocks.getCount()));
 		
 		// This isn't undoable, since we can't pick the items back up!
 		// So, don't add it to the undo queue.
-		castMessage(player, "Mined " + minedBlocks.getCount() + " blocks of " + target.getType().name().toLowerCase());
+		castMessage(player, "Mined " + minedBlocks.getCount() + " blocks of " + mineMaterial.name().toLowerCase());
 		
 		return true;
 	}
