@@ -91,19 +91,21 @@ public class WandPlugin extends JavaPlugin
 		String wandUsers = properties.getString("wand-users", "");
 		String wandMods = properties.getString("wand-mods", "");
 		String wandAdmins = properties.getString("wand-admins", "");
+		String wandDenyUsers = properties.getString("wand-deny-users", "");
 		
-		parsePermissions(wandUsers, wandMods, wandAdmins);
+		parsePermissions(wandUsers, wandMods, wandAdmins, wandDenyUsers);
 		
 		properties.save();
 	}
 	
-	protected void parsePermissions(String wandUserString, String wandModString, String wandAdminString)
+	protected void parsePermissions(String wandUserString, String wandModString, String wandAdminString, String wandNoUseString)
 	{
 		permissions.clear();
 		
 		List<String> wandUsers = parseUserList(wandUserString);
 		List<String> wandMods = parseUserList(wandModString);
 		List<String> wandAdmins = parseUserList(wandAdminString);
+		List<String> wandNoUse = parseUserList(wandNoUseString);
 		
 		allCanUse = true;
 		allCanAdminister = true;
@@ -128,6 +130,14 @@ public class WandPlugin extends JavaPlugin
 			allCanAdminister = false;
 			WandPermissions player = getPermissions(admin);
 			player.setCanAdminister(true);
+		}
+		
+		for (String noUse : wandNoUse)
+		{
+			WandPermissions player = getPermissions(noUse);
+			player.setCanAdminister(false);
+			player.setCanUse(false);
+			player.setCanModify(false);
 		}
 	}
 	
