@@ -11,6 +11,8 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -83,6 +85,28 @@ public abstract class Spell implements Comparable<Spell>
 	public Spell()
 	{
 		variants.add(new SpellVariant(this));
+	}
+	
+	/*
+	 * General helper functions
+	 */
+	protected ItemStack getBuildingMaterial()
+	{
+		ItemStack result = null;
+		List<Material> buildingMaterials = plugin.getBuildingMaterials();
+		Inventory inventory = player.getInventory();
+		ItemStack[] contents = inventory.getContents();
+		for (int i = 0; i < 9; i++)
+		{
+			if (contents[i] == null) break;
+			Material candidate = contents[i].getType();
+			if (candidate == Material.AIR || buildingMaterials.contains(candidate))
+			{
+				result = contents[i];
+				break;
+			}
+		}
+		return result;
 	}
 
 	/*

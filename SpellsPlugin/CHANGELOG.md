@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.63
+
+- Added "selected material" system, which is more elegant than the "material selection" system :)
+- Transmute now fills with the selected material in one click.
+- Add "fillwith" variant to fill with the selected material.
+
 ## 0.62
 
 - Added "disintigrate" spell.

@@ -4,6 +4,8 @@ import java.util.HashMap;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
@@ -15,12 +17,34 @@ public class FillSpell extends Spell
 	private int maxVolume = 512;
 	private final HashMap<String, Block> playerTargets = new HashMap<String, Block>();
 	
+	public FillSpell()
+	{
+		addVariant("fillwith", Material.GOLD_HOE, getCategory(), "Fill with your selected material", "with");
+	}
+	
 	@Override
 	public boolean onCast(String[] parameters) 
 	{
 		Block targetBlock = getTargetBlock();
 		Material material = plugin.finishMaterialUse(player);
+		boolean overrideMaterial = false;
 		byte data = plugin.getMaterialData(player);
+	
+		if (parameters.length > 0 && parameters[0].equalsIgnoreCase("with"))
+		{
+			ItemStack buildWith = getBuildingMaterial();
+			if (buildWith != null)
+			{
+				overrideMaterial = true;
+				material = buildWith.getType();
+				MaterialData targetData = buildWith.getData();
+				if (targetData != null)
+				{
+					data = targetData.getData();
+				}
+			}
+		}
+		
 		if (targetBlock == null) 
 		{
 			castMessage(player, "No target");
@@ -87,7 +111,11 @@ public class FillSpell extends Spell
 			target = targetBlock;
 			setTarget(target);
 			plugin.startMaterialUse(player, target.getType(), target.getData());
-			player.sendMessage("Cast again to fill with " + target.getType().name().toLowerCase());
+			if (!overrideMaterial)
+			{
+				material = target.getType();
+			}
+			player.sendMessage("Cast again to fill with " + material.name().toLowerCase());
 			return true;
 		}
 	}
@@ -141,6 +169,6 @@ public class FillSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.GOLD_HOE;
+		return Material.WOOD_HOE;
 	}
 }
