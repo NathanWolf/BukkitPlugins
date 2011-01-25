@@ -13,7 +13,7 @@ public class PillarSpell extends Spell
 	
 	public PillarSpell()
 	{
-		addVariant("stalactite", Material.WOOD_PICKAXE, "construction", "Create a downward pillar", "down");
+		addVariant("stalactite", Material.STONE_AXE, "construction", "Create a downward pillar", "down");
 	}
 	
 	@Override
@@ -80,6 +80,6 @@ public class PillarSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.WOOD_SPADE;
+		return Material.WOOD_AXE;
 	}
 }

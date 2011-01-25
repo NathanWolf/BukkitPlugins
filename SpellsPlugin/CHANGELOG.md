@@ -1,6 +1,14 @@
 # CHANGELOG
 
+## 0.65
+ 
+ - More work on the undo system, make the cave-in-proof thing optional.
+ - Add paint and shell spells.
+ - Fix variants with multiple parameters.
+ - Re-arrange spell materials, again- now that I can use right-clickable items again.
+
 ## 0.64
+
  - Improved the undo system to automatically add sticky blocks to the undo list, as well
   as auto-fill in sand and gravel that would fall with dirt.
 
@@ -12,7 +20,7 @@
 
 ## 0.62
 
-- Added "disintigrate" spell.
+- Added "disintegrate" spell.
 
 ## 0.61
 

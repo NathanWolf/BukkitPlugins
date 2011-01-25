@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
@@ -20,10 +22,16 @@ public class ConstructSpell extends Spell
 	private int				maxRadius				= 32;
 	private int				defaultSearchDistance	= 32;
 	
+	public ConstructSpell()
+	{
+		addVariant("shell", Material.BOWL, getCategory(), "Create a large shell using your selected material", "8 shell with");
+	}
+	
 	enum ConstructionType
 	{
 		SPHERE,
-		CUBOID;
+		CUBOID,
+		SHELL;
 		
 		public static ConstructionType parseString(String s, ConstructionType defaultType)
 		{
@@ -79,13 +87,48 @@ public class ConstructSpell extends Spell
 			}
 		}
 		
-		// For now, there is only sphere!
-		constructSphere(target, radius);
+		Material material = target.getType();
+		byte data = target.getData();
+		
+		for (int i = 2; i < parameters.length; i++)
+		{
+			if (parameters[i].equalsIgnoreCase("with"))
+			{
+				ItemStack buildWith = getBuildingMaterial();
+				if (buildWith != null)
+				{
+					material = buildWith.getType();
+					MaterialData targetData = buildWith.getData();
+					if (targetData != null)
+					{
+						data = targetData.getData();
+					}
+				}
+			}
+		}
+		
+		switch (conType)
+		{
+			case SPHERE: constructSphere(target, radius, material, data); break;
+			case SHELL: constructShell(target, radius, material, data); break;
+			default : return false;
+		}
+		
 		
 		return true;
 	}
 	
-	public void constructSphere(Block target, int radius)
+	public void constructSphere(Block target, int radius, Material material, byte data)
+	{
+		fillSphere(target, radius, material, data, true);
+	}
+	
+	public void constructShell(Block target, int radius, Material material, byte data)
+	{
+		fillSphere(target, radius, material, data, false);
+	}
+	
+	public void fillSphere(Block target, int radius, Material material, byte data, boolean fill)
 	{
 		BlockList constructedBlocks = new BlockList();
 		int diameter = radius * 2;
@@ -100,16 +143,21 @@ public class ConstructSpell extends Spell
 			{
 				for (int z = 0; z < radius; ++z)
 				{
-					if (checkPosition(x - midX, y - midY, z - midZ, radius) <= 0)
+					int position = checkSpherePosition(x - midX, y - midY, z - midZ, radius);
+					if 
+					(
+						(fill && position <= 0)
+					||	(!fill && position == 1)
+					)
 					{
-						constructBlock(x, y, z, target, radius, constructedBlocks);
-						constructBlock(diameterOffset - x, y, z, target, radius, constructedBlocks);
-						constructBlock(x, diameterOffset - y, z, target, radius, constructedBlocks);
-						constructBlock(x, y, diameterOffset - z, target, radius, constructedBlocks);
-						constructBlock(diameterOffset - x, diameterOffset - y, z, target, radius, constructedBlocks);
-						constructBlock(x, diameterOffset - y, diameterOffset - z, target, radius, constructedBlocks);
-						constructBlock(diameterOffset - x, y, diameterOffset - z, target, radius, constructedBlocks);
-						constructBlock(diameterOffset - x, diameterOffset - y, diameterOffset - z, target, radius, constructedBlocks);
+						constructBlock(x, y, z, target, radius, material, data, constructedBlocks);
+						constructBlock(diameterOffset - x, y, z, target, radius, material, data, constructedBlocks);
+						constructBlock(x, diameterOffset - y, z, target, radius, material, data, constructedBlocks);
+						constructBlock(x, y, diameterOffset - z, target, radius, material, data, constructedBlocks);
+						constructBlock(diameterOffset - x, diameterOffset - y, z, target, radius, material, data, constructedBlocks);
+						constructBlock(x, diameterOffset - y, diameterOffset - z, target, radius, material, data, constructedBlocks);
+						constructBlock(diameterOffset - x, y, diameterOffset - z, target, radius, material, data, constructedBlocks);
+						constructBlock(diameterOffset - x, diameterOffset - y, diameterOffset - z, target, radius, material, data, constructedBlocks);
 					}
 				}
 			}
@@ -119,12 +167,12 @@ public class ConstructSpell extends Spell
 		castMessage(player, "Constructed " + constructedBlocks.getCount() + "blocks");
 	}
 	
-	public int checkPosition(int x, int y, int z, int R)
+	public int checkSpherePosition(int x, int y, int z, int R)
 	{
 		return (x * x) + (y * y) + (z * z) - (R * R);
 	}
 
-	public void constructBlock(int dx, int dy, int dz, Block centerPoint, int radius, BlockList constructedBlocks)
+	public void constructBlock(int dx, int dy, int dz, Block centerPoint, int radius, Material material, byte data, BlockList constructedBlocks)
 	{
 		int x = centerPoint.getX() + dx - radius;
 		int y = centerPoint.getY() + dy - radius;
@@ -135,7 +183,8 @@ public class ConstructSpell extends Spell
 			return;
 		}
 		constructedBlocks.addBlock(block);
-		block.setType(centerPoint.getType());
+		block.setType(material);
+		block.setData(data);
 	}
 
 	public boolean isDestructible(Block block)
@@ -177,7 +226,7 @@ public class ConstructSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.GOLD_AXE;
+		return Material.CLAY_BALL;
 	}
 
 }

@@ -652,8 +652,7 @@ public abstract class Spell implements Comparable<Spell>
 	
 	protected void addVariant(String name, Material material, String category, String description, String parameter)
 	{
-		String[] parameters = new String[1];
-		parameters[0] = parameter;
+		String[] parameters = parameter.split(" ");
 		variants.add(new SpellVariant(this, name, material, category, description, parameters));
 	}
 	

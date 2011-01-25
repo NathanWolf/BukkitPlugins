@@ -82,6 +82,6 @@ public class ExtendSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.WOOD_AXE;
+		return Material.WOOD_SWORD;
 	}
 }

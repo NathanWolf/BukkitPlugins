@@ -168,7 +168,7 @@ public class FrostSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.SNOW_BLOCK;
+		return Material.SNOW_BALL;
 	}
 
 }

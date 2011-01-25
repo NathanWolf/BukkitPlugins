@@ -206,7 +206,25 @@ public class SpellsPlugin extends JavaPlugin
 					if (isAffectedByGravity(topMaterial))
 					{
 						expandedBlocks.addBlock(topBlock);
-						topBlock.setType(gravityFillMaterial);
+						if (autoPreventCaveIn)
+						{
+							topBlock.setType(gravityFillMaterial);
+						}
+						else
+						{
+							for (int dy = 0; dy < undoCaveInHeight; dy++)
+							{
+								topBlock = topBlock.getFace(BlockFace.UP);
+								if (isAffectedByGravity(topBlock.getType()))
+								{
+									expandedBlocks.addBlock(topBlock);
+								}
+								else
+								{
+									break;
+								}
+							}
+						}
 					}
 					else
 					if (isStickyAndTall(topMaterial))
@@ -533,6 +551,8 @@ public class SpellsPlugin extends JavaPlugin
 		buildingMaterials = properties.getMaterials("spells-general-building", DEFAULT_BUILDING_MATERIALS);
 		stickyMaterials = PluginProperties.parseMaterials(STICKY_MATERIALS);
 		stickyMaterialsDoubleHeight = PluginProperties.parseMaterials(STICKY_MATERIALS_DOUBLE_HEIGHT);
+		autoPreventCaveIn = properties.getBoolean("spells-general-prevent-cavein", autoPreventCaveIn);
+		undoCaveInHeight = properties.getInteger("spells-general-undo-cavein-height", undoCaveInHeight);
 		
 		permissions.load(permissionsFile);
 		
@@ -626,6 +646,8 @@ public class SpellsPlugin extends JavaPlugin
 	private boolean quiet = false;
 	private boolean allowCommands = true;
 	private boolean	autoExpandUndo = true;
+	private boolean autoPreventCaveIn = false;
+	private int undoCaveInHeight = 32;
 	private HashMap<String, UndoQueue> playerUndoQueues =  new HashMap<String, UndoQueue>();
 	
 	private final Logger log = Logger.getLogger("Minecraft");

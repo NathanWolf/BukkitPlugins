@@ -106,6 +106,6 @@ public class CushionSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.BOWL;
+		return Material.SOUL_SAND;
 	}
 }

@@ -20,6 +20,7 @@ public class FillSpell extends Spell
 	public FillSpell()
 	{
 		addVariant("fillwith", Material.GOLD_HOE, getCategory(), "Fill with your selected material", "with");
+		addVariant("paint", Material.PAINTING, getCategory(), "Fill a single block", "with single");
 	}
 	
 	@Override
@@ -28,20 +29,29 @@ public class FillSpell extends Spell
 		Block targetBlock = getTargetBlock();
 		Material material = plugin.finishMaterialUse(player);
 		boolean overrideMaterial = false;
+		boolean singleBlock = false;
 		byte data = plugin.getMaterialData(player);
 	
-		if (parameters.length > 0 && parameters[0].equalsIgnoreCase("with"))
+		for (int i = 0; i < parameters.length; i++)
 		{
-			ItemStack buildWith = getBuildingMaterial();
-			if (buildWith != null)
+			if (parameters[i].equalsIgnoreCase("with"))
 			{
-				overrideMaterial = true;
-				material = buildWith.getType();
-				MaterialData targetData = buildWith.getData();
-				if (targetData != null)
+				ItemStack buildWith = getBuildingMaterial();
+				if (buildWith != null)
 				{
-					data = targetData.getData();
+					overrideMaterial = true;
+					material = buildWith.getType();
+					MaterialData targetData = buildWith.getData();
+					if (targetData != null)
+					{
+						data = targetData.getData();
+					}
 				}
+			}
+			
+			if (parameters[i].equalsIgnoreCase("single"))
+			{
+				singleBlock = true;
 			}
 		}
 		
@@ -49,6 +59,19 @@ public class FillSpell extends Spell
 		{
 			castMessage(player, "No target");
 			return false;
+		}
+		
+		if (singleBlock)
+		{
+			BlockList filledBlocks = new BlockList();
+			
+			filledBlocks.addBlock(targetBlock);
+			targetBlock.setType(material);
+			targetBlock.setData(data);
+			
+			castMessage(player, "Painting with " + material.name().toLowerCase());
+			plugin.addToUndoQueue(player, filledBlocks);
+			return true;
 		}
 		
 		Block target = getTarget();
