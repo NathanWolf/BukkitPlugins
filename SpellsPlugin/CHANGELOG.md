@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.68
+
+ - Don't allow material selection for non-buildable materials (such as items!)
+
 ## 0.67
 
  - Fixed command-line use with spell variants!

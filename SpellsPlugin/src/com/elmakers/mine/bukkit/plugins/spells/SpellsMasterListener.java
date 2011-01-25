@@ -123,6 +123,10 @@ public class SpellsMasterListener
 		if (item != null)
 		{
 			material = item.getType();
+			if (!plugin.getBuildingMaterials().contains(material))
+			{
+				return;
+			}
 			MaterialData mData = item.getData();
 			if (mData != null)
 			{
