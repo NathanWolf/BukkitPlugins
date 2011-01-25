@@ -7,7 +7,7 @@ import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
-public class DisintigrateSpell extends Spell
+public class DisintegrateSpell extends Spell
 {
 	private int				defaultSearchDistance	= 32;
 
@@ -47,7 +47,7 @@ public class DisintigrateSpell extends Spell
 	@Override
 	protected String getName()
 	{
-		return "disintigrate";
+		return "disintegrate";
 	}
 
 	@Override
@@ -71,6 +71,6 @@ public class DisintigrateSpell extends Spell
 	@Override
 	public void onLoad(PluginProperties properties)
 	{
-		defaultSearchDistance = properties.getInteger("spells-disintigrate-search-distance", defaultSearchDistance);
+		defaultSearchDistance = properties.getInteger("spells-disintegrate-search-distance", defaultSearchDistance);
 	}
 }
