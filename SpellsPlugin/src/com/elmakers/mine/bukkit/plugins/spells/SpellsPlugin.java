@@ -527,7 +527,7 @@ public class SpellsPlugin extends JavaPlugin
 	private final String wandPropertiesFile = "wand.properties";
 	private int wandTypeId = 280;
 	
-	static final String		DEFAULT_BUILDING_MATERIALS	= "0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,24,25,35,41,42,43,45,46,47,48,49,56,57,60,73,74,79,80,81,82,83,85,86,87,88,89,91";
+	static final String		DEFAULT_BUILDING_MATERIALS	= "0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,24,25,35,41,42,43,45,46,47,48,49,56,57,60,65,66,73,74,79,80,81,82,83,85,86,87,88,89,91";
 
 	private List<Material>	buildingMaterials	= new ArrayList<Material>();
 	
