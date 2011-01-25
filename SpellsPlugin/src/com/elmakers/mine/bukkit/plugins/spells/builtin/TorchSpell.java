@@ -58,6 +58,12 @@ public class TorchSpell extends Spell
 		Block target = getTargetBlock();	
 		Block face = getLastBlock();
 		
+		if (target == null || face == null)
+		{
+			castMessage(player, "No target");
+			return false;
+		}
+		
 		boolean isAir = face.getType() == Material.AIR;
 		boolean isAttachmentSlippery = target.getType() == Material.GLASS || target.getType() == Material.ICE || target.getType() == Material.SNOW;
 		boolean isWater = face.getType() == Material.STATIONARY_WATER || face.getType() == Material.WATER;

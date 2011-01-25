@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.67
+
+ - Fixed command-line use with spell variants!
+
 ## 0.66
 
  - Alter now knows what data values are valid for alterable materials.

@@ -88,10 +88,15 @@ public class SpellsMasterListener
     		return;
     	}
     	
-    	String[] parameters = new String[split.length - 2];
+    	String[] variantParameters = spell.getParameters();
+    	String[] parameters = new String[split.length - 2 + variantParameters.length];
+    	for (int i = 0; i < variantParameters.length; i++)
+    	{
+    		parameters[i] = variantParameters[i];
+    	}
     	for (int i = 2; i < split.length; i++)
     	{
-    		parameters[i - 2] = split[i];
+    		parameters[i - 2 + variantParameters.length] = split[i];
     	}
     	
     	spell.getSpell().cast(parameters, event.getPlayer());
