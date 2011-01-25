@@ -8,7 +8,6 @@ import org.bukkit.block.Block;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class FillSpell extends Spell 
 {
@@ -72,10 +71,9 @@ public class FillSpell extends Spell
 					for (int iz = 0; iz < absz; iz++)
 					{
 						Block block = getBlockAt(x + ix * dx, y + iy * dy, z + iz * dz);
-						UndoableBlock undoBlock = filledBlocks.addBlock(block);
+						filledBlocks.addBlock(block);
 						block.setType(material);
 						block.setData(data);
-						undoBlock.update();
 					}
 				}
 			}

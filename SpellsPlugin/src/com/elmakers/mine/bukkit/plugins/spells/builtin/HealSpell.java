@@ -35,6 +35,6 @@ public class HealSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.APPLE;
+		return Material.BREAD;
 	}
 }

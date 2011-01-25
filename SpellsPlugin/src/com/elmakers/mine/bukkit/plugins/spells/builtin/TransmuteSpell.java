@@ -67,7 +67,6 @@ public class TransmuteSpell extends Spell
 			Block block = undoBlock.getBlock();
 			block.setType(material);
 			block.setData(data);
-			undoBlock.update();
 		}
 		
 		castMessage(player, "You transmute your last structure to " + material.name().toLowerCase());

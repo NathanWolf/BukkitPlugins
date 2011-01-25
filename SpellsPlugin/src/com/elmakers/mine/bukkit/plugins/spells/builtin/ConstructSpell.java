@@ -9,7 +9,6 @@ import org.bukkit.block.Block;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class ConstructSpell extends Spell
 {
@@ -135,9 +134,8 @@ public class ConstructSpell extends Spell
 		{
 			return;
 		}
-		UndoableBlock undoBlock = constructedBlocks.addBlock(block);
+		constructedBlocks.addBlock(block);
 		block.setType(centerPoint.getType());
-		undoBlock.update();
 	}
 
 	public boolean isDestructible(Block block)

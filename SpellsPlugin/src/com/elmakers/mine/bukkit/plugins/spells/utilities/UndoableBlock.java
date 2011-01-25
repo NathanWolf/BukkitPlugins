@@ -3,7 +3,6 @@ package com.elmakers.mine.bukkit.plugins.spells.utilities;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.CraftWorld;
 
 public class UndoableBlock
 {	
@@ -45,13 +44,7 @@ public class UndoableBlock
 		originalData = b.getData();
 		originalMaterial = b.getType();
 	}
-	
-	public void update()
-	{
-		CraftWorld craftWorld = (CraftWorld)world;
-		craftWorld.updateBlock(x, y, z);
-	}
-	
+
 	public void undo()
 	{
 		Block block = world.getBlockAt(x, y, z);
@@ -59,7 +52,6 @@ public class UndoableBlock
 		{
 			block.setType(originalMaterial);
 			block.setData(originalData);
-			update();
 		}
 	}
 }

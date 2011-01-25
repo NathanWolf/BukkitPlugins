@@ -7,7 +7,6 @@ import org.bukkit.block.BlockFace;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class FrostSpell extends Spell
 {
@@ -130,9 +129,8 @@ public class FrostSpell extends Spell
 		{
 			block = block.getFace(BlockFace.UP);
 		}
-		UndoableBlock undoBlock = frostedBlocks.addBlock(block);
+		frostedBlocks.addBlock(block);
 		block.setType(material);
-		undoBlock.update();
 	}
 
 	public int checkPosition(int x, int z, int R)
@@ -170,7 +168,7 @@ public class FrostSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.SNOW_BALL;
+		return Material.SNOW_BLOCK;
 	}
 
 }

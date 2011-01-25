@@ -184,11 +184,25 @@ public abstract class Spell implements Comparable<Spell>
 		return null;
 	}
 	
+	protected double getDistance(Location source, Location target)
+	{
+		return Math.sqrt
+		(
+			Math.pow(source.getX() - target.getX(), 2) 
+		+ 	Math.pow(source.getY() - target.getY(), 2)
+		+ 	Math.pow(source.getZ() - target.getZ(), 2)
+		);
+	}
+	
 	protected double getDistance(Player player, Block target)
 	{
 		Location loc = player.getLocation();
-		return Math.sqrt(Math.pow(loc.getX() - target.getX(), 2) + Math.pow(loc.getY() - target.getY(), 2)
-				+ Math.pow(loc.getZ() - target.getZ(), 2));
+		return Math.sqrt
+		(
+			Math.pow(loc.getX() - target.getX(), 2) 
+		+ 	Math.pow(loc.getY() - target.getY(), 2)
+		+ 	Math.pow(loc.getZ() - target.getZ(), 2)
+		);
 	}
 	
 	/*

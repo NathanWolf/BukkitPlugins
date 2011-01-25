@@ -13,7 +13,6 @@ import org.bukkit.inventory.ItemStack;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class MineSpell extends Spell
 {
@@ -65,9 +64,8 @@ public class MineSpell extends Spell
 	
 	protected void mine(Block block, Material fillMaterial, BlockList minedBlocks, int rDepth)
 	{
-		UndoableBlock minedBlock = minedBlocks.addBlock(block);
+		minedBlocks.addBlock(block);
 		block.setType(Material.AIR);
-		minedBlock.update();
 		
 		if (rDepth < maxRecursion)
 		{

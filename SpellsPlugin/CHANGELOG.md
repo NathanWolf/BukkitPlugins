@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.60
+
+- Added "recall" spell
+- Removed the "upload" command from UndoableBlock, and all its uses. It seems it was unnecessary!
+
 ## 0.59
 
 - Remove time, ascend and descend- make them variants of torch and blink instead.

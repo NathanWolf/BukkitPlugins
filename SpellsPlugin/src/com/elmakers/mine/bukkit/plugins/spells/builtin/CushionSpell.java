@@ -8,7 +8,6 @@ import org.bukkit.craftbukkit.CraftWorld;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class CushionSpell extends Spell
 {
@@ -58,9 +57,8 @@ public class CushionSpell extends Spell
 						}
 						else
 						{
-							UndoableBlock undoBlock = cushionBlocks.addBlock(block);
+							cushionBlocks.addBlock(block);
 							block.setType(Material.STATIONARY_WATER);
-							undoBlock.update();
 						}
 					}
 				}

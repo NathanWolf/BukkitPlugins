@@ -10,7 +10,6 @@ import org.bukkit.block.BlockFace;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class StairsSpell extends Spell
 {
@@ -93,30 +92,27 @@ public class StairsSpell extends Spell
 						&&		checkBlock.getType() != Material.AIR
 						);
 						boolean useStairs = (h == 0);
-						UndoableBlock undoBlock = null;
 						if (useStairs)
 						{
-							undoBlock = stairBlocks.addBlock(targetBlock);
+							stairBlocks.addBlock(targetBlock);
 							targetBlock.setType(stairsMaterial);
 						}
 						else
 						if (useTorch)
 						{
-							undoBlock = tunneledBlocks.addBlock(targetBlock);
+							tunneledBlocks.addBlock(targetBlock);
 							targetBlock.setType(Material.TORCH);
 						}
 						else
 						{
-							undoBlock = tunneledBlocks.addBlock(targetBlock);
+							tunneledBlocks.addBlock(targetBlock);
 							targetBlock.setType(Material.AIR);
 						}
-						undoBlock.update();
 						Block standingBlock = targetBlock.getFace(BlockFace.DOWN);
 						if (standingBlock.getType() == Material.AIR)
 						{
-							UndoableBlock standBlock = stairBlocks.addBlock(standingBlock);
+							stairBlocks.addBlock(standingBlock);
 							standingBlock.setType(fillMaterial);
-							standBlock.update();
 						}
 					}
 					targetBlock = targetBlock.getFace(BlockFace.UP);

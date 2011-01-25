@@ -282,7 +282,7 @@ public class FamiliarSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.EGG;
+		return Material.APPLE;
 	}
 	
 }

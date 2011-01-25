@@ -5,7 +5,6 @@ import org.bukkit.block.Block;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class TowerSpell extends Spell {
 
@@ -62,9 +61,8 @@ public class TowerSpell extends Spell {
 					{
 						blocksCreated++;
 						Block block = getBlockAt(x, y, z);
-						UndoableBlock undoBlock = towerBlocks.addBlock(block);
+						towerBlocks.addBlock(block);
 						block.setTypeId(material);
-						undoBlock.update();
 					}					
 				}
 			}

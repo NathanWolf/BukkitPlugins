@@ -10,7 +10,6 @@ import org.bukkit.block.BlockFace;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class AlterSpell extends Spell
 {
@@ -53,9 +52,8 @@ public class AlterSpell extends Spell
 	
 	protected void adjust(Block block, byte dataValue, BlockList adjustedBlocks, boolean recursive, int rDepth)
 	{
-		UndoableBlock undoBlock = adjustedBlocks.addBlock(block);
+		adjustedBlocks.addBlock(block);
 		block.setData(dataValue);
-		undoBlock.update();
 		
 		if (recursive && rDepth < recurseDistance)
 		{

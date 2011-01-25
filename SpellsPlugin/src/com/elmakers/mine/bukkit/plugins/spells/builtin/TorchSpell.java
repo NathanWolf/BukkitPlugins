@@ -6,7 +6,6 @@ import org.bukkit.Material;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class TorchSpell extends Spell 
 {
@@ -76,7 +75,7 @@ public class TorchSpell extends Spell
 		
 		castMessage(player, "Flame on!");
 		BlockList torchBlock = new BlockList();
-		UndoableBlock undoBlock = torchBlock.addBlock(face);
+		torchBlock.addBlock(face);
 		
 		if (isWater || isAttachmentSlippery)
 		{
@@ -87,7 +86,6 @@ public class TorchSpell extends Spell
 			face.setType(Material.TORCH);
 		}
 		
-		undoBlock.update();
 		plugin.addToUndoQueue(player, torchBlock);
 		
 		return true;

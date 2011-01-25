@@ -95,6 +95,11 @@ public class PluginProperties extends Properties
         return value;
 	}
 	
+	public Material getMaterial(String key, Material material)
+	{
+		return Material.getMaterial(getInteger(key, material.getId()));
+	}
+	
 	public List<Material> getMaterials(String key, String csvList)
 	{
 		if (containsKey(key)) 

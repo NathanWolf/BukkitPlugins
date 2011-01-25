@@ -10,7 +10,6 @@ import org.bukkit.block.BlockFace;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class TunnelSpell extends Spell
 {
@@ -79,7 +78,7 @@ public class TunnelSpell extends Spell
 						&& 		(h == 1)
 						&& 		(d % torchFrequency == 0)
 						);
-						UndoableBlock tunnelBlock = tunneledBlocks.addBlock(targetBlock);
+						tunneledBlocks.addBlock(targetBlock);
 						if (useTorch)
 						{
 							// First check to see if the torch will stick to the wall
@@ -106,7 +105,6 @@ public class TunnelSpell extends Spell
 						{
 							targetBlock.setType(Material.AIR);
 						}
-						tunnelBlock.update();
 					}
 					targetBlock = targetBlock.getFace(BlockFace.UP);
 				}

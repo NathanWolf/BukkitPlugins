@@ -6,7 +6,6 @@ import org.bukkit.block.BlockFace;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class PillarSpell extends Spell 
 {
@@ -50,9 +49,8 @@ public class PillarSpell extends Spell
 		
 		BlockList pillarBlocks = new BlockList();
 		Block pillar = getBlockAt(targetBlock.getX(), targetBlock.getY(), targetBlock.getZ());
-		UndoableBlock undoPillar = pillarBlocks.addBlock(pillar);
+		pillarBlocks.addBlock(pillar);
 		pillar.setType(attachBlock.getType());
-		undoPillar.update();
 		
 		castMessage(player, "Creating a pillar of " + attachBlock.getType().name().toLowerCase());
 		plugin.addToUndoQueue(player, pillarBlocks);

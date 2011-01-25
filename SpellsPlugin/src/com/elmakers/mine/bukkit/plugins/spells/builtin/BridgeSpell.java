@@ -6,7 +6,6 @@ import org.bukkit.block.BlockFace;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class BridgeSpell extends Spell 
 {
@@ -39,9 +38,8 @@ public class BridgeSpell extends Spell
 			return false;
 		}
 		BlockList bridgeBlocks = new BlockList();
-		UndoableBlock bridgeBlock = bridgeBlocks.addBlock(targetBlock);
+		bridgeBlocks.addBlock(targetBlock);
 		targetBlock.setType(attachBlock.getType());
-		bridgeBlock.update();
 		
 		castMessage(player, "A bridge extends!");
 		plugin.addToUndoQueue(player, bridgeBlocks);
