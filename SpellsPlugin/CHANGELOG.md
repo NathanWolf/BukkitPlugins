@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.62
+
+- Added "disintigrate" spell.
+
 ## 0.61
 
 - Added "map" spell, re-renders a dynmap tile.

@@ -141,6 +141,6 @@ public class FillSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.GOLD_SWORD;
+		return Material.GOLD_HOE;
 	}
 }

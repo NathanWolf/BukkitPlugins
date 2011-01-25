@@ -162,7 +162,7 @@ public class RecallSpell extends Spell
 	@Override
 	public String getCategory()
 	{
-		return "movement";
+		return "exploration";
 	}
 
 	@Override

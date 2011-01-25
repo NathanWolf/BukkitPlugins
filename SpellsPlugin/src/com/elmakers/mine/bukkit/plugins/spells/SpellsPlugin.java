@@ -580,6 +580,7 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new ConstructSpell());
 		addSpell(new TransmuteSpell());
 		addSpell(new RecallSpell());
+		addSpell(new DisintigrateSpell());
 		
 		// dynmap spells
 		if (isDynmapBound())
