@@ -23,7 +23,7 @@ public class BlastSpell extends Spell
 
 	public BlastSpell()
 	{
-		addVariant("superblast", Material.TNT, "mining", "Mine out a very large area", "16");
+		addVariant("superblast", Material.TNT, getCategory(), "Mine out a very large area", "16");
 	}
 	
 	@Override

@@ -45,9 +45,6 @@ import com.elmakers.mine.bukkit.plugins.spells.builtin.TransmuteSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.TreeSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.TunnelSpell;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.UndoSpell;
-import com.elmakers.mine.bukkit.plugins.spells.builtin.deprecated.AscendSpell;
-import com.elmakers.mine.bukkit.plugins.spells.builtin.deprecated.DescendSpell;
-import com.elmakers.mine.bukkit.plugins.spells.builtin.deprecated.TimeSpell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoQueue;
@@ -557,8 +554,6 @@ public class SpellsPlugin extends JavaPlugin
 	
 		addSpell(new HealSpell());
 		addSpell(new BlinkSpell());
-		addSpell(new AscendSpell());
-		addSpell(new DescendSpell());
 		addSpell(new TorchSpell());
 		addSpell(new ExtendSpell());
 		addSpell(new FireballSpell());
@@ -567,7 +562,6 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new BridgeSpell());
 		addSpell(new AbsorbSpell());
 		addSpell(new FillSpell());
-		addSpell(new TimeSpell());
 		addSpell(new CushionSpell());
 		addSpell(new TunnelSpell());
 		addSpell(new UndoSpell());

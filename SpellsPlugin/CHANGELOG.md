@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.59
+
+- Remove time, ascend and descend- make them variants of torch and blink instead.
+- Add "night" spell, another torch variant.
+- Make blink smart about putting you up on ledges.
+
 ## 0.58
 
 - Fix the "allow-command-use" flag, which was backwards!

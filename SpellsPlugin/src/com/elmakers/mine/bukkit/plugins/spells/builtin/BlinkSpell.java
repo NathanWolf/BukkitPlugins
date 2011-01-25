@@ -6,15 +6,23 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 
+import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class BlinkSpell extends Spell
 {
 	private int maxRange = 0;
-	private boolean allowAscend = true;
-	private boolean allowDescend = true;
-	private boolean allowPassthrough = true;
+	private boolean autoAscend = true;
+	private boolean autoDescend = true;
+	private boolean autoPassthrough = true;
+	private int verticalSearchDistance = 255;
+	
+	public BlinkSpell()
+	{
+		addVariant("ascend", Material.RED_MUSHROOM, getCategory(), "Go up to the nearest safe spot", "ascend");
+		addVariant("descend", Material.BROWN_MUSHROOM, getCategory(), "Go down to the nearest safe spot", "descend");
+	}
 	
 	public String getName()
 	{
@@ -26,32 +34,81 @@ public class BlinkSpell extends Spell
 		return "Teleport to your target";
 	}
 	
+	protected boolean ascend()
+	{
+		Location location = findPlaceToStand(player.getLocation(), true);
+		if (location != null) 
+		{
+			castMessage(player, "You ascend");
+			player.teleportTo(location);
+			return true;
+		}
+		return false;
+	}
+	
+	protected boolean descend()
+	{
+		Location location = findPlaceToStand(player.getLocation(), false);
+		if (location != null) 
+		{
+			castMessage(player, "You descend");
+			player.teleportTo(location);
+			return true;
+		}
+		return false;
+	}
+	
 	@Override
 	public boolean onCast(String[] parameters)
 	{
-		if (getYRotation() < -80 && allowDescend)
+		PlayerPermissions permissions = plugin.getPermissions(player.getName());
+		
+		if (parameters.length > 0)
 		{
-			Location location = findPlaceToStand(player.getLocation(), false);
-			if (location != null) 
+			if (parameters[0].equalsIgnoreCase("ascend"))
 			{
-				castMessage(player, "Blink down!");
-				player.teleportTo(location);
+				if (!ascend())
+				{
+					castMessage(player, "Nowhere to go up");
+					return false;
+				}
+				return true;
+			}
+			
+			if (parameters[0].equalsIgnoreCase("descend"))
+			{
+				if (!descend())
+				{
+					castMessage(player, "Nowhere to go down");
+					return false;
+				}
+				return true;
+			}
+			
+			return false;
+		}
+		
+		// No parameters
+		
+		// Auto ascend + descend
+		
+		if (getYRotation() < -80 && permissions.hasPermission("descend") && autoDescend)
+		{
+			if (descend())
+			{
 				return true;
 			}
 		}
 		
-		if (getYRotation() > 80 && allowAscend)
+		if (getYRotation() > 80 && permissions.hasPermission("ascend") && autoAscend)
 		{
-			Location location = findPlaceToStand(player.getLocation(), true);
-			if (location != null) 
+			if (ascend())
 			{
-				castMessage(player, "Blink up!");
-				player.teleportTo(location);
 				return true;
 			}
 		}
 		
-		if (allowPassthrough)
+		if (autoPassthrough)
 		{
 			Block firstBlock = getNextBlock();
 			if (firstBlock.getType() != Material.AIR)
@@ -84,15 +141,53 @@ public class BlinkSpell extends Spell
 		
 		// Don't drop the player too far, and make sure there is somewhere to stand
     	Block destination = face;
+    	int distanceUp = 0;
+    	int distanceDown = 0;
     	if (isReverseTargeting())
     	{
     		destination = target;
     	}
     	Block groundBlock = destination.getFace(BlockFace.DOWN);
-    	while (!isOkToStandOn(groundBlock.getType()))
+    	while (distanceDown < verticalSearchDistance && !isOkToStandOn(groundBlock.getType()))
     	{
     		destination = groundBlock;
     		groundBlock = destination.getFace(BlockFace.DOWN);
+    		distanceDown++;
+    	}
+    	
+    	Block ledge = null;
+    	// Also check for a ledge above the target
+    	if (!isReverseTargeting())
+    	{
+    		ledge = target;
+    		Block inFront = face;
+    		Block oneUp = null;
+    		Block twoUp = null;
+    		
+        	do
+        	{
+        		oneUp = ledge.getFace(BlockFace.UP);
+        		twoUp = oneUp.getFace(BlockFace.UP);
+        		inFront = inFront.getFace(BlockFace.UP);
+        		ledge = ledge.getFace(BlockFace.UP);
+        		distanceUp++;
+        	}
+        	while
+        	(
+        			distanceUp < verticalSearchDistance
+        	&&		isOkToStandIn(inFront.getType())
+        	&&	(
+        				!isOkToStandOn(groundBlock.getType())
+        		||		!isOkToStandIn(oneUp.getType())
+        		||		!isOkToStandIn(twoUp.getType())
+        		)
+        	);
+        	
+    	}
+    	
+    	if (ledge != null && distanceUp < distanceDown)
+    	{
+    		destination = ledge;
     	}
     	
 		Block oneUp = destination.getFace(BlockFace.UP);
@@ -128,9 +223,9 @@ public class BlinkSpell extends Spell
 	public void onLoad(PluginProperties properties)
 	{
 		maxRange = properties.getInteger("spells-blink-range", maxRange);
-		allowAscend = properties.getBoolean("spells-blink-allow-ascend", allowAscend);
-		allowDescend = properties.getBoolean("spells-blink-allow-ascend", allowDescend);
-		allowPassthrough = properties.getBoolean("spells-blink-allow-ascend", allowPassthrough);
+		autoAscend = properties.getBoolean("spells-blink-auto-ascend", autoAscend);
+		autoDescend = properties.getBoolean("spells-blink-aauto-decend", autoDescend);
+		autoPassthrough = properties.getBoolean("spells-blink-auto-passthrough", autoPassthrough);
 	}
 
 	@Override

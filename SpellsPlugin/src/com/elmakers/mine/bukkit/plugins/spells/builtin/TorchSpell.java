@@ -13,9 +13,42 @@ public class TorchSpell extends Spell
 	private boolean allowDay = true;
 	private boolean allowLightstone = true;
 
+	public TorchSpell()
+	{
+		addVariant("day", Material.FLINT, "help", "Change time time to day", "day");
+		addVariant("night", Material.COAL, "help", "Change time time to night", "night");
+	}
+	
 	@Override
 	public boolean onCast(String[] parameters) 
 	{
+		if (parameters.length > 0)
+		{
+			long targetTime = 0;
+			String timeDescription = "day";
+			String param = parameters[0];
+			if (param.equalsIgnoreCase("night"))
+			{
+				targetTime = 13000;
+				timeDescription = "night";
+			}
+			else
+			{
+				try 
+				{
+					targetTime = Long.parseLong(param);
+					timeDescription = "raw: " + targetTime;
+				} 
+				catch (NumberFormatException ex) 
+				{
+					targetTime = 0;
+				}
+			}
+			setRelativeTime(targetTime);	
+			castMessage(player, "Changed time to " + timeDescription);
+			return true;
+		}
+		
 		if (getYRotation() > 80 && allowDay)
 		{
 			castMessage(player, "FLAME ON!");
