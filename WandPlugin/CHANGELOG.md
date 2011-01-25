@@ -1,5 +1,8 @@
 # CHANGELOG
 
+## 0.55
+ - Only show the wand help message if the player wasn't give a wand with /wand.
+
 ## 0.54
  - Cleanup: remove unused classes, orphaned in the new Wand system.
  - Only show right-click help messages for items in your spell inventory, and only when you also have a wand in your inventory.

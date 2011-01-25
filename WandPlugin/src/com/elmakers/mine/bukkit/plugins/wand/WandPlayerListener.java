@@ -258,6 +258,7 @@ public class WandPlayerListener extends PlayerListener
     	
     	if (split.length <= 1 || !permissions.canModify())
     	{
+    		boolean gaveWand = false;
     		if (permissions.canModify())
     		{
     			Inventory inventory = player.getInventory();
@@ -266,9 +267,13 @@ public class WandPlayerListener extends PlayerListener
     			{
     				ItemStack itemStack = new ItemStack(Material.getMaterial(plugin.getWandTypeId()), 1);
     				player.getWorld().dropItem(player.getLocation(), itemStack);
+    				gaveWand = true;
     			}
     		}
-    		showHelp(player);
+    		if (!gaveWand)
+    		{
+    			showHelp(player);
+    		}
     		return;
     	}
     	
