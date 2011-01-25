@@ -13,12 +13,17 @@ import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class AlterSpell extends Spell
 {
-	static final String DEFAULT_ADJUSTABLES = "6,8,9,10,11,17,18,35,50,52,53,54,55,58,59,60,61,62,63,64,65,66,67,69,71,75,76,77,81,83,85,86";
+	static final String DEFAULT_ADJUSTABLES = "6, 8, 9, 10,11,17,18,23,35,50,52,53,54,55,58,59,60,61,62,63,64,65,66,67,68,69,71,75,76,77,81,83,85,86";
+	static final String DEFAULT_ADJUST_MAX =  "15,15,15,15,15,2 ,15,2 ,15,5 ,15,3 ,5 ,15,5 ,15,8 ,5 ,5 ,15,15,3 ,9 ,3 ,2 ,14,15,5 ,5 ,15,15,15,5 ,0 ";
+	static final String DEFAULT_ADJUST_MIN =  "0 ,0 ,0 ,0 ,0 ,0 ,0 ,5 ,0 ,0 ,0 ,0 ,2 ,0 ,2 ,0 ,0 ,2 ,2 ,0 ,0 ,0 ,0 ,0 ,5 ,6 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,3 ";
 	static final String DEFAULT_RECURSABLES = "17,18,59";
 	
 	private List<Material> adjustableMaterials = new ArrayList<Material>();
-	private int recurseDistance = 32;
+	private List<Integer> maxData = new ArrayList<Integer>();
+	private List<Integer> minData = new ArrayList<Integer>();
 	private List<Material> recursableMaterials = new ArrayList<Material>();
+	
+	private int recurseDistance = 32;	
 	
 	@Override
 	public boolean onCast(String[] parameters)
@@ -36,9 +41,15 @@ public class AlterSpell extends Spell
 		}
 		
 		BlockList undoList = new BlockList();
-		byte originalData = targetBlock.getData();
-		byte data = originalData;
-		data = (byte)((data + 1) % 16);
+		int originalData = targetBlock.getData();
+		
+		int materialIndex = adjustableMaterials.indexOf(targetBlock.getType());
+		int minValue = minData.get(materialIndex);
+		int maxValue = maxData.get(materialIndex);
+		int dataSize = maxValue - minValue + 1;
+
+		byte data = (byte)((((originalData - minValue) + 1) % dataSize) + minValue);
+
 		boolean recursive = recursableMaterials.contains(targetBlock.getType());
 		
 		adjust(targetBlock, data, undoList, recursive, 0);
@@ -99,8 +110,17 @@ public class AlterSpell extends Spell
 	public void onLoad(PluginProperties properties)
 	{
 		recurseDistance = properties.getInteger("spells-alter-recursion-depth", recurseDistance);
-		adjustableMaterials = properties.getMaterials("spells-alter-adjustable", DEFAULT_ADJUSTABLES);
 		recursableMaterials = properties.getMaterials("spells-alter-recursable", DEFAULT_RECURSABLES);
+
+		//adjustableMaterials = properties.getMaterials("spells-alter-adjustable", DEFAULT_ADJUSTABLES);
+		adjustableMaterials = PluginProperties.parseMaterials(DEFAULT_ADJUSTABLES);
+		maxData = PluginProperties.parseIntegers(DEFAULT_ADJUST_MAX);
+		minData = PluginProperties.parseIntegers(DEFAULT_ADJUST_MIN);
+		
+		if (adjustableMaterials.size() != maxData.size() || maxData.size() != minData.size())
+		{
+			plugin.getLog().warning("Spells:Alter: Mis-match in adjustable material lists!");
+		}
 	}
 
 	@Override

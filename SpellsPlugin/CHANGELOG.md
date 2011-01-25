@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.66
+
+ - Alter now knows what data values are valid for alterable materials.
+
 ## 0.65
  
  - More work on the undo system, make the cave-in-proof thing optional.

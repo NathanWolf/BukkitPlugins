@@ -107,10 +107,37 @@ public class PluginProperties extends Properties
 		String[] matIds = csvList.split(",");
 		for (String matId : matIds)
 		{
-			int typeId = Integer.parseInt(matId);
-			materials.add(Material.getMaterial(typeId));
+			try
+			{
+				int typeId = Integer.parseInt(matId.trim());
+				materials.add(Material.getMaterial(typeId));
+			}
+			catch (NumberFormatException ex)
+			{
+				
+			}
 		}
 		return materials;
+	}
+	
+	public static List<Integer> parseIntegers(String csvList)
+	{
+		List<Integer> ints = new ArrayList<Integer>();
+		
+		String[] intStrings = csvList.split(",");
+		for (String s : intStrings)
+		{
+			try
+			{
+				int thisInt = Integer.parseInt(s.trim());
+				ints.add(thisInt);
+			}
+			catch (NumberFormatException ex)
+			{
+				
+			}
+		}
+		return ints;
 	}
 	
 	public List<Material> getMaterials(String key, String csvList)

@@ -393,6 +393,14 @@ public class SpellsPlugin extends JavaPlugin
 	}
 	
 	/*
+	 * Get the log, if you need to debug or log errors.
+	 */
+	public Logger getLog()
+	{
+		return log;
+	}
+	
+	/*
 	 * dynmap access functions
 	 */
 	
