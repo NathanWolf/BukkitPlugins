@@ -256,23 +256,32 @@ public class WandPlayerListener extends PlayerListener
     		return;
     	}
     	
-    	if (split.length <= 1 || !permissions.canModify())
+    	if (!permissions.canModify() || !permissions.canModify())
+    	{
+    		showHelp(player);
+    		return;
+    	}
+    	
+    	if (split.length <= 1)
     	{
     		boolean gaveWand = false;
-    		if (permissions.canModify())
-    		{
-    			Inventory inventory = player.getInventory();
-    			CraftInventory cInventory = (CraftInventory)inventory;
-    			if (!cInventory.contains(plugin.getWandTypeId()))
-    			{
-    				ItemStack itemStack = new ItemStack(Material.getMaterial(plugin.getWandTypeId()), 1);
-    				player.getWorld().dropItem(player.getLocation(), itemStack);
-    				gaveWand = true;
-    			}
-    		}
+  
+			Inventory inventory = player.getInventory();
+			CraftInventory cInventory = (CraftInventory)inventory;
+			if (!cInventory.contains(plugin.getWandTypeId()))
+			{
+				ItemStack itemStack = new ItemStack(Material.getMaterial(plugin.getWandTypeId()), 1);
+				player.getWorld().dropItem(player.getLocation(), itemStack);
+				gaveWand = true;
+			}
+			
     		if (!gaveWand)
     		{
     			showHelp(player);
+    		}
+    		else
+    		{
+    			player.sendMessage("Use /wand again for help, /spells for spell list");
     		}
     		return;
     	}
@@ -280,7 +289,7 @@ public class WandPlayerListener extends PlayerListener
     	SpellVariant spell = plugin.getSpells().getSpell(split[1], player.getName());
     	if (spell == null)
     	{
-    		showHelp(player);
+    		player.sendMessage("Spell '" + split[1] + "' unknown, Use /spells for spell list");
     		return;
     	}
     	
