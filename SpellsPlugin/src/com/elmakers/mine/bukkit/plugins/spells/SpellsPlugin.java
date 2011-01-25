@@ -14,6 +14,7 @@ import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
@@ -22,9 +23,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.elmakers.mine.bukkit.plugins.groups.Permissions;
 import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.*;
+import com.elmakers.mine.bukkit.plugins.spells.dynmap.MapSpell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoQueue;
+
+import org.dynmap.DynmapPlugin;
 
 public class SpellsPlugin extends JavaPlugin
 {
@@ -289,6 +293,19 @@ public class SpellsPlugin extends JavaPlugin
 	}
 	
 	/*
+	 * dynmap access functions
+	 */
+	public boolean isDynmapBound()
+	{
+		return dynmap != null;
+	}
+	
+	public DynmapPlugin getDynmapPlugin()
+	{
+		return dynmap;
+	}
+	
+	/*
 	 * Internal functions - don't call these, or really anything below here.
 	 */
 	
@@ -456,6 +473,8 @@ public class SpellsPlugin extends JavaPlugin
 	@Override
 	public void onEnable() 
 	{
+		bindDynmapPlugin();
+		addBuiltinSpells();
 		load();
 		listener.setPlugin(this);
 		playerListener.setMaster(listener);
@@ -488,6 +507,9 @@ public class SpellsPlugin extends JavaPlugin
 		movementListeners.clear();
 		materialListeners.clear();
 		quitListeners.clear();
+		spells.clear();
+		spellVariants.clear();
+		spellsByMaterial.clear();
 	}
 	
 	/*
@@ -521,6 +543,7 @@ public class SpellsPlugin extends JavaPlugin
 	private final List<Spell> movementListeners = new ArrayList<Spell>();
 	private final List<Spell> materialListeners = new ArrayList<Spell>();
 	private final List<Spell> quitListeners = new ArrayList<Spell>();
+	private DynmapPlugin dynmap = null;
 	
 	/*
 	 * Constructor - add default spells.
@@ -528,7 +551,10 @@ public class SpellsPlugin extends JavaPlugin
 	public SpellsPlugin(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File dataFolder, File plugin, ClassLoader cLoader) 
 	{
 		super(pluginLoader, instance, desc, dataFolder, plugin, cLoader);
+	}
 	
+	protected void addBuiltinSpells()
+	{
 		addSpell(new HealSpell());
 		addSpell(new BlinkSpell());
 		addSpell(new TorchSpell());
@@ -554,6 +580,26 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new ConstructSpell());
 		addSpell(new TransmuteSpell());
 		addSpell(new RecallSpell());
+		
+		// dynmap spells
+		if (isDynmapBound())
+		{
+			addSpell(new MapSpell());
+		}
 	}
+	
+	protected void bindDynmapPlugin() 
+	{
+		Plugin checkForMap = this.getServer().getPluginManager().getPlugin("dynmap");
 
+		if (dynmap == null) 
+		{
+		    if (checkForMap != null) 
+		    {
+		    	this.dynmap = (DynmapPlugin)checkForMap;
+		    	log.info("Spells: Found dynmap plugin, binding to it");
+		    }
+		}
+	}
+	
 }

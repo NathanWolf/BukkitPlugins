@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.61
+
+- Added "map" spell, re-renders a dynmap tile.
+
 ## 0.60
 
 - Added "recall" spell
