@@ -80,19 +80,20 @@ public class WandPlayerListener extends PlayerListener
     public void onPlayerItem(PlayerItemEvent event) 
 	{
 		int materialId = event.getPlayer().getInventory().getItemInHand().getTypeId();
-		if (materialId == plugin.getWandTypeId())
+		SpellsPlugin spells = plugin.getSpells();
+		Player player = event.getPlayer();
+		WandPermissions permissions = plugin.getPermissions(player.getName());
+
+		if (!permissions.canUse())
 		{
-			Player player = event.getPlayer();
-			WandPermissions permissions = plugin.getPermissions(player.getName());	
-			if (!permissions.canUse())
-			{
-				return;
-			}
-			
+			return;
+		}
+		
+		if (materialId == plugin.getWandTypeId())
+		{	
 			Inventory inventory = player.getInventory();
 			ItemStack[] contents = inventory.getContents();
 			ItemStack[] active = new ItemStack[9];
-			SpellsPlugin spells = plugin.getSpells();
 			
 			for (int i = 0; i < 9; i++) { active[i] = contents[i]; }
 			
@@ -155,9 +156,53 @@ public class WandPlayerListener extends PlayerListener
 		else
 		{
 			// Check for magic item
-			Player player = event.getPlayer();
-			SpellVariant spell = plugin.getSpells().getSpell(Material.getMaterial(materialId), player.getName());
-			if (spell != null)
+			Inventory inventory = player.getInventory();
+			ItemStack[] contents = inventory.getContents();
+			
+			boolean inInventory = false;
+			boolean foundInventory = false;
+			SpellVariant spell = null;
+			boolean hasWand = false;
+			
+			for (int i = 0; i < 9; i++)
+			{
+				if (contents[i].getTypeId() == plugin.getWandTypeId())
+				{
+					hasWand = true;
+					continue;
+				}
+				
+				if (contents[i].getType() != Material.AIR)
+				{
+					SpellVariant ispell = spells.getSpell(contents[i].getType(), player.getName());
+
+					if (!foundInventory)
+					{
+						if (!inInventory)
+						{
+							if (ispell != null)
+							{
+								inInventory = true;
+							}
+						}
+						else
+						{
+							if (ispell == null)
+							{
+								inInventory = false;
+								foundInventory = true;
+							}
+						}
+					}
+					
+					if (inInventory && i == player.getInventory().getHeldItemSlot())
+					{
+						spell = ispell;
+					}
+				}
+			}
+
+			if (hasWand && spell != null)
 			{
 				player.sendMessage(spell.getName() + " : " + spell.getDescription());
 			}

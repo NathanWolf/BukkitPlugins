@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.54
+ - Cleanup: remove unused classes, orphaned in the new Wand system.
+ - Only show right-click help messages for items in your spell inventory, and only when you also have a wand in your inventory.
+ 
 ## 0.53
  - Added "deny-users" property to allow co-op with Wandmin.
 
