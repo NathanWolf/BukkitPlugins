@@ -100,12 +100,8 @@ public class PluginProperties extends Properties
 		return Material.getMaterial(getInteger(key, material.getId()));
 	}
 	
-	public List<Material> getMaterials(String key, String csvList)
+	public static List<Material> parseMaterials(String csvList)
 	{
-		if (containsKey(key)) 
-		{
-			csvList = getProperty(key);
-		}
 		List<Material> materials = new ArrayList<Material>();
 		
 		String[] matIds = csvList.split(",");
@@ -114,9 +110,19 @@ public class PluginProperties extends Properties
 			int typeId = Integer.parseInt(matId);
 			materials.add(Material.getMaterial(typeId));
 		}
+		return materials;
+	}
+	
+	public List<Material> getMaterials(String key, String csvList)
+	{
+		if (containsKey(key)) 
+		{
+			csvList = getProperty(key);
+		}
+		
 		put(key, csvList);
 		
-		return materials;
+		return parseMaterials(csvList);
 	}
 	
 	public List<String> getStringList(String key, String csvList)

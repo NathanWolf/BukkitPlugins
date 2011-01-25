@@ -3,6 +3,7 @@ package com.elmakers.mine.bukkit.plugins.spells.utilities;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 
 public class UndoableBlock
 {	
@@ -10,24 +11,64 @@ public class UndoableBlock
 	private int x;
 	private int y;
 	private int z;
-	private final byte originalData;
-	private final Material originalMaterial;
+	private byte originalData;
+	private Material originalMaterial;
+	private Material[] originalSideMaterials = new Material[4];
+	private Material originalTopMaterial;
+	private byte[] originalSideData = new byte[4];
+	private byte originalTopData;	
+	public static final BlockFace[] SIDES = new BlockFace[] {BlockFace.WEST, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST};
 	
-	public long getHash()
+	
+	public byte getOriginalData()
 	{
-		long hash = (long)x | ((long)z << 24) | (long)y << 48;
-		return hash;
- 	}
+		return originalData;
+	}
+	
+	public Material getOriginalMaterial()
+	{
+		return originalMaterial;
+	}
+	
+	public Material getOriginalSideMaterial(int side)
+	{
+		if (side > 3 || side < 0) return Material.AIR;
+		return originalSideMaterials[side];
+	}
+	
+	public Material getOriginalTopMaterial()
+	{
+		return originalTopMaterial;
+	}
 	
 	public UndoableBlock(UndoableBlock ub)
 	{
 		world = ub.world;
-		Block b = world.getBlockAt(x, y, z);
-		x = b.getX();
-		y = b.getY();
-		z = b.getZ();
-		originalData = b.getData();
-		originalMaterial = b.getType();
+		x = ub.x;
+		y = ub.y;
+		z = ub.z;
+		originalData = ub.originalData;
+		originalMaterial = ub.originalMaterial;
+		originalTopMaterial = ub.originalTopMaterial;
+		originalTopData = ub.originalTopData;
+		for (int i = 0; i < 4; i++)
+		{
+			originalSideMaterials[i] = ub.originalSideMaterials[i];
+			originalSideData[i] = ub.originalSideData[i];
+		}
+	}
+	
+	public void setFromBottom(UndoableBlock bottom)
+	{
+		originalMaterial = bottom.originalTopMaterial;
+		originalData = bottom.originalTopData;
+	}
+	
+	public void setFromSide(UndoableBlock neighbor, int side)
+	{
+		if (side > 3 || side < 0) return;
+		originalMaterial = neighbor.originalSideMaterials[side];
+		originalData = neighbor.originalSideData[side];
 	}
 	
 	public Block getBlock()
@@ -43,6 +84,16 @@ public class UndoableBlock
 		z = b.getZ();
 		originalData = b.getData();
 		originalMaterial = b.getType();
+		
+		Block topBlock =  b.getFace(BlockFace.UP);
+		originalTopMaterial = topBlock.getType();
+		originalTopData = topBlock.getData();
+		for (int i = 0; i < 4; i++)
+		{
+			Block side = b.getFace(SIDES[i]);
+			originalSideData[i] = side.getData();
+			originalSideMaterials[i] = side.getType();
+		}
 	}
 
 	public void undo()

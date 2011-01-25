@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.64
+ - Improved the undo system to automatically add sticky blocks to the undo list, as well
+  as auto-fill in sand and gravel that would fall with dirt.
+
 ## 0.63
 
 - Added "selected material" system, which is more elegant than the "material selection" system :)

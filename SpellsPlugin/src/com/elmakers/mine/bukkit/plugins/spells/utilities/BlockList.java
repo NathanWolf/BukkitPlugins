@@ -23,7 +23,9 @@ public class BlockList
 	{
 		for (UndoableBlock block : other.blocks)
 		{
-			blocks.add(new UndoableBlock(block));
+			UndoableBlock newBlock = new UndoableBlock(block);
+			blocks.add(newBlock);
+			blockLookup.put(block.getBlock(), newBlock);
 		}
 		timeToLive = other.timeToLive;
 	}
