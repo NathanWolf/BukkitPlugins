@@ -24,7 +24,7 @@ public class ConstructSpell extends Spell
 	
 	public ConstructSpell()
 	{
-		addVariant("shell", Material.BOWL, getCategory(), "Create a large shell using your selected material", "8 shell with");
+		addVariant("shell", Material.BOWL, getCategory(), "Create a large shell using your selected material", "16 shell with");
 	}
 	
 	enum ConstructionType
