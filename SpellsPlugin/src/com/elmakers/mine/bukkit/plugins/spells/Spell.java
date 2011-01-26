@@ -92,7 +92,7 @@ public abstract class Spell implements Comparable<Spell>
 	 */
 	protected ItemStack getBuildingMaterial()
 	{
-		return getBuildingMaterial(true);
+		return getBuildingMaterial(false);
 	}
 	
 	protected ItemStack getBuildingMaterial(boolean allowAir)

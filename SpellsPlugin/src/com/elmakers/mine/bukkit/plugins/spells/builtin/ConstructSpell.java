@@ -96,7 +96,7 @@ public class ConstructSpell extends Spell
 		{
 			if (parameters[i].equalsIgnoreCase("with"))
 			{
-				ItemStack buildWith = getBuildingMaterial(false);
+				ItemStack buildWith = getBuildingMaterial();
 				if (buildWith != null)
 				{
 					material = buildWith.getType();

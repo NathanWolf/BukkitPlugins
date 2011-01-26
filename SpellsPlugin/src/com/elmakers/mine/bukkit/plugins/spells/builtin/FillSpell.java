@@ -36,17 +36,7 @@ public class FillSpell extends Spell
 		{
 			if (parameters[i].equalsIgnoreCase("with"))
 			{
-				ItemStack buildWith = getBuildingMaterial();
-				if (buildWith != null)
-				{
-					overrideMaterial = true;
-					material = buildWith.getType();
-					MaterialData targetData = buildWith.getData();
-					if (targetData != null)
-					{
-						data = targetData.getData();
-					}
-				}
+				overrideMaterial = true;
 			}
 			
 			if (parameters[i].equalsIgnoreCase("single"))
@@ -59,6 +49,24 @@ public class FillSpell extends Spell
 		{
 			castMessage(player, "No target");
 			return false;
+		}
+		
+		if (overrideMaterial)
+		{
+			ItemStack buildWith = getBuildingMaterial(!singleBlock);
+			if (buildWith != null)
+			{
+				material = buildWith.getType();
+				MaterialData targetData = buildWith.getData();
+				if (targetData != null)
+				{
+					data = targetData.getData();
+				}
+			}
+			else
+			{
+				overrideMaterial = false;
+			}
 		}
 		
 		if (singleBlock)

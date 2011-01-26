@@ -1,9 +1,12 @@
 # CHANGELOG
 
+## 0.70
+ - Disallow air selection by default- right now, only transmute and fillwith allow it. I'm not sure how intuitive this is!
+
 ## 0.69
 
  - Add revert, a targeted variant of rewind.
- - Rename construct to "blob", and add megablob and superblob.
+ - Add blob and superblob, variants of construct.
  - Add manifest, for getting a material by name.
 
 ## 0.68
