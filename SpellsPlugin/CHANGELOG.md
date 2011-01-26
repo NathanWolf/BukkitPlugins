@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.72
+
+ - Fix "player tried command /cast" messages. Now only shown for unauthorized users.
+
 ## 0.71
 
  - Change around the way default material selection works will a few spells.

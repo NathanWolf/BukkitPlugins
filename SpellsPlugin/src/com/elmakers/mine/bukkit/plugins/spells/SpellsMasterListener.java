@@ -42,9 +42,12 @@ public class SpellsMasterListener
     	{
     		return;
     	}
+    	
+    	if (event.isCancelled()) return;
    	
     	if (commandString.equalsIgnoreCase("/spells"))
     	{
+    		event.setCancelled(true);
     		if (split.length < 2)
     		{
     			plugin.listCategories(player, permissions);
@@ -72,6 +75,8 @@ public class SpellsMasterListener
     	{
     		return;
     	}
+    	
+    	event.setCancelled(true);
    	
     	if (split.length < 2)
     	{
