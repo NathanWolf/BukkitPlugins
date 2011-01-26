@@ -88,6 +88,6 @@ public class BridgeSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.GOLD_SPADE;
+		return Material.GOLD_HOE;
 	}
 }
