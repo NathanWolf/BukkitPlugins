@@ -42,6 +42,8 @@ public class SpellsPlugin extends JavaPlugin
 	public SpellVariant getSpell(Material material, String playerName)
 	{
 		PlayerPermissions permissions = getPermissions(playerName);
+		if (permissions == null) return null;
+		
 		SpellVariant spell = spellsByMaterial.get(material);
 		if (spell != null && !permissions.hasPermission(spell.getName())) return null;
 		return spell;
@@ -66,6 +68,8 @@ public class SpellsPlugin extends JavaPlugin
 	public SpellVariant getSpell(String name, String playerName)
 	{
 		PlayerPermissions permissions= getPermissions(playerName);
+		if (permissions == null) return null;
+		
 		if (!permissions.hasPermission(name)) return null;
 		return spellVariants.get(name);
 	}

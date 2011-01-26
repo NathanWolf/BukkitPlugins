@@ -5,6 +5,7 @@
  - Change around the way default material selection works will a few spells.
  - Make rewind and transmute targetable by default. Remove revert.
  - Remove wip spells. I can add them back as I test them- I'm tired of people reporting bugs on them...
+ - Fix an NPE when trying to access permissions for a player who had none!
 
 ## 0.70
 
