@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.57
+
+ - Fix "player Blah tried command /wand" messages. Now only shown for unauthorized users.
+
 ## 0.56
 
  - More cleanup/smarts added to help messages. 

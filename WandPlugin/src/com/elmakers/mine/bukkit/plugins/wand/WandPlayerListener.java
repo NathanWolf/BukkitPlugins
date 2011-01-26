@@ -243,7 +243,7 @@ public class WandPlayerListener extends PlayerListener
     	Player player = event.getPlayer();
     	WandPermissions permissions = plugin.getPermissions(player.getName());
 
-		if (!permissions.canUse())
+		if (event.isCancelled() || !permissions.canUse())
 		{
 			return;
 		}
@@ -255,6 +255,8 @@ public class WandPlayerListener extends PlayerListener
     	{
     		return;
     	}
+    	
+    	event.setCancelled(true);
     	
     	if (!permissions.canModify() || !permissions.canModify())
     	{
