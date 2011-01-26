@@ -149,7 +149,7 @@ public class GillsSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.BOAT;
+		return Material.RAW_FISH;
 	}
 
 }

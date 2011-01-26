@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.69
+
+ - Add revert, a targeted variant of rewind.
+ - Rename construct to "blob", and add megablob and superblob.
+ - Add manifest, for getting a material by name.
+
 ## 0.68
 
  - Don't allow material selection for non-buildable materials (such as items!)

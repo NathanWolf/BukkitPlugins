@@ -2,6 +2,8 @@ package com.elmakers.mine.bukkit.plugins.spells.utilities;
 
 import java.util.LinkedList;
 
+import org.bukkit.block.Block;
+
 
 public class UndoQueue
 {
@@ -24,6 +26,21 @@ public class UndoQueue
 		BlockList blocks = blockQueue.removeLast();
 		blocks.undo();
 		return true;
+	}
+	
+	public boolean undo(Block target)
+	{
+		if (blockQueue.size() == 0) return false;
+		for (BlockList blocks : blockQueue)
+		{
+			if (blocks.contains(target))
+			{
+				blockQueue.remove(blocks);
+				blocks.undo();
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public void setMaxSize(int size)

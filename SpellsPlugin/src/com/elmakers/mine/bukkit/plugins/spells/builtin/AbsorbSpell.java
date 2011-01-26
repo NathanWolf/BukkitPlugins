@@ -10,7 +10,7 @@ import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class AbsorbSpell extends Spell 
 {
-	int defaultAmount = 16;
+	private int defaultAmount = 1;
 
 	@Override
 	public boolean onCast(String[] parameters) 

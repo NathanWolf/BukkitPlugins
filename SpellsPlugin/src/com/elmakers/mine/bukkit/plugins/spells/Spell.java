@@ -92,6 +92,11 @@ public abstract class Spell implements Comparable<Spell>
 	 */
 	protected ItemStack getBuildingMaterial()
 	{
+		return getBuildingMaterial(true);
+	}
+	
+	protected ItemStack getBuildingMaterial(boolean allowAir)
+	{
 		ItemStack result = null;
 		List<Material> buildingMaterials = plugin.getBuildingMaterials();
 		Inventory inventory = player.getInventory();
@@ -100,7 +105,7 @@ public abstract class Spell implements Comparable<Spell>
 		{
 			if (contents[i] == null) break;
 			Material candidate = contents[i].getType();
-			if (candidate == Material.AIR || buildingMaterials.contains(candidate))
+			if ((allowAir && candidate == Material.AIR) || buildingMaterials.contains(candidate))
 			{
 				result = contents[i];
 				break;

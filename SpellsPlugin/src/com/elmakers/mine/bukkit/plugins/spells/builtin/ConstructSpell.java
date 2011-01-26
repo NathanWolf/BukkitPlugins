@@ -24,7 +24,9 @@ public class ConstructSpell extends Spell
 	
 	public ConstructSpell()
 	{
-		addVariant("shell", Material.BOWL, getCategory(), "Create a large shell using your selected material", "16 shell with");
+		addVariant("shell", Material.BOWL, getCategory(), "Create a large shell using your selected material", "shell 12 with");
+		addVariant("superblob", Material.CLAY, getCategory(), "Create a large sphere at your target", "sphere 11 with");
+		addVariant("blob", Material.CLAY_BRICK, getCategory(), "Create a sphere at your target", "sphere 3 with");
 	}
 	
 	enum ConstructionType
@@ -94,7 +96,7 @@ public class ConstructSpell extends Spell
 		{
 			if (parameters[i].equalsIgnoreCase("with"))
 			{
-				ItemStack buildWith = getBuildingMaterial();
+				ItemStack buildWith = getBuildingMaterial(false);
 				if (buildWith != null)
 				{
 					material = buildWith.getType();
@@ -147,7 +149,7 @@ public class ConstructSpell extends Spell
 					if 
 					(
 						(fill && position <= 0)
-					||	(!fill && position == 1)
+					||	(!fill && position <= 0 && getDistance(x - midX, y - midY, z - midZ) >= radius - 2)
 					)
 					{
 						constructBlock(x, y, z, target, radius, material, data, constructedBlocks);
@@ -165,6 +167,11 @@ public class ConstructSpell extends Spell
 
 		plugin.addToUndoQueue(player, constructedBlocks);
 		castMessage(player, "Constructed " + constructedBlocks.getCount() + "blocks");
+	}
+	
+	public int getDistance(int x, int y, int z)
+	{
+		return (int)(Math.sqrt(x * x + y * y + z * z) + 0.5);
 	}
 	
 	public int checkSpherePosition(int x, int y, int z, int R)
@@ -210,7 +217,7 @@ public class ConstructSpell extends Spell
 	@Override
 	public String getDescription()
 	{
-		return "Construct a shape your target";
+		return "Add some blocks to your target";
 	}
 	
 	@Override

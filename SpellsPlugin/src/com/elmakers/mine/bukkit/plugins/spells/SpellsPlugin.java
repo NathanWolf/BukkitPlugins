@@ -254,6 +254,12 @@ public class SpellsPlugin extends JavaPlugin
 		return queue.undo();
 	}
 	
+	public boolean undo(String playerName, Block target)
+	{
+		UndoQueue queue = getUndoQueue(playerName);
+		return queue.undo(target);
+	}
+	
 	public BlockList getLastBlockList(String playerName)
 	{
 		UndoQueue queue = getUndoQueue(playerName);
@@ -556,11 +562,13 @@ public class SpellsPlugin extends JavaPlugin
 		quiet = properties.getBoolean("spells-general-quiet", quiet);
 		autoExpandUndo = properties.getBoolean("spells-general-expand-undo", autoExpandUndo);
 		allowCommands = properties.getBoolean("spells-general-allow-commands", allowCommands);
-		buildingMaterials = properties.getMaterials("spells-general-building", DEFAULT_BUILDING_MATERIALS);
 		stickyMaterials = PluginProperties.parseMaterials(STICKY_MATERIALS);
 		stickyMaterialsDoubleHeight = PluginProperties.parseMaterials(STICKY_MATERIALS_DOUBLE_HEIGHT);
 		autoPreventCaveIn = properties.getBoolean("spells-general-prevent-cavein", autoPreventCaveIn);
 		undoCaveInHeight = properties.getInteger("spells-general-undo-cavein-height", undoCaveInHeight);
+		
+		//buildingMaterials = properties.getMaterials("spells-general-building", DEFAULT_BUILDING_MATERIALS);
+		buildingMaterials = PluginProperties.parseMaterials(DEFAULT_BUILDING_MATERIALS);
 		
 		permissions.load(permissionsFile);
 		
@@ -636,7 +644,7 @@ public class SpellsPlugin extends JavaPlugin
 	private final String wandPropertiesFile = "wand.properties";
 	private int wandTypeId = 280;
 	
-	static final String		DEFAULT_BUILDING_MATERIALS	= "0,1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,24,25,35,41,42,43,45,46,47,48,49,56,57,60,65,66,73,74,79,80,81,82,83,85,86,87,88,89,91";
+	static final String		DEFAULT_BUILDING_MATERIALS	= "1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,24,25,35,41,42,43,45,46,47,48,49,56,57,60,65,66,73,74,79,80,81,82,83,85,86,87,88,89,91";
 	static final String		STICKY_MATERIALS = "37,38,39,50,51,55,59,63,65,66,68,70,72,75,76,77,78,83";
 	static final String		STICKY_MATERIALS_DOUBLE_HEIGHT = "64,71,";
 	
@@ -708,6 +716,7 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new TransmuteSpell());
 		addSpell(new RecallSpell());
 		addSpell(new DisintegrateSpell());
+		addSpell(new ManifestSpell());
 		
 		// dynmap spells
 		if (isDynmapBound())
