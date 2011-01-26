@@ -3,6 +3,8 @@ package com.elmakers.mine.bukkit.plugins.spells.builtin;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
@@ -25,6 +27,21 @@ public class BridgeSpell extends Spell
 		BlockFace direction = getPlayerFacing();
 		Block attachBlock = playerBlock;
 		Block targetBlock = attachBlock.getFace(direction);
+		
+		Material material = targetBlock.getType();
+		byte data = targetBlock.getData();
+		
+		ItemStack buildWith = getBuildingMaterial();
+		if (buildWith != null)
+		{
+			material = buildWith.getType();
+			MaterialData targetData = buildWith.getData();
+			if (targetData != null)
+			{
+				data = targetData.getData();
+			}
+		}
+		
 		int distance = 0;
 		while (isTargetable(targetBlock.getType()) && distance <= MAX_SEARCH_DISTANCE)
 		{
@@ -39,7 +56,8 @@ public class BridgeSpell extends Spell
 		}
 		BlockList bridgeBlocks = new BlockList();
 		bridgeBlocks.addBlock(targetBlock);
-		targetBlock.setType(attachBlock.getType());
+		targetBlock.setType(material);
+		targetBlock.setData(data);
 		
 		castMessage(player, "A bridge extends!");
 		plugin.addToUndoQueue(player, bridgeBlocks);
@@ -70,6 +88,6 @@ public class BridgeSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.WOOD_SPADE;
+		return Material.GOLD_SPADE;
 	}
 }

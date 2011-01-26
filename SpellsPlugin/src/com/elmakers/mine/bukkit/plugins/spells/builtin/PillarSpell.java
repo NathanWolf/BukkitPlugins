@@ -3,6 +3,8 @@ package com.elmakers.mine.bukkit.plugins.spells.builtin;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
@@ -13,7 +15,7 @@ public class PillarSpell extends Spell
 	
 	public PillarSpell()
 	{
-		addVariant("stalactite", Material.STONE_AXE, "construction", "Create a downward pillar", "down");
+		addVariant("stalactite", Material.WOOD_AXE, "construction", "Create a downward pillar", "down");
 	}
 	
 	@Override
@@ -47,14 +49,28 @@ public class PillarSpell extends Spell
 			return false;
 		}
 		
+		Material material = attachBlock.getType();
+		byte data = attachBlock.getData();
+		
+		ItemStack buildWith = getBuildingMaterial();
+		if (buildWith != null)
+		{
+			material = buildWith.getType();
+			MaterialData targetData = buildWith.getData();
+			if (targetData != null)
+			{
+				data = targetData.getData();
+			}
+		}
+		
 		BlockList pillarBlocks = new BlockList();
 		Block pillar = getBlockAt(targetBlock.getX(), targetBlock.getY(), targetBlock.getZ());
 		pillarBlocks.addBlock(pillar);
-		pillar.setType(attachBlock.getType());
+		pillar.setType(material);
+		pillar.setData(data);
 		
 		castMessage(player, "Creating a pillar of " + attachBlock.getType().name().toLowerCase());
 		plugin.addToUndoQueue(player, pillarBlocks);
-		//castMessage(player, "Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
 		
 		return true;
 	}
@@ -80,6 +96,6 @@ public class PillarSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.WOOD_AXE;
+		return Material.GOLD_AXE;
 	}
 }

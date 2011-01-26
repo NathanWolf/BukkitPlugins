@@ -30,17 +30,17 @@ public class UndoQueue
 	
 	public boolean undo(Block target)
 	{
-		if (blockQueue.size() == 0) return false;
-		for (BlockList blocks : blockQueue)
+		BlockList lastActionOnTarget = getLast(target);
+
+		if (lastActionOnTarget == null)
 		{
-			if (blocks.contains(target))
-			{
-				blockQueue.remove(blocks);
-				blocks.undo();
-				return true;
-			}
+			return false;
 		}
-		return false;
+		
+		blockQueue.remove(lastActionOnTarget);
+		lastActionOnTarget.undo();
+		
+		return true;
 	}
 	
 	public void setMaxSize(int size)
@@ -52,5 +52,19 @@ public class UndoQueue
 	{
 		if (blockQueue.isEmpty()) return null;
 		return blockQueue.getLast();
+	}
+	
+	public BlockList getLast(Block target)
+	{
+
+		if (blockQueue.size() == 0) return null;
+		for (BlockList blocks : blockQueue)
+		{
+			if (blocks.contains(target))
+			{
+				return blocks;
+			}
+		}
+		return null;
 	}
 }

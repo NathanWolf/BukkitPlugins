@@ -24,9 +24,8 @@ public class ConstructSpell extends Spell
 	
 	public ConstructSpell()
 	{
-		addVariant("shell", Material.BOWL, getCategory(), "Create a large shell using your selected material", "shell 12 with");
-		addVariant("superblob", Material.CLAY, getCategory(), "Create a large sphere at your target", "sphere 11 with");
-		addVariant("blob", Material.CLAY_BRICK, getCategory(), "Create a sphere at your target", "sphere 3 with");
+		addVariant("shell", Material.BOWL, getCategory(), "Create a large shell using your selected material", "shell 12");
+		addVariant("superblob", Material.CLAY_BRICK, getCategory(), "Create a large sphere at your target", "sphere 11");
 	}
 	
 	enum ConstructionType
@@ -92,20 +91,14 @@ public class ConstructSpell extends Spell
 		Material material = target.getType();
 		byte data = target.getData();
 		
-		for (int i = 2; i < parameters.length; i++)
+		ItemStack buildWith = getBuildingMaterial();
+		if (buildWith != null)
 		{
-			if (parameters[i].equalsIgnoreCase("with"))
+			material = buildWith.getType();
+			MaterialData targetData = buildWith.getData();
+			if (targetData != null)
 			{
-				ItemStack buildWith = getBuildingMaterial();
-				if (buildWith != null)
-				{
-					material = buildWith.getType();
-					MaterialData targetData = buildWith.getData();
-					if (targetData != null)
-					{
-						data = targetData.getData();
-					}
-				}
+				data = targetData.getData();
 			}
 		}
 		
@@ -205,7 +198,7 @@ public class ConstructSpell extends Spell
 	@Override
 	public String getName()
 	{
-		return "construct";
+		return "blob";
 	}
 
 	@Override

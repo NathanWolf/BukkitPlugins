@@ -19,7 +19,6 @@ public class FillSpell extends Spell
 	
 	public FillSpell()
 	{
-		addVariant("fillwith", Material.GOLD_HOE, getCategory(), "Fill with your selected material", "with");
 		addVariant("paint", Material.PAINTING, getCategory(), "Fill a single block", "with single");
 	}
 	
@@ -200,6 +199,6 @@ public class FillSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.WOOD_HOE;
+		return Material.GOLD_SPADE;
 	}
 }

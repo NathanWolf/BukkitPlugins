@@ -15,8 +15,27 @@ public class TransmuteSpell extends Spell
 	@Override
 	public boolean onCast(String[] parameters)
 	{	
-		BlockList lastAction = plugin.getLastBlockList(player.getName());
-		if (lastAction == null)
+		BlockList transmuteAction = null;
+
+		/*
+		 * Use target if targeting
+		 */
+		boolean usedTarget = false;
+		targetThrough(Material.GLASS);
+		Block target = getTargetBlock();
+		
+		if (target != null)
+		{
+			transmuteAction = plugin.getLastBlockList(player.getName(), target);
+			usedTarget = transmuteAction != null;
+		}
+
+		if (transmuteAction == null)
+		{
+			transmuteAction = plugin.getLastBlockList(player.getName());
+		}
+		
+		if (transmuteAction == null)
 		{
 			sendMessage(player, "Nothing to transmute");
 			return false;
@@ -36,13 +55,22 @@ public class TransmuteSpell extends Spell
 		{
 			data = targetData.getData();
 		}
-		for (UndoableBlock undoBlock : lastAction.getBlocks())
+				
+		for (UndoableBlock undoBlock : transmuteAction.getBlocks())
 		{
 			Block block = undoBlock.getBlock();
 			block.setType(material);
 			block.setData(data);
 		}
-		castMessage(player, "You transmute your last structure to " + material.name().toLowerCase());
+		
+		if (usedTarget)
+		{
+			castMessage(player, "You transmute your target structure to " + material.name().toLowerCase());
+		}
+		else
+		{
+			castMessage(player, "You transmute your last structure to " + material.name().toLowerCase());
+		}
 		
 		return true;
 	}

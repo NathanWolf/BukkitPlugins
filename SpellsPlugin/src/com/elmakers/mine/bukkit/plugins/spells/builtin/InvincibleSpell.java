@@ -6,8 +6,6 @@ import org.bukkit.Material;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 
-
-// TODO WIP!!
 public class InvincibleSpell extends Spell 
 {
 	private final HashMap<String, Boolean> invinciblePlayers = new HashMap<String, Boolean>();

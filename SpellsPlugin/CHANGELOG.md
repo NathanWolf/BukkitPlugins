@@ -1,6 +1,13 @@
 # CHANGELOG
 
+## 0.71
+
+ - Change around the way default material selection works will a few spells.
+ - Make rewind and transmute targetable by default. Remove revert.
+ - Remove wip spells. I can add them back as I test them- I'm tired of people reporting bugs on them...
+
 ## 0.70
+
  - Disallow air selection by default- right now, only transmute and fillwith allow it. I'm not sure how intuitive this is!
 
 ## 0.69

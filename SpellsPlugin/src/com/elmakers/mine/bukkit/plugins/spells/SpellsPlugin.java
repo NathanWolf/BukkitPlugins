@@ -89,14 +89,22 @@ public class SpellsPlugin extends JavaPlugin
 			{
 				spellVariants.put(variant.getName(), variant);
 			}
-			conflict = spellsByMaterial.get(variant.getMaterial());
-			if (conflict != null)
+			Material m = variant.getMaterial();
+			if (m != null && m != Material.AIR)
 			{
-				log.log(Level.WARNING, "Duplicate spell material: '" + conflict.getMaterial().name() + "'");
-			}
-			else
-			{
-				spellsByMaterial.put(variant.getMaterial(), variant);
+				if (buildingMaterials.contains(m))
+				{
+					log.warning("Spell " + variant.getName() + " uses building material as icon: " + m.name().toLowerCase());
+				}
+				conflict = spellsByMaterial.get(m);
+				if (conflict != null)
+				{
+					log.log(Level.WARNING, "Duplicate spell material: " + m.name() + " for " + conflict.getName() + " and " + variant.getName());
+				}
+				else
+				{
+					spellsByMaterial.put(variant.getMaterial(), variant);
+				}
 			}
 		}
 		
@@ -258,6 +266,12 @@ public class SpellsPlugin extends JavaPlugin
 	{
 		UndoQueue queue = getUndoQueue(playerName);
 		return queue.undo(target);
+	}
+	
+	public BlockList getLastBlockList(String playerName, Block target)
+	{
+		UndoQueue queue = getUndoQueue(playerName);
+		return queue.getLast(target);
 	}
 	
 	public BlockList getLastBlockList(String playerName)
@@ -693,18 +707,14 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new HealSpell());
 		addSpell(new BlinkSpell());
 		addSpell(new TorchSpell());
-		addSpell(new ExtendSpell());
 		addSpell(new FireballSpell());
-		addSpell(new TowerSpell());
 		addSpell(new PillarSpell());
 		addSpell(new BridgeSpell());
 		addSpell(new AbsorbSpell());
 		addSpell(new FillSpell());
 		addSpell(new CushionSpell());
-		addSpell(new TunnelSpell());
 		addSpell(new UndoSpell());
 		addSpell(new AlterSpell());
-		addSpell(new StairsSpell());
 		addSpell(new BlastSpell());
 		addSpell(new MineSpell());
 		addSpell(new TreeSpell());
@@ -717,6 +727,12 @@ public class SpellsPlugin extends JavaPlugin
 		addSpell(new RecallSpell());
 		addSpell(new DisintegrateSpell());
 		addSpell(new ManifestSpell());
+		
+		// wip
+		// addSpell(new TowerSpell());
+		// addSpell(new ExtendSpell());
+		// addSpell(new StairsSpell());
+		// addSpell(new TunnelSpell());
 		
 		// dynmap spells
 		if (isDynmapBound())

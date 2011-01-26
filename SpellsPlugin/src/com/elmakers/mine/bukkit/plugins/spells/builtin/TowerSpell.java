@@ -87,7 +87,7 @@ public class TowerSpell extends Spell {
 	@Override
 	public String getCategory() 
 	{
-		return "construction";
+		return "wip";
 	}
 
 	@Override
