@@ -1,0 +1,3 @@
+name: Persistence
+main: com.elmakers.mine.bukkit.plugins.persistence.Persistence
+version: 0.10
