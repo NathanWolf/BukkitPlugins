@@ -236,11 +236,11 @@ public class FamiliarSpell extends Spell
 		}
 		if (anyFamiliars)
 		{
-			plugin.registerEvent(SpellEventType.PLAYER_QUIT, this);
+			spells.registerEvent(SpellEventType.PLAYER_QUIT, this);
 		}
 		else
 		{
-			plugin.unregisterEvent(SpellEventType.PLAYER_QUIT, this);
+			spells.unregisterEvent(SpellEventType.PLAYER_QUIT, this);
 		}
 	}
 	

@@ -13,7 +13,7 @@ public class MapSpell extends Spell
 	@Override
 	public boolean onCast(String[] parameters)
 	{
-		DynmapPlugin dynmap = plugin.getDynmapPlugin();
+		DynmapPlugin dynmap = spells.getDynmapPlugin();
 		if (dynmap == null) return false;
 		MapManager mgr = dynmap.getMapManager();
 		if (mgr == null) return false;

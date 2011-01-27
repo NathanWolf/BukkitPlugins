@@ -6,15 +6,16 @@ import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageByProjectileEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityListener;
 
 public class SpellsEntityListener extends EntityListener 
 {
-private SpellsMasterListener master;
+	private Spells master;
 	
-	public void setMaster(SpellsMasterListener master)
+	public void setSpells(Spells master)
 	{
 		this.master = master;
 	}
@@ -57,4 +58,13 @@ private SpellsMasterListener master;
     {
     	handleDamage(event);
     }
+
+	public void onEntityDeath(EntityDeathEvent event)
+	{
+		if (Player.class.isInstance(event.getEntity()))
+		{
+			Player player = (Player)event.getEntity();
+			master.onPlayerDeath(player, event);
+		}
+	}
 }

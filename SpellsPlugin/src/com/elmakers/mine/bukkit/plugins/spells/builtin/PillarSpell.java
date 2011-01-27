@@ -70,7 +70,7 @@ public class PillarSpell extends Spell
 		pillar.setData(data);
 		
 		castMessage(player, "Creating a pillar of " + attachBlock.getType().name().toLowerCase());
-		plugin.addToUndoQueue(player, pillarBlocks);
+		spells.addToUndoQueue(player, pillarBlocks);
 		
 		return true;
 	}

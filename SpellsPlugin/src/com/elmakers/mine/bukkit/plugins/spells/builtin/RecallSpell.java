@@ -6,9 +6,12 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDeathEvent;
 
 import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
+import com.elmakers.mine.bukkit.plugins.spells.SpellEventType;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class RecallSpell extends Spell
@@ -26,6 +29,7 @@ public class RecallSpell extends Spell
 	}
 	
 	private boolean autoDropOnDeath = true;
+	private boolean autoDropIsInvisible = false;
 	private boolean autoSpawn = true;
 	private int disableDistance = 5;
 	private HashMap<String, PlayerMarker> markers = new HashMap<String, PlayerMarker>();
@@ -46,7 +50,7 @@ public class RecallSpell extends Spell
 			return true;
 		}
 		
-		PlayerPermissions permissions = plugin.getPermissions(player.getName());
+		PlayerPermissions permissions = spells.getPermissions(player.getName());
 		PlayerMarker marker = markers.get(player.getName());
 		
 		if (getYRotation() > 80)
@@ -78,7 +82,7 @@ public class RecallSpell extends Spell
 		
 		if (marker == null || !marker.isActive)
 		{
-			return placeMarker();
+			return placeMarker(getTargetBlock());
 		}
 		
 		double distance = getDistance(player.getLocation(), marker.location);
@@ -93,7 +97,7 @@ public class RecallSpell extends Spell
 			return removed;
 		}
 		
-		return placeMarker();
+		return placeMarker(getTargetBlock());
 	}
 	
 	protected boolean removeMarker(PlayerMarker marker)
@@ -114,9 +118,8 @@ public class RecallSpell extends Spell
 		return true;
 	}
 	
-	protected boolean placeMarker()
+	protected boolean placeMarker(Block target)
 	{
-		Block target = getTargetBlock();
 		if (target == null)
 		{
 			castMessage(player, "No target");
@@ -181,8 +184,28 @@ public class RecallSpell extends Spell
 	public void onLoad(PluginProperties properties)
 	{
 		autoDropOnDeath = properties.getBoolean("spells-recall-auto-resurrect", autoDropOnDeath);
+		autoDropIsInvisible = properties.getBoolean("spells-recall-auto-resurrect-invisible", autoDropIsInvisible);
 		autoSpawn = properties.getBoolean("spells-recall-auto-spawn", autoSpawn);
 		markerMaterial = properties.getMaterial("spells-recall-marker", markerMaterial);
+
+		if (autoDropOnDeath)
+		{
+			spells.registerEvent(SpellEventType.PLAYER_DEATH, this);
+		}
+	}
+
+	@Override
+	public void onPlayerDeath(Player player, EntityDeathEvent event)
+	{
+		PlayerPermissions permissions = spells.getPermissions(player.getName());
+		if (autoDropOnDeath && permissions != null && permissions.hasPermission("recall"))
+		{
+			PlayerMarker marker = markers.get(player.getName());
+			if (marker == null || !marker.isActive)
+			{
+				placeMarker(getPlayerBlock());
+			}
+		}
 	}
 
 }

@@ -61,7 +61,7 @@ public class BlinkSpell extends Spell
 	@Override
 	public boolean onCast(String[] parameters)
 	{
-		PlayerPermissions permissions = plugin.getPermissions(player.getName());
+		PlayerPermissions permissions = spells.getPermissions(player.getName());
 		
 		if (parameters.length > 0)
 		{

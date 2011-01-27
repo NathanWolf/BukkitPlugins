@@ -79,11 +79,11 @@ public class GillsSpell extends Spell
 	{
 		if (gillPlayers.size() == 0)
 		{
-			plugin.unregisterEvent(SpellEventType.PLAYER_MOVE, this);
+			spells.unregisterEvent(SpellEventType.PLAYER_MOVE, this);
 		}
 		else
 		{
-			plugin.registerEvent(SpellEventType.PLAYER_MOVE, this);
+			spells.registerEvent(SpellEventType.PLAYER_MOVE, this);
 		}
 	}
 	

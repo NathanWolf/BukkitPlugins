@@ -26,10 +26,10 @@ public class FillSpell extends Spell
 	public boolean onCast(String[] parameters) 
 	{
 		Block targetBlock = getTargetBlock();
-		Material material = plugin.finishMaterialUse(player);
+		Material material = spells.finishMaterialUse(player);
 		boolean overrideMaterial = false;
 		boolean singleBlock = false;
-		byte data = plugin.getMaterialData(player);
+		byte data = spells.getMaterialData(player);
 	
 		for (int i = 0; i < parameters.length; i++)
 		{
@@ -77,7 +77,7 @@ public class FillSpell extends Spell
 			targetBlock.setData(data);
 			
 			castMessage(player, "Painting with " + material.name().toLowerCase());
-			plugin.addToUndoQueue(player, filledBlocks);
+			spells.addToUndoQueue(player, filledBlocks);
 			return true;
 		}
 		
@@ -131,7 +131,7 @@ public class FillSpell extends Spell
 					}
 				}
 			}
-			plugin.addToUndoQueue(player, filledBlocks);
+			spells.addToUndoQueue(player, filledBlocks);
 			
 			setTarget(null);
 			return true;
@@ -140,7 +140,7 @@ public class FillSpell extends Spell
 		{
 			target = targetBlock;
 			setTarget(target);
-			plugin.startMaterialUse(player, target.getType(), target.getData());
+			spells.startMaterialUse(player, target.getType(), target.getData());
 			if (!overrideMaterial)
 			{
 				material = target.getType();

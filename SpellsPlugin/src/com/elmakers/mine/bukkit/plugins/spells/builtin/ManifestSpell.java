@@ -18,7 +18,7 @@ public class ManifestSpell extends Spell
 	public boolean onCast(String[] parameters)
 	{
 		Material material = Material.AIR;
-		List<Material> buildingMaterials = plugin.getBuildingMaterials();
+		List<Material> buildingMaterials = spells.getBuildingMaterials();
 		
 		if (parameters.length > 0)
 		{

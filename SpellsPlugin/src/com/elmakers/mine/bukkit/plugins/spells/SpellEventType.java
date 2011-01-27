@@ -4,5 +4,6 @@ public enum SpellEventType
 {
 	PLAYER_MOVE,
 	PLAYER_QUIT,
-	MATERIAL_CHANGE
+	PLAYER_DEATH,
+	MATERIAL_CHANGE,
 }

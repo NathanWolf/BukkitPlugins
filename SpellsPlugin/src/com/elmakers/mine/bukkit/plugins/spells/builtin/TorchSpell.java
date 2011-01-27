@@ -92,7 +92,7 @@ public class TorchSpell extends Spell
 			face.setType(Material.TORCH);
 		}
 		
-		plugin.addToUndoQueue(player, torchBlock);
+		spells.addToUndoQueue(player, torchBlock);
 		
 		return true;
 	}

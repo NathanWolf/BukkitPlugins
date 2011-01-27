@@ -9,6 +9,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.Inventory;
@@ -32,8 +33,8 @@ public abstract class Spell implements Comparable<Spell>
 	/*
 	 * protected members that are helpful to use
 	 */
-	protected Player							player;
-	protected SpellsPlugin						plugin;
+	protected Player						player;
+	protected Spells						spells;
 	
 	/*
 	 * Spell abstract interface- you must override these.
@@ -79,6 +80,11 @@ public abstract class Spell implements Comparable<Spell>
 
 	}
 	
+	public void onPlayerDeath(Player player, EntityDeathEvent event)
+	{
+
+	}
+	
 	/*
 	 * Constructor - override to add additional spell variants
 	 */
@@ -98,7 +104,7 @@ public abstract class Spell implements Comparable<Spell>
 	protected ItemStack getBuildingMaterial(boolean allowAir)
 	{
 		ItemStack result = null;
-		List<Material> buildingMaterials = plugin.getBuildingMaterials();
+		List<Material> buildingMaterials = spells.getBuildingMaterials();
 		Inventory inventory = player.getInventory();
 		ItemStack[] contents = inventory.getContents();
 		for (int i = 0; i < 9; i++)
@@ -586,7 +592,7 @@ public abstract class Spell implements Comparable<Spell>
 	
 	public void castMessage(Player player, String message)
 	{
-		if (!plugin.isQuiet() && !plugin.isSilent())
+		if (!spells.isQuiet() && !spells.isSilent())
 		{
 			player.sendMessage(message);
 		}
@@ -594,7 +600,7 @@ public abstract class Spell implements Comparable<Spell>
 
 	public void sendMessage(Player player, String message)
 	{
-		if (!plugin.isSilent())
+		if (!spells.isSilent())
 		{
 			player.sendMessage(message);
 		}
@@ -618,7 +624,7 @@ public abstract class Spell implements Comparable<Spell>
 		{
 			margin += 24000;
 		}
-		plugin.getServer().setTime(getTime() + margin);
+		spells.getPlugin().getServer().setTime(getTime() + margin);
 	}
 
 	/**
@@ -628,7 +634,7 @@ public abstract class Spell implements Comparable<Spell>
 	 */
 	public long getTime()
 	{
-		return plugin.getServer().getTime();
+		return spells.getPlugin().getServer().getTime();
 	}
 	
 	/*
@@ -661,9 +667,9 @@ public abstract class Spell implements Comparable<Spell>
 		variants.add(new SpellVariant(this, name, material, category, description, parameters));
 	}
 	
-	public void setPlugin(SpellsPlugin plugin)
+	public void setPlugin(Spells plugin)
 	{
-		this.plugin = plugin;
+		this.spells = plugin;
 	}
 	
 	public boolean cast(String[] parameters, Player player)
@@ -679,10 +685,10 @@ public abstract class Spell implements Comparable<Spell>
 		return onCast(parameters);
 	}
 
-	public void cancel(SpellsPlugin plugin, Player player)
+	public void cancel(Spells plugin, Player player)
 	{
 		this.player = player;
-		this.plugin = plugin;
+		this.spells = plugin;
 
 		onCancel();
 	}

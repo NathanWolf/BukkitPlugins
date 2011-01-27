@@ -67,7 +67,7 @@ public class TowerSpell extends Spell {
 				}
 			}
 		}
-		plugin.addToUndoQueue(player, towerBlocks);
+		spells.addToUndoQueue(player, towerBlocks);
 		castMessage(player, "Made tower " + height + " high with " + blocksCreated + " blocks");
 		return true;
 	}

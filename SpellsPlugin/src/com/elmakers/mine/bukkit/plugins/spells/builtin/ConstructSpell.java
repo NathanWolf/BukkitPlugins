@@ -158,7 +158,7 @@ public class ConstructSpell extends Spell
 			}
 		}
 
-		plugin.addToUndoQueue(player, constructedBlocks);
+		spells.addToUndoQueue(player, constructedBlocks);
 		castMessage(player, "Constructed " + constructedBlocks.getCount() + "blocks");
 	}
 	

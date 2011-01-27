@@ -26,13 +26,13 @@ public class TransmuteSpell extends Spell
 		
 		if (target != null)
 		{
-			transmuteAction = plugin.getLastBlockList(player.getName(), target);
+			transmuteAction = spells.getLastBlockList(player.getName(), target);
 			usedTarget = transmuteAction != null;
 		}
 
 		if (transmuteAction == null)
 		{
-			transmuteAction = plugin.getLastBlockList(player.getName());
+			transmuteAction = spells.getLastBlockList(player.getName());
 		}
 		
 		if (transmuteAction == null)

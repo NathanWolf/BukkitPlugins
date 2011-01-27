@@ -123,8 +123,8 @@ public class StairsSpell extends Spell
 			bottomLeftBlock = bottomLeftBlock.getFace(vertDirection);
 		}
 
-		plugin.addToUndoQueue(player, tunneledBlocks);
-		plugin.addToUndoQueue(player, stairBlocks);
+		spells.addToUndoQueue(player, tunneledBlocks);
+		spells.addToUndoQueue(player, stairBlocks);
 		castMessage(player, "Tunneled through " + tunneledBlocks.getCount() + "blocks and created " + stairBlocks.getCount() + " stairs");
 	}	
 	

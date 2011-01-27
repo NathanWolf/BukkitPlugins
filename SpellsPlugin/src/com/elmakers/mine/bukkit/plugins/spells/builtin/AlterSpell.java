@@ -54,7 +54,7 @@ public class AlterSpell extends Spell
 		
 		adjust(targetBlock, data, undoList, recursive, 0);
 		
-		plugin.addToUndoQueue(player, undoList);
+		spells.addToUndoQueue(player, undoList);
 		
 		castMessage(player, "Adjusting " + targetBlock.getType().name().toLowerCase() + " from " + originalData + " to " + data);
 		
@@ -119,7 +119,7 @@ public class AlterSpell extends Spell
 		
 		if (adjustableMaterials.size() != maxData.size() || maxData.size() != minData.size())
 		{
-			plugin.getLog().warning("Spells:Alter: Mis-match in adjustable material lists!");
+			spells.getLog().warning("Spells:Alter: Mis-match in adjustable material lists!");
 		}
 	}
 

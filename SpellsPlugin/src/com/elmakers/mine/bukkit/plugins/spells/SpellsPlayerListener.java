@@ -9,9 +9,9 @@ import org.bukkit.event.player.PlayerMoveEvent;
 
 public class SpellsPlayerListener extends PlayerListener 
 {
-	private SpellsMasterListener master;
+	private Spells master;
 	
-	public void setMaster(SpellsMasterListener master)
+	public void setSpells(Spells master)
 	{
 		this.master = master;
 	}

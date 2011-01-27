@@ -74,7 +74,7 @@ public class FrostSpell extends Spell
 			}
 		}
 
-		plugin.addToUndoQueue(player, frostedBlocks);
+		spells.addToUndoQueue(player, frostedBlocks);
 		castMessage(player, "Frosted " + frostedBlocks.getCount() + " blocks");
 		
 		return true;

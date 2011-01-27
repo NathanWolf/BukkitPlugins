@@ -65,14 +65,14 @@ public class CushionSpell extends Spell
 			}
 		}
 	
-		plugin.scheduleCleanup(cushionBlocks);
-		plugin.scheduleCleanup(airBlocks);
+		spells.scheduleCleanup(cushionBlocks);
+		spells.scheduleCleanup(airBlocks);
 	
 		// Schedule an additional later cleanup, to cleanup water spillage
 		BlockList delayedCleanup = new BlockList(cushionBlocks);
 		delayedCleanup.setTimeToLive(15000);
 		
-		plugin.scheduleCleanup(delayedCleanup);
+		spells.scheduleCleanup(delayedCleanup);
 		
 		return true;
 	}

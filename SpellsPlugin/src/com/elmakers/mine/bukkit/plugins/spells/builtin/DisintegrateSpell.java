@@ -38,7 +38,7 @@ public class DisintegrateSpell extends Spell
 			target.setType(Material.AIR);
 		}
 		
-		plugin.addToUndoQueue(player, disintigrated);
+		spells.addToUndoQueue(player, disintigrated);
 		castMessage(player, "ZAP!");
 		
 		return true;

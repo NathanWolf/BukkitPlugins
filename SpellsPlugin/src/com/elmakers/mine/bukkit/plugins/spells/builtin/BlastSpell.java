@@ -85,7 +85,7 @@ public class BlastSpell extends Spell
 			}
 		}
 
-		plugin.addToUndoQueue(player, blastedBlocks);
+		spells.addToUndoQueue(player, blastedBlocks);
 		castMessage(player, "Blasted " + blastedBlocks.getCount() + "blocks");
 
 		return true;

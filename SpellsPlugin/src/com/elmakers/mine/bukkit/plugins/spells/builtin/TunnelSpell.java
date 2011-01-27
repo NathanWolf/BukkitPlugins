@@ -113,7 +113,7 @@ public class TunnelSpell extends Spell
 			bottomLeftBlock = bottomLeftBlock.getFace(direction);
 		}
 
-		plugin.addToUndoQueue(player, tunneledBlocks);
+		spells.addToUndoQueue(player, tunneledBlocks);
 		castMessage(player, "Tunneled through " + tunneledBlocks.getCount() + "blocks");
 		
 		return true;

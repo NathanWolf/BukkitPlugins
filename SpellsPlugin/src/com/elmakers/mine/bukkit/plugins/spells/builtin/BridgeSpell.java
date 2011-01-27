@@ -60,7 +60,7 @@ public class BridgeSpell extends Spell
 		targetBlock.setData(data);
 		
 		castMessage(player, "A bridge extends!");
-		plugin.addToUndoQueue(player, bridgeBlocks);
+		spells.addToUndoQueue(player, bridgeBlocks);
 		
 		//castMessage(player, "Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
 		

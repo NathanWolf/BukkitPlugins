@@ -15,7 +15,7 @@ public class UndoSpell extends Spell
 			if (parameters[i].equalsIgnoreCase("player") && i < parameters.length - 1)
 			{
 				String undoPlayer = parameters[++i];
-				boolean undone = plugin.undo(undoPlayer);
+				boolean undone = spells.undo(undoPlayer);
 				if (undone)
 				{
 					castMessage(player, "You revert " + undoPlayer + "'s construction");
@@ -35,7 +35,7 @@ public class UndoSpell extends Spell
 		Block target = getTargetBlock();
 		if (target != null)
 		{
-			boolean undone = plugin.undo(player.getName(), target);
+			boolean undone = spells.undo(player.getName(), target);
 			if (undone)
 			{
 				castMessage(player, "You revert your construction");
@@ -46,7 +46,7 @@ public class UndoSpell extends Spell
 		/*
 		 * No target, or target isn't yours- just undo last
 		 */
-		boolean undone = plugin.undo(player.getName());
+		boolean undone = spells.undo(player.getName());
 		if (undone)
 		{
 			castMessage(player, "You revert your construction");

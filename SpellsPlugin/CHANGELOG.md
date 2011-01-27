@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.73
+
+ - Recall automatically drops a marker on death. (Requires a Craftbukkit update!)
+ - Moved code out of plugin handler. LOTS of refactoring to make API cleaner.
+
 ## 0.72
 
  - Fix "player tried command /cast" messages. Now only shown for unauthorized users.
