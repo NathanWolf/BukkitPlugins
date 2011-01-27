@@ -17,7 +17,7 @@ import com.elmakers.mine.bukkit.plugins.spells.SpellVariant;
 import com.elmakers.mine.bukkit.plugins.spells.Spells;
 
 
-public class WandPlayerListener extends PlayerListener 
+class WandPlayerListener extends PlayerListener 
 {
 	private Wands wands;
 	

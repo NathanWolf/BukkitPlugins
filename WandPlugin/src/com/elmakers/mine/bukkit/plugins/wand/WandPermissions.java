@@ -14,6 +14,11 @@ public class WandPermissions
 	public void setCanUse(boolean use) 
 	{
 		this.use = use;
+		if (!use)
+		{
+			admin = false;
+			modify = false;
+		}
 	}
 	
 	public boolean canAdminister() 
@@ -34,5 +39,9 @@ public class WandPermissions
 	public void setCanModify(boolean modify) 
 	{
 		this.modify = modify;
+		if (!modify)
+		{
+			admin = false;
+		}
 	}
 }

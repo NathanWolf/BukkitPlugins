@@ -3,6 +3,7 @@
 ## 0.58
 
  - Moved code out of plugin handler.
+ - Make Ops automatically be Wand admins.
 
 ## 0.57
 

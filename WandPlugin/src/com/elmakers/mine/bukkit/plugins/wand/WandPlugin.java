@@ -28,7 +28,7 @@ public class WandPlugin extends JavaPlugin
 	@Override
 	public void onEnable() 
 	{
-		wands.load();
+		wands.initialize(this);
 		
 		bindSpellsPlugin();
 		

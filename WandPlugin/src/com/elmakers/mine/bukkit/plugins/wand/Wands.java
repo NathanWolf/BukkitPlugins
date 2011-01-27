@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.bukkit.entity.Player;
+
 import com.elmakers.mine.bukkit.plugins.spells.Spells;
 import com.elmakers.mine.bukkit.plugins.wand.utilities.PluginProperties;
 
@@ -13,6 +15,12 @@ public class Wands
 	/*
 	 * Public API 
 	 */
+	
+	public void initialize(WandPlugin plugin) 
+	{
+		this.plugin = plugin;
+		load();
+	}
 	
 	public void load() 
 	{	
@@ -138,6 +146,12 @@ public class Wands
 			permissions.put(playerName, player);
 		}
 		
+		Player mcPlayer = plugin.getServer().getPlayer(playerName);
+		if (player.canUse() && mcPlayer != null && mcPlayer.isOp())
+		{
+			player.setCanModify(true);
+			player.setCanAdminister(true);
+		}
 		return player;
 	}	
 
@@ -154,6 +168,7 @@ public class Wands
 	private int wandTypeId = 280;
 	
 	private Spells spells = null;
+	private WandPlugin plugin = null;
 	
 	private final HashMap<String, WandPermissions> permissions = new HashMap<String, WandPermissions>();
 	
