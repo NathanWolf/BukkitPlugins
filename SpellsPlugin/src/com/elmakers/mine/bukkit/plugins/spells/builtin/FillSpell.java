@@ -145,7 +145,7 @@ public class FillSpell extends Spell
 			{
 				material = target.getType();
 			}
-			player.sendMessage("Cast again to fill with " + material.name().toLowerCase());
+			castMessage(player, "Cast again to fill with " + material.name().toLowerCase());
 			return true;
 		}
 	}
