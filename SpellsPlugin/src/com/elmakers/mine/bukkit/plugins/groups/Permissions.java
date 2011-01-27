@@ -125,6 +125,12 @@ public class Permissions
 	
 	public PlayerPermissions getPlayerPermissions(String playerName)
 	{
-		return players.get(playerName.toLowerCase());
+		PlayerPermissions permissions = players.get(playerName.toLowerCase());
+		if (permissions == null)
+		{
+			permissions = new PlayerPermissions();
+			players.put(playerName, permissions);
+		}
+		return permissions;
 	}
 }

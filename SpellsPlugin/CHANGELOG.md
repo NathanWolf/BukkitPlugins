@@ -4,6 +4,7 @@
 
  - Recall automatically drops a marker on death. (Requires a Craftbukkit update!)
  - Moved code out of plugin handler. LOTS of refactoring to make API cleaner.
+ - Make ops automatically spell admins.
 
 ## 0.72
 

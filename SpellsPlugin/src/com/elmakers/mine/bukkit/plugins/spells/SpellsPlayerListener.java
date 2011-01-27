@@ -7,7 +7,7 @@ import org.bukkit.event.player.PlayerItemEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
-public class SpellsPlayerListener extends PlayerListener 
+class SpellsPlayerListener extends PlayerListener 
 {
 	private Spells master;
 	

@@ -51,7 +51,16 @@ public class Spells
 	
 	public PlayerPermissions getPermissions(String playerName)
 	{
-		return permissions.getPlayerPermissions(playerName);
+		PlayerPermissions playerPermissions = permissions.getPlayerPermissions(playerName);
+
+		// TODO hook this directly into the permissions system.
+		Player player = plugin.getServer().getPlayer(playerName);
+		if (playerPermissions != null && player != null && player.isOp())
+		{
+			playerPermissions.setIsOp();
+		}
+		
+		return playerPermissions;
 	}
 	
 	public PlayerSpells getPlayerSpells(Player player)
@@ -67,7 +76,7 @@ public class Spells
 	
 	public SpellVariant getSpell(String name, String playerName)
 	{
-		PlayerPermissions permissions= getPermissions(playerName);
+		PlayerPermissions permissions = getPermissions(playerName);
 		if (permissions == null) return null;
 		
 		if (!permissions.hasPermission(name)) return null;
@@ -76,7 +85,12 @@ public class Spells
 	
 	public boolean castSpell(SpellVariant spell, Player player)
 	{
-		return spell.cast(player);
+		return castSpell(spell, new String[0], player);
+	}
+	
+	public boolean castSpell(SpellVariant spell, String[] parameters, Player player)
+	{
+		return spell.cast(parameters, player);
 	}
 	
 	public void addSpell(Spell spell)
@@ -735,15 +749,10 @@ public class Spells
     		return;
     	}
     	
-    	String[] variantParameters = spell.getParameters();
-    	String[] parameters = new String[split.length - 2 + variantParameters.length];
-    	for (int i = 0; i < variantParameters.length; i++)
-    	{
-    		parameters[i] = variantParameters[i];
-    	}
+    	String[] parameters = new String[split.length - 2];
     	for (int i = 2; i < split.length; i++)
     	{
-    		parameters[i - 2 + variantParameters.length] = split[i];
+    		parameters[i - 2] = split[i];
     	}
     	
     	spell.getSpell().cast(parameters, event.getPlayer());

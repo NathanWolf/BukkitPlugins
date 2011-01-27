@@ -74,8 +74,23 @@ public class SpellVariant implements Comparable<SpellVariant>
 		return material;
 	}
 	
-	public boolean cast(Player player)
+	public boolean cast(String[] extraParameters, Player player)
 	{
-		return spell.cast(parameters, player);
+    	String[] spellParameters = parameters;
+    	
+    	if (extraParameters.length > 0)
+    	{
+    		spellParameters = new String[extraParameters.length + parameters.length];
+	    	for (int i = 0; i < parameters.length; i++)
+	    	{
+	    		spellParameters[i] = parameters[i];
+	    	}
+	    	for (int i = 0; i < extraParameters.length; i++)
+	    	{
+	    		spellParameters[i + parameters.length] = extraParameters[i];
+	    	}
+    	}
+ 
+		return spell.cast(spellParameters, player);
 	}
 }

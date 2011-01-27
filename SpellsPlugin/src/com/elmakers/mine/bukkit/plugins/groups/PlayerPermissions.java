@@ -68,6 +68,11 @@ public class PlayerPermissions
 		return permission != null && permission == true;
 	}
 	
+	public void setIsOp()
+	{
+		administrator = true;
+	}
+	
 	public String getPlayerName()
 	{
 		return playerName;

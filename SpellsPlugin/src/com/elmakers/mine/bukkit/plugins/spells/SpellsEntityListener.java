@@ -11,7 +11,7 @@ import org.bukkit.event.entity.EntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityListener;
 
-public class SpellsEntityListener extends EntityListener 
+class SpellsEntityListener extends EntityListener 
 {
 	private Spells master;
 	
