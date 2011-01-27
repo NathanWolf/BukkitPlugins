@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.58
+
+ - Moved code out of plugin handler.
+
 ## 0.57
 
  - Fix "player Blah tried command /wand" messages. Now only shown for unauthorized users.

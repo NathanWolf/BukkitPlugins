@@ -14,16 +14,16 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.craftbukkit.inventory.CraftInventory;
 
 import com.elmakers.mine.bukkit.plugins.spells.SpellVariant;
-import com.elmakers.mine.bukkit.plugins.spells.SpellsPlugin;
+import com.elmakers.mine.bukkit.plugins.spells.Spells;
 
 
 public class WandPlayerListener extends PlayerListener 
 {
-	private WandPlugin plugin;
+	private Wands wands;
 	
-	public void setPlugin(WandPlugin plugin)
+	public void setWands(Wands wands)
 	{
-		this.plugin = plugin;
+		this.wands = wands;
 	}
 	
 	 /**
@@ -37,9 +37,9 @@ public class WandPlayerListener extends PlayerListener
 		Player player = event.getPlayer();
 		if (event.getAnimationType() == PlayerAnimationType.ARM_SWING)
 		{
-			if (event.getPlayer().getInventory().getItemInHand().getTypeId() == plugin.getWandTypeId())
+			if (event.getPlayer().getInventory().getItemInHand().getTypeId() == wands.getWandTypeId())
 			{
-				WandPermissions permissions = plugin.getPermissions(player.getName());	
+				WandPermissions permissions = wands.getPermissions(player.getName());	
 				if (!permissions.canUse())
 				{
 					return;
@@ -51,11 +51,11 @@ public class WandPlayerListener extends PlayerListener
 				SpellVariant spell = null;
 				for (int i = 0; i < 9; i++)
 				{
-					if (contents[i].getType() == Material.AIR || contents[i].getTypeId() == plugin.getWandTypeId())
+					if (contents[i].getType() == Material.AIR || contents[i].getTypeId() == wands.getWandTypeId())
 					{
 						continue;
 					}
-					spell = plugin.getSpells().getSpell(contents[i].getType(), player.getName());
+					spell = wands.getSpells().getSpell(contents[i].getType(), player.getName());
 					if (spell != null)
 					{
 						break;
@@ -64,7 +64,7 @@ public class WandPlayerListener extends PlayerListener
 				
 				if (spell != null)
 				{
-					plugin.getSpells().castSpell(spell, player);
+					wands.getSpells().castSpell(spell, player);
 				}
 				
 			}
@@ -80,16 +80,16 @@ public class WandPlayerListener extends PlayerListener
     public void onPlayerItem(PlayerItemEvent event) 
 	{
 		int materialId = event.getPlayer().getInventory().getItemInHand().getTypeId();
-		SpellsPlugin spells = plugin.getSpells();
+		Spells spells = wands.getSpells();
 		Player player = event.getPlayer();
-		WandPermissions permissions = plugin.getPermissions(player.getName());
+		WandPermissions permissions = wands.getPermissions(player.getName());
 
 		if (!permissions.canUse())
 		{
 			return;
 		}
 		
-		if (materialId == plugin.getWandTypeId())
+		if (materialId == wands.getWandTypeId())
 		{	
 			Inventory inventory = player.getInventory();
 			ItemStack[] contents = inventory.getContents();
@@ -101,7 +101,7 @@ public class WandPlayerListener extends PlayerListener
 			int firstSpellSlot = -1;
 			for (int i = 0; i < 9; i++)
 			{
-				boolean isWand = active[i].getTypeId() == plugin.getWandTypeId();
+				boolean isWand = active[i].getTypeId() == wands.getWandTypeId();
 				boolean isSpell = false;
 				if (active[i].getType() != Material.AIR)
 				{
@@ -134,13 +134,13 @@ public class WandPlayerListener extends PlayerListener
 			for (int ddi = 0; ddi < numSpellSlots; ddi++)
 			{
 				int i = ddi + firstSpellSlot;
-				if (contents[i].getTypeId() != plugin.getWandTypeId())
+				if (contents[i].getTypeId() != wands.getWandTypeId())
 				{
 					for (int di = 1; di < numSpellSlots; di++)
 					{
 						int dni = (ddi + di) % numSpellSlots;
 						int ni = dni + firstSpellSlot;
-						if (active[ni].getTypeId() != plugin.getWandTypeId())
+						if (active[ni].getTypeId() != wands.getWandTypeId())
 						{
 							contents[i] = active[ni];
 							break;
@@ -166,7 +166,7 @@ public class WandPlayerListener extends PlayerListener
 			
 			for (int i = 0; i < 9; i++)
 			{
-				if (contents[i].getTypeId() == plugin.getWandTypeId())
+				if (contents[i].getTypeId() == wands.getWandTypeId())
 				{
 					hasWand = true;
 					continue;
@@ -211,7 +211,7 @@ public class WandPlayerListener extends PlayerListener
 	
 	private void showHelp(Player player)
 	{
-		WandPermissions permissions = plugin.getPermissions(player.getName());
+		WandPermissions permissions = wands.getPermissions(player.getName());
 			
 		player.sendMessage("How to use your wand:");
 		player.sendMessage(" Type /spells to see what spells you know");
@@ -241,7 +241,7 @@ public class WandPlayerListener extends PlayerListener
     public void onPlayerCommand(PlayerChatEvent event) 
     {
     	Player player = event.getPlayer();
-    	WandPermissions permissions = plugin.getPermissions(player.getName());
+    	WandPermissions permissions = wands.getPermissions(player.getName());
 
 		if (event.isCancelled() || !permissions.canUse())
 		{
@@ -270,9 +270,9 @@ public class WandPlayerListener extends PlayerListener
   
 			Inventory inventory = player.getInventory();
 			CraftInventory cInventory = (CraftInventory)inventory;
-			if (!cInventory.contains(plugin.getWandTypeId()))
+			if (!cInventory.contains(wands.getWandTypeId()))
 			{
-				ItemStack itemStack = new ItemStack(Material.getMaterial(plugin.getWandTypeId()), 1);
+				ItemStack itemStack = new ItemStack(Material.getMaterial(wands.getWandTypeId()), 1);
 				player.getWorld().dropItem(player.getLocation(), itemStack);
 				gaveWand = true;
 			}
@@ -288,7 +288,7 @@ public class WandPlayerListener extends PlayerListener
     		return;
     	}
     	
-    	SpellVariant spell = plugin.getSpells().getSpell(split[1], player.getName());
+    	SpellVariant spell = wands.getSpells().getSpell(split[1], player.getName());
     	if (spell == null)
     	{
     		player.sendMessage("Spell '" + split[1] + "' unknown, Use /spells for spell list");
