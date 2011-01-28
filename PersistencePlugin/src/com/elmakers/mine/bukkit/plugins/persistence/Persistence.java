@@ -31,28 +31,59 @@ public class Persistence
 		return instance;
 	}
 	
-	public boolean load(Object persist)
-	{
+	public <T> void getAll(List<T> objects, Class<T> objectType)
+	{	
 		synchronized(cacheLock)
 		{
-			PersistedClass persistedClass = getPersistedClass(persist);
+			PersistedClass persistedClass = getPersistedClass(objectType);
 			if (persistedClass == null)
 			{
-				return false;
+				return;
 			}
+			
+			persistedClass.getAll(objects);	
 		}
-		return true;
 	}
 	
-	public boolean save(Object persist)
+	public <T> void putAll(List<T> objects, Class<T> objectType)
 	{
 		synchronized(cacheLock)
 		{
-			PersistedClass persistedClass = getPersistedClass(persist);
+			PersistedClass persistedClass = getPersistedClass(objectType);
+			if (persistedClass == null)
+			{
+				return;
+			}
+			
+			persistedClass.putAll(objects);	
+		}
+	}
+	
+	public Object get(Object persist)
+	{
+		synchronized(cacheLock)
+		{
+			PersistedClass persistedClass = getPersistedClass(persist.getClass());
+			if (persistedClass == null)
+			{
+				return null;
+			}
+			
+			return persistedClass.get(persist);	
+		}
+	}
+	
+	public boolean put(Object persist)
+	{
+		synchronized(cacheLock)
+		{
+			PersistedClass persistedClass = getPersistedClass(persist.getClass());
 			if (persistedClass == null)
 			{
 				return false;
 			}
+			
+			persistedClass.put(persist);
 		}
 		return true;		
 	}
@@ -124,9 +155,8 @@ public class Persistence
 		return store;
 	}
 	
-	protected PersistedClass getPersistedClass(Object persist)
-	{
-		Class<? extends Object> persistType = persist.getClass();
+	protected PersistedClass getPersistedClass(Class<? extends Object> persistType)
+	{	
 		PersistedClass persistedClass = persistedClassMap.get(persistType);
 		if (persistedClass == null)
 		{

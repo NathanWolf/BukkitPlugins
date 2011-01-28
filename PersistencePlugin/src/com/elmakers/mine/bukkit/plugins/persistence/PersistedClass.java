@@ -20,6 +20,7 @@ public class PersistedClass
 		 * Set up persisted class
 		 */
 		PersistClass classSettings = persistClass.getAnnotation(PersistClass.class);
+		
 		if (classSettings == null)
 		{
 			// TODO : Log error
@@ -31,6 +32,12 @@ public class PersistedClass
 		name = classSettings.name();
 		store = Persistence.getInstance().getStore(schema);
 		
+		if (!cacheObjects)
+		{
+			// TODO: support non-cached objects
+			return false;
+		}
+		
 		/*
 		 * Find fields, getters and setters
 		 */
@@ -38,7 +45,6 @@ public class PersistedClass
 		idField = null;
 		orderByField = null;
 
-		
 		for (Field field : persistClass.getDeclaredFields())
 		{
 			Persist persist = field.getAnnotation(Persist.class);
@@ -99,25 +105,64 @@ public class PersistedClass
 		return (fields.size() > 0);
 	}
 	
-	public CachedObject put(Object o)
+	public void put(Object o)
 	{
+		checkLoadCache();
 		Object idField = getId(o);
 		CachedObject co = cacheMap.get(idField);
 		if (co == null)
 		{
-			co = new CachedObject(o);
-			cacheMap.put(idField, co);
-			cache.add(co);
-		}
+			co = addToCache(o);
+		}	
 		co.setCached(cacheObjects);
-		return co;
+		co.setObject(o);
+		dirty = true;
 	}
 
-	public CachedObject get(Object o)
+	public Object get(Object id)
 	{
-		return cacheMap.get(o);
+		checkLoadCache();
+		return cacheMap.get(id).getObject();
 	}
-		
+	
+	/*
+	public void getAll(List<? extends Object> objects)
+	{
+	}
+	*/
+	
+	@SuppressWarnings("unchecked")
+	public <T> void getAll(List<T> objects)
+	{
+		checkLoadCache();
+		for (CachedObject cachedObject : cache)
+		{
+			Object object = cachedObject.getObject();
+			if (persistClass.isAssignableFrom(object.getClass()))
+			{
+				objects.add((T)object);
+			}
+		}
+	}
+	
+	public void putAll(List<? extends Object> objects)
+	{
+		checkLoadCache();
+		// TODO: merge
+	}
+
+	public Object get(Object id, Object defaultValue)
+	{
+		checkLoadCache();
+		CachedObject cached = cacheMap.get(id);
+		if (cached == null)
+		{
+			cached = addToCache(defaultValue);
+			
+		}
+		return cached.getObject();
+	}
+	
 	public boolean isDirty()
 	{
 		return dirty;
@@ -131,6 +176,15 @@ public class PersistedClass
 	/*
 	 * Protected members
 	 */
+		
+	protected void checkLoadCache()
+	{
+		if (!loaded && cacheObjects)
+		{
+			store.connect(schema);
+			loaded = true;
+		}
+	}
 	
 	protected boolean isGetter(Method method)
 	{
@@ -188,11 +242,20 @@ public class PersistedClass
 		return value;
 	}
 	
+	protected CachedObject addToCache(Object o)
+	{
+		CachedObject cached = new CachedObject(o);
+		cache.add(cached);
+		cacheMap.put(o, cached);
+		return cached;
+	}
+	
 	/*
 	 * Private data
 	 */
 	
 	protected boolean dirty = false;
+	protected boolean loaded = false;
 	
 	protected boolean cacheObjects;
 	protected Class<? extends Object> persistClass;
