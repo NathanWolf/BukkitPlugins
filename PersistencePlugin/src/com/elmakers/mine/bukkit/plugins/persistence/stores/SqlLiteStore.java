@@ -1,7 +1,11 @@
 package com.elmakers.mine.bukkit.plugins.persistence.stores;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -17,8 +21,56 @@ public class SqlLiteStore extends PersistenceStore
 		try 
 		{
 			// Check to see if the driver is loaded
-			Class.forName("org.sqlite.JDBC");
-			
+			String jdbcClass = "org.sqlite.JDBC";
+			try
+			{
+				Class.forName(jdbcClass);
+			}
+			catch (ClassNotFoundException e)
+			{
+				log.info("Persistence: Loading sqlite drivers from plugins folder");
+				String fileName = "sqlitejdbc";
+				
+				File dataPath = dataFolder.getAbsoluteFile();
+				File pluginsPath = new File(dataPath.getParent());
+				File cbPath = new File(pluginsPath.getParent());
+				File sqlLiteFile = new File(cbPath, fileName + ".jar");
+	            if (!sqlLiteFile.exists()) 
+	            {
+	                log.severe("Persistence: Failed to find sqllite driver: " + fileName + ".jar");
+	                return false;
+	            }
+	            
+	            try 
+	            {
+	            	URL u = new URL("jar:file:" + sqlLiteFile.getAbsolutePath() + "!/");
+	        		URLClassLoader ucl = new URLClassLoader(new URL[] { u });
+	        		Driver d = (Driver)Class.forName(jdbcClass, true, ucl).newInstance();
+	        		DriverManager.registerDriver(new DriverShim(d));
+	            } 
+	            catch (MalformedURLException ex) 
+	            {
+	                log.severe("Persistence: Exception while loading sqllite drivers");
+	                ex.printStackTrace();
+	                return false;
+	            }
+	            catch (IllegalAccessException ex) 
+	            {
+	                log.severe("Persistence: Exception while loading sqllite drivers");
+	                ex.printStackTrace();
+	                return false;
+	            }
+	            catch (InstantiationException ex) 
+	            {
+	                log.severe("Persistence: Exception while loading sqllite drivers");
+	                ex.printStackTrace();
+	                return false;
+	            }
+				catch (ClassNotFoundException e1)
+				{
+					log.severe("Persistence: JDBC class not found in sqllite jar");
+				}
+			}			
 			// Create or connect to the database
 			File sqlLiteFile = new File(dataFolder, schema + ".db");
 			
@@ -28,11 +80,6 @@ public class SqlLiteStore extends PersistenceStore
 		{
 			connection = null;
 			log.severe("Permissions: error connecting to sqllite db: " + e.getMessage());
-		}
-		catch (ClassNotFoundException e)
-		{
-			log.severe("Permissions: Can't find sqllite drivers");
-			connection = null;
 		}
 		
 		return isConnected();
@@ -91,5 +138,5 @@ public class SqlLiteStore extends PersistenceStore
 	}
 	
 	private File dataFolder;
-
+	
 }
