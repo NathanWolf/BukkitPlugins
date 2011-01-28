@@ -30,6 +30,10 @@ public class PersistedClass
 		cacheObjects = classSettings.cache();
 		schema = classSettings.schema();
 		name = classSettings.name();
+		
+		name = name.replace(" ", "_");
+		schema = schema.replace(" ", "_");
+		
 		store = Persistence.getInstance().getStore(schema);
 		
 		if (!cacheObjects)
@@ -71,6 +75,11 @@ public class PersistedClass
 				Method setter = null;
 				Method getter = null;
 				String fieldName = getNameFromMethod(method);
+				if (fieldName.length() == 0)
+				{
+					// TODO : log error?
+					continue;
+				}
 				
 				if (isSetter(method))
 				{
@@ -173,6 +182,11 @@ public class PersistedClass
 		return fields.size();
 	}
 	
+	public String getTableName()
+	{
+		return name;
+	}
+	
 	/*
 	 * Protected members
 	 */
@@ -182,6 +196,7 @@ public class PersistedClass
 		if (!loaded && cacheObjects)
 		{
 			store.connect(schema);
+			store.validateTable(this);
 			loaded = true;
 		}
 	}
@@ -201,7 +216,7 @@ public class PersistedClass
 	protected String getNameFromMethod(Method method)
 	{
 		String methodName = method.getName();
-		return methodName.substring(3);
+		return methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
 	}
 	
 	protected Method findSetter(String name, Class<? extends Object> c)
@@ -249,6 +264,7 @@ public class PersistedClass
 		cacheMap.put(o, cached);
 		return cached;
 	}
+	
 	
 	/*
 	 * Private data

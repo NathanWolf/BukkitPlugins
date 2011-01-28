@@ -10,6 +10,8 @@ public abstract class PersistenceStore
 	public abstract boolean connect(String schema);
 	public abstract void disconnect();
 	
+	public abstract void validateTable(PersistedClass persisted);
+	
 	public abstract boolean load(PersistedClass persisted);
 	public abstract boolean save(PersistedClass persisted);
 	
