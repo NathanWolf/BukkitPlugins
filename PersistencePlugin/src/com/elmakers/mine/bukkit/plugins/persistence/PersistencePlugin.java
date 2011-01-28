@@ -54,12 +54,17 @@ public class PersistencePlugin extends JavaPlugin
         log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled");
 	}
 	
+	public static Logger getLogger()
+	{
+		return log;
+	}
+	
 	/*
 	 * Private data
 	 */
 	
 	private static PersistencePlugin pluginInstance = null;
 	private Persistence persistence = null;
-	private final Logger log = Logger.getLogger("Minecraft");
+	private static final Logger log = Logger.getLogger("Minecraft");
 	
 }

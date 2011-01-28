@@ -10,8 +10,11 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 import com.elmakers.mine.bukkit.plugins.persistence.PersistedClass;
+import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
+import com.elmakers.mine.bukkit.plugins.persistence.PersistedField;
 
 public abstract class SqlStore extends PersistenceStore
 {
@@ -132,7 +135,8 @@ public abstract class SqlStore extends PersistenceStore
 		}
 		if (!tableExists)
 		{
-			String createStatement = "CREATE TABLE " + tableName;
+			String createStatement = "CREATE TABLE " + tableName + "(";
+			
 			//TODO...
 		}
 	}
@@ -163,6 +167,36 @@ public abstract class SqlStore extends PersistenceStore
 			isClosed = true;
 		}
 		return (connection != null && !isClosed);
+	}
+	
+	protected SqlType getSqlType(PersistedField field)
+	{
+		SqlType sqlType = SqlType.NULL;
+		
+		Class<?> fieldType = field.getType();
+		if (fieldType.isAssignableFrom(Integer.class))
+		{
+			sqlType = SqlType.INTEGER;
+		}
+		else if (fieldType.isAssignableFrom(Double.class))
+		{
+			sqlType = SqlType.DOUBLE;
+		}
+		else if (fieldType.isAssignableFrom(Float.class))
+		{
+			sqlType = SqlType.DOUBLE;
+		}
+		else if (fieldType.isAssignableFrom(String.class))
+		{
+			sqlType = SqlType.STRING;
+		}
+		else
+		{
+			log.warning("Persistence: field: " + field.getType().getName() + " not a supported type. Object refences not supported, yet.");
+			sqlType = SqlType.NULL;
+		}
+		
+		return sqlType;
 	}
 
 	public void setDataFolder(File dataFolder)

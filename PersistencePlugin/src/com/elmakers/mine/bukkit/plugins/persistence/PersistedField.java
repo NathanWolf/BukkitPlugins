@@ -86,6 +86,19 @@ public class PersistedField
 		return result;
 	}
 	
+	public Class<?> getType()
+	{
+		if (getter != null)
+		{
+			return getter.getReturnType();
+		}
+		if (field != null)
+		{
+			return field.getType();
+		}
+		return null;
+	}
+	
 	private Method getter;
 	private Method setter;
 	private Field field;

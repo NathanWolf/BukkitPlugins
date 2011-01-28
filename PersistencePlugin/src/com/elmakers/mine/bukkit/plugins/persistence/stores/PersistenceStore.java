@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import com.elmakers.mine.bukkit.plugins.persistence.PersistedClass;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
+import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 
 public abstract class PersistenceStore
 {
@@ -21,5 +22,5 @@ public abstract class PersistenceStore
 	}
 	
 	protected Persistence persistence = null;
-	protected Logger log = Logger.getLogger("Minecraft");
+	protected Logger log = PersistencePlugin.getLogger();
 }

@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.elmakers.mine.bukkit.plugins.persistence.annotations.Persist;
 import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
@@ -23,7 +24,7 @@ public class PersistedClass
 		
 		if (classSettings == null)
 		{
-			// TODO : Log error
+			log.warning("Persistence: class " + persistClass.getName() + " does not have the @PersistClass annotation.");
 			return false;
 		}		
 
@@ -38,7 +39,7 @@ public class PersistedClass
 		
 		if (!cacheObjects)
 		{
-			// TODO: support non-cached objects
+			log.warning("Persistence: class " + persistClass.getName() + ": non-cached objects no supported, yet.");
 			return false;
 		}
 		
@@ -77,7 +78,7 @@ public class PersistedClass
 				String fieldName = getNameFromMethod(method);
 				if (fieldName.length() == 0)
 				{
-					// TODO : log error?
+					log.warning("Persistence: class " + persistClass.getName() + ": annotated field is too short");
 					continue;
 				}
 				
@@ -94,7 +95,7 @@ public class PersistedClass
 				
 				if (getter == null || setter == null)
 				{
-					// TODO: Log error!
+					log.warning("Persistence: class " + persistClass.getName() + ": annotated getter has no setter (or vice-versa)");
 					continue;
 				}
 				
@@ -185,6 +186,14 @@ public class PersistedClass
 	public String getTableName()
 	{
 		return name;
+	}
+	
+	public List<Field> getPersistedFields()
+	{
+		List<Field> fields = new ArrayList<Field>();
+		
+		// TDOD
+		return fields;
 	}
 	
 	/*
@@ -287,4 +296,6 @@ public class PersistedClass
 	
 	protected HashMap<Object, CachedObject> cacheMap = new HashMap<Object, CachedObject>();
 	protected List<CachedObject>			cache =  new ArrayList<CachedObject>();
+	
+	protected Logger log = PersistencePlugin.getLogger();
 }
