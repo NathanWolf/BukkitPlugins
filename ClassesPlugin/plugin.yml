@@ -1,0 +1,3 @@
+name: Classes
+main: com.elmakers.mine.bukkit.plugins.classes.ClassesPlugin
+version: 0.10
