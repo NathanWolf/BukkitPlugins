@@ -1,6 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.persistence.stores;
 
 import java.io.File;
+import java.util.Date;
 
 public class SqlLiteStore extends SqlStore
 {
@@ -27,24 +28,55 @@ public class SqlLiteStore extends SqlStore
 		{
 			case INTEGER:
 				return "INTEGER";
+			case BOOLEAN:
+				return "INTEGER";
+			case DATE:
+				return "INTEGER";
 			case DOUBLE:
 				return "REAL";
 			case STRING:
 				return "TEXT";
-			case DATE:
-				return "INTEGER";
 		}
 		return null;
 	}
 	
 	@Override
-	public String getFieldValue(Object field, SqlType dataType)
+	public Object getFieldValue(Object field, SqlType dataType)
 	{
 		if (dataType == SqlType.STRING)
 		{
 			return "'" + field.toString() + "'";
 		}
-		return field.toString();
+		if (dataType == SqlType.DATE)
+		{
+			Date d = (Date)field;
+			Integer seconds = (int)(d.getTime() / 1000);
+			return seconds;
+		}
+		if (dataType == SqlType.BOOLEAN)
+		{
+			Boolean flag = (Boolean)field;
+			Integer intValue = flag ? 1 : 0;
+			return intValue;
+		}
+		return field;
+	}
+	
+	public Object getDataValue(Object storedValue, SqlType dataType)
+	{
+		if (dataType == SqlType.DATE)
+		{
+			Integer i = (Integer)storedValue;
+			Date d = new Date(i * 1000);
+			return d;
+		}
+		if (dataType == SqlType.BOOLEAN)
+		{
+			Integer i = (Integer)storedValue;
+			Boolean b = i != 0;
+			return b;
+		}
+		return storedValue;
 	}
 
 }

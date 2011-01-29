@@ -59,17 +59,20 @@ public class Persistence
 		}
 	}
 	
-	public Object get(Object persist)
+	@SuppressWarnings("unchecked")
+	public <T> T get(Object id, Class<T> objectType)
 	{
 		synchronized(cacheLock)
 		{
-			PersistedClass persistedClass = getPersistedClass(persist.getClass());
+			PersistedClass persistedClass = getPersistedClass(objectType);
 			if (persistedClass == null)
 			{
 				return null;
 			}
 			
-			return persistedClass.get(persist);	
+			Object result = persistedClass.get(id);
+			if (result == null) return null;
+			return (T)result;	
 		}
 	}
 	
@@ -88,12 +91,15 @@ public class Persistence
 		return true;		
 	}
 	
-	public void saveCache()
+	public void save()
 	{
-		// TODO
+		for (PersistedClass persistedClass : persistedClasses)
+		{
+			persistedClass.save();
+		}
 	}
 	
-	public void clearCache()
+	public void clear()
 	{
 		persistedClasses.clear();
 		persistedClassMap.clear();

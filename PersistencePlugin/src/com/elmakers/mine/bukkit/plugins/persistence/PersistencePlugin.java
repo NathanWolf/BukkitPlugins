@@ -41,8 +41,8 @@ public class PersistencePlugin extends JavaPlugin
 	{
 		if (persistence != null)
 		{
-			persistence.saveCache();
-			persistence.clearCache();
+			persistence.save();
+			persistence.clear();
 			persistence.disconnect();
 		}
 	}

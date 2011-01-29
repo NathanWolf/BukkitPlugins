@@ -8,7 +8,7 @@ public class PersistedField
 {
 	public PersistedField(Method getter, Method setter)
 	{
-		this.name = getNameFromMethod(getter);
+		this.name = getNameFromMethod(setter);
 		this.getter = getter;
 		this.setter = setter;
 		this.field = null;
@@ -148,7 +148,10 @@ public class PersistedField
 	public static boolean isGetter(Method method)
 	{
 		String methodName = method.getName();
-		return methodName.substring(0, 3).equals("get");
+		boolean hasGet = methodName.substring(0, 3).equals("get");
+		boolean hasIs = methodName.substring(0, 2).equals("is");
+		
+		return hasIs || hasGet;
 	}
 	
 	public static boolean isSetter(Method method)
@@ -166,7 +169,12 @@ public class PersistedField
 	public static Method findSetter(Method getter, Class<? extends Object> c)
 	{
 		Method setter = null;
-		String name = "s" + getter.getName().substring(1);
+		String methodName = getter.getName();
+		String name = "s" + methodName.substring(1);
+		if (methodName.substring(0, 2).equals("is"))
+		{
+			name = "set" + methodName.substring(2);
+		}
 		try
 		{
 			setter = c.getMethod(name, getter.getReturnType());
@@ -189,6 +197,18 @@ public class PersistedField
 		catch (NoSuchMethodException e)
 		{
 			getter = null;
+		}
+		if (getter == null)
+		{
+			name = "is" + setter.getName().substring(3);
+			try
+			{
+				getter = c.getMethod(name);
+			}
+			catch (NoSuchMethodException e)
+			{
+				getter = null;
+			}
 		}
 		return getter;
 	}

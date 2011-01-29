@@ -48,6 +48,12 @@ public class CachedObject
 		updateCacheTime();
 	}
 	
+	public void setSaved()
+	{
+		dirty = false;
+		updateCacheTime();
+	}
+	
 	protected void updateCacheTime()
 	{
 		cacheTime = System.currentTimeMillis();

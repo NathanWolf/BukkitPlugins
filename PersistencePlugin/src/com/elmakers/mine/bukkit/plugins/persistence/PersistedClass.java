@@ -95,6 +95,12 @@ public class PersistedClass
 			}
 		}
 		
+		if (idField == null)
+		{
+			log.warning("Persistence: class " + persistClass.getName() + ": must specify one id field. Use an auto int if you need.");
+			return false;
+		}
+		
 		return (fields.size() > 0);
 	}
 	
@@ -115,14 +121,10 @@ public class PersistedClass
 	public Object get(Object id)
 	{
 		checkLoadCache();
-		return cacheMap.get(id).getObject();
+		CachedObject cached = cacheMap.get(id);
+		if (cached == null) return null;
+		return cached.getObject();
 	}
-	
-	/*
-	public void getAll(List<? extends Object> objects)
-	{
-	}
-	*/
 	
 	@SuppressWarnings("unchecked")
 	public <T> void getAll(List<T> objects)
@@ -141,7 +143,7 @@ public class PersistedClass
 	public void putAll(List<? extends Object> objects)
 	{
 		checkLoadCache();
-		// TODO: merge
+		// TODO: merge...
 	}
 
 	public Object get(Object id, Object defaultValue)
@@ -182,6 +184,21 @@ public class PersistedClass
 		
 		fieldsCopy.addAll(fields);
 		return fieldsCopy;
+	}
+	
+	public void save()
+	{
+		if (loadState != LoadState.LOADED) return;
+		if (!dirty) return;
+		
+		for (CachedObject cached : cache)
+		{
+			if (!cached.isDirty()) continue;
+			store.save(this, cached.getObject());
+			cached.setSaved();
+		}
+		
+		dirty = false;
 	}
 	
 	/*

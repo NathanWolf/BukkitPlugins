@@ -22,7 +22,8 @@ public abstract class SqlStore extends PersistenceStore
 	public abstract String getMasterTableName();
 	public abstract String getConnectionString(String schema, String user, String password);
 	public abstract String getTypeName(SqlType dataType);
-	public abstract String getFieldValue(Object field, SqlType dataType);
+	public abstract Object getFieldValue(Object field, SqlType dataType);
+	public abstract Object getDataValue(Object storedValue, SqlType dataType);
 	
 	public boolean onConnect()
 	{
@@ -182,6 +183,64 @@ public abstract class SqlStore extends PersistenceStore
 			// TODO: validate schema, migrate data if necessary
 		}
 	}
+	
+	@Override
+	public boolean save(PersistedClass persisted, Object o)
+	{
+		String tableName = persisted.getTableName();
+		String fieldList = "";
+		String valueList = "";
+		int fieldCount = 0;
+		List<PersistedField> fields = persisted.getPersistedFields();
+		for (PersistedField field : fields)
+		{
+			if (fieldCount != 0)
+			{
+				fieldList += ", ";
+				valueList += ", ";
+			}
+			fieldCount++;
+			fieldList += field.getName();
+			valueList += "?";
+		}
+		if (fieldCount == 0)
+		{
+			log.warning("Persistence: class " + tableName + " has no fields");
+			return false;
+		}
+		
+		String selectQuery = "INSERT INTO " + tableName + "(" + fieldList + ") VALUES (" + valueList + ")";
+
+		try
+		{
+			PreparedStatement ps = connection.prepareStatement(selectQuery);
+			
+			int index = 1;
+			for (PersistedField field : fields)
+            {
+				Object value = field.get(o);
+				
+				if (value != null)
+				{
+					ps.setObject(index, getFieldValue(value, getSqlType(field)));
+				}
+				else
+				{
+					ps.setNull(index, java.sql.Types.NULL);
+				}
+				index++;
+            }
+			
+			ps.execute();
+		}
+		catch (SQLException ex)
+		{
+			log.warning("Persistence: Error updating table " + tableName + ": " + ex.getMessage());
+			return false;
+		}
+		
+		return true;
+	}
 
 	@Override
 	public boolean loadAll(PersistedClass persisted)
@@ -222,7 +281,7 @@ public abstract class SqlStore extends PersistenceStore
 		}
 		catch (SQLException ex)
 		{
-			ex.printStackTrace();
+			log.warning("Persistence: Error selecting from table " + tableName + ": " + ex.getMessage());
 			return false;
 		}
 		
@@ -239,7 +298,9 @@ public abstract class SqlStore extends PersistenceStore
 			List<PersistedField> fields = persisted.getPersistedFields();
 	        for (PersistedField field : fields)
 	        {
-	        	field.set(newObject, rs.getObject(field.getName()));
+	        	Object value = rs.getObject(field.getName());
+	        	SqlType sqlType = getSqlType(field);
+	        	field.set(newObject, getDataValue(value, sqlType));
 	        }
 		}
 		catch (IllegalAccessException e)
@@ -259,13 +320,6 @@ public abstract class SqlStore extends PersistenceStore
 		}
 		return newObject;
 	}
-
-	@Override
-	public boolean saveAll(PersistedClass persisted)
-	{
-		// TODO Auto-generated method stub
-		return false;
-	}
 	
 	public boolean isConnected()
 	{
@@ -283,31 +337,14 @@ public abstract class SqlStore extends PersistenceStore
 	
 	protected SqlType getSqlType(PersistedField field)
 	{
-		SqlType sqlType = SqlType.NULL;
-		
 		Class<?> fieldType = field.getType();
-		if (fieldType.isAssignableFrom(Integer.class))
-		{
-			sqlType = SqlType.INTEGER;
-		}
-		else if (fieldType.isAssignableFrom(Double.class))
-		{
-			sqlType = SqlType.DOUBLE;
-		}
-		else if (fieldType.isAssignableFrom(Float.class))
-		{
-			sqlType = SqlType.DOUBLE;
-		}
-		else if (fieldType.isAssignableFrom(String.class))
-		{
-			sqlType = SqlType.STRING;
-		}
-		else
+		SqlType sqlType = SqlType.getTypeFromClass(fieldType);
+		
+		if (sqlType == SqlType.NULL)
 		{
 			log.warning("Persistence: field: " + field.getType().getName() + " not a supported type. Object refences not supported, yet.");
-			sqlType = SqlType.NULL;
 		}
-		
+				
 		return sqlType;
 	}
 
