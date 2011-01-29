@@ -43,6 +43,8 @@ public class SqlLiteStore extends SqlStore
 	@Override
 	public Object getFieldValue(Object field, SqlType dataType)
 	{
+		if (field == null) return "null";
+		
 		if (dataType == SqlType.STRING)
 		{
 			return "'" + field.toString() + "'";
@@ -64,6 +66,8 @@ public class SqlLiteStore extends SqlStore
 	
 	public Object getDataValue(Object storedValue, SqlType dataType)
 	{
+		if (storedValue == null) return null;
+		
 		if (dataType == SqlType.DATE)
 		{
 			Integer i = (Integer)storedValue;
