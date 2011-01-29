@@ -231,7 +231,8 @@ public class PersistedClass
 	{
 		CachedObject cached = new CachedObject(o);
 		cache.add(cached);
-		cacheMap.put(o, cached);
+		Object id = getId(o);
+		cacheMap.put(id, cached);
 		return cached;
 	}
 	

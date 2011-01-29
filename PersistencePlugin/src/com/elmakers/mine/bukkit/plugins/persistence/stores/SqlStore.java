@@ -209,7 +209,7 @@ public abstract class SqlStore extends PersistenceStore
 			return false;
 		}
 		
-		String selectQuery = "INSERT INTO " + tableName + "(" + fieldList + ") VALUES (" + valueList + ")";
+		String selectQuery = "INSERT OR REPLACE INTO " + tableName + "(" + fieldList + ") VALUES (" + valueList + ")";
 
 		try
 		{

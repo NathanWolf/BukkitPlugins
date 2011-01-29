@@ -45,10 +45,6 @@ public class SqlLiteStore extends SqlStore
 	{
 		if (field == null) return "null";
 		
-		if (dataType == SqlType.STRING)
-		{
-			return "'" + field.toString() + "'";
-		}
 		if (dataType == SqlType.DATE)
 		{
 			Date d = (Date)field;
