@@ -1,17 +1,17 @@
 package com.elmakers.mine.bukkit.plugins.classes;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.Server;
+import org.bukkit.event.Event.Priority;
+import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.elmakers.mine.bukkit.plugins.classes.dao.PlayerDAO;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 
@@ -35,8 +35,13 @@ public class ClassesPlugin extends JavaPlugin
 	{
 		if (!bindPersistence()) return;
 		
-		List<PlayerDAO> players = new ArrayList<PlayerDAO>();
-		persistence.getAll(players, PlayerDAO.class);
+		playerListener.setPersistence(persistence);
+		
+		PluginManager pm = getServer().getPluginManager();
+			
+		pm.registerEvent(Type.PLAYER_COMMAND, playerListener, Priority.Normal, this);
+		pm.registerEvent(Type.PLAYER_QUIT, playerListener, Priority.Normal, this);
+		pm.registerEvent(Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
 	}
 	
 	public boolean bindPersistence() 
@@ -58,5 +63,6 @@ public class ClassesPlugin extends JavaPlugin
 	}
 	
 	private final Logger log = Logger.getLogger("Minecraft");
+	private final ClassesPlayerListener playerListener = new ClassesPlayerListener();
 	private Persistence persistence = null;
 }
