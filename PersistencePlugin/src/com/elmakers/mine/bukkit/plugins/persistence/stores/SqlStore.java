@@ -1,6 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.persistence.stores;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -10,10 +11,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Logger;
+import java.util.List;
 
 import com.elmakers.mine.bukkit.plugins.persistence.PersistedClass;
-import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistedField;
 
 public abstract class SqlStore extends PersistenceStore
@@ -22,6 +22,8 @@ public abstract class SqlStore extends PersistenceStore
 	public abstract String getDriverFileName();
 	public abstract String getMasterTableName();
 	public abstract String getConnectionString(String schema, String user, String password);
+	public abstract String getTypeName(SqlType dataType);
+	public abstract String getFieldValue(Object field, SqlType dataType);
 	
 	public boolean onConnect()
 	{
@@ -31,6 +33,8 @@ public abstract class SqlStore extends PersistenceStore
 	@Override
 	public boolean connect(String schema)
 	{
+		this.schema = schema;
+		
 		try 
 		{
 			// Check to see if the driver is loaded
@@ -128,28 +132,137 @@ public abstract class SqlStore extends PersistenceStore
 		{
 			PreparedStatement ps = connection.prepareStatement(checkQuery);
 			ResultSet rs = ps.executeQuery();
-			tableExists = !rs.isClosed() && rs.first();
+			tableExists = rs.next();
+			rs.close();
 		}
 		catch (SQLException ex)
 		{
+			ex.printStackTrace();
 		}
 		if (!tableExists)
 		{
+			List<PersistedField> fields = persisted.getPersistedFields();
 			String createStatement = "CREATE TABLE " + tableName + "(";
+			int fieldCount = 0;
+			for (PersistedField field : fields)
+			{
+				SqlType fieldType = getSqlType(field);
+				if (fieldCount != 0)
+				{
+					createStatement += ",";
+				}
+				fieldCount++;
+				createStatement += field.getName() + " " + getTypeName(fieldType);
+				if (field.isIdField())
+				{
+					createStatement += " PRIMARY KEY";
+				}
+			}
+			createStatement += ");";
 			
-			//TODO...
+			if (fieldCount == 0)
+			{
+				log.warning("Persistence: class " + tableName + " has no fields");
+				return;
+			}
+			
+			log.info(createStatement);
+			log.info("Persistence: Create table " + schema + "." + tableName);
+			try
+			{
+				PreparedStatement ps = connection.prepareStatement(createStatement);
+				ps.execute();
+			}
+			catch (SQLException ex)
+			{
+				ex.printStackTrace();
+			}
+		}
+		else
+		{
+			// TODO: validate schema, migrate data if necessary
 		}
 	}
 
 	@Override
-	public boolean load(PersistedClass persisted)
+	public boolean loadAll(PersistedClass persisted)
 	{
-		// TODO Auto-generated method stub
-		return false;
+		String tableName = persisted.getTableName();
+		String selectQuery = "SELECT ";
+		int fieldCount = 0;
+		List<PersistedField> fields = persisted.getPersistedFields();
+		for (PersistedField field : fields)
+		{
+			if (fieldCount == 0)
+			{
+				selectQuery += ", ";
+			}
+			fieldCount++;
+			selectQuery += field.getName();
+		}
+		if (fieldCount == 0)
+		{
+			log.warning("Persistence: class " + tableName + " has no fields");
+			return false;
+		}
+		selectQuery +=  " FROM tableName";
+		
+		try
+		{
+			PreparedStatement ps = connection.prepareStatement(selectQuery);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next())
+			{
+				Object newObject = createInstance(rs, persisted);
+				if (newObject != null)
+				{
+					persisted.put(newObject);
+				}
+			}
+			rs.close();
+		}
+		catch (SQLException ex)
+		{
+			ex.printStackTrace();
+			return false;
+		}
+		
+		return true;
+	}
+	
+	protected Object createInstance(ResultSet rs, PersistedClass persisted)
+	{
+		Object newObject = null;
+		
+		try
+		{
+			newObject = persisted.getPersistClass().newInstance();
+			List<PersistedField> fields = persisted.getPersistedFields();
+	        for (PersistedField field : fields)
+	        {
+	        	field.set(newObject, rs.getObject(field.getName()));
+	        }
+		}
+		catch (IllegalAccessException e)
+		{
+			newObject = null;
+			e.printStackTrace();
+		}
+		catch (InstantiationException e)
+		{
+			newObject = null;
+			e.printStackTrace();
+		}
+		catch (SQLException e)
+		{
+			newObject = null;
+			log.warning("Persistence error getting fields for " + persisted.getTableName() + ": " + e.getMessage());
+		}
+		return newObject;
 	}
 
 	@Override
-	public boolean save(PersistedClass persisted)
+	public boolean saveAll(PersistedClass persisted)
 	{
 		// TODO Auto-generated method stub
 		return false;
@@ -204,6 +317,7 @@ public abstract class SqlStore extends PersistenceStore
 		this.dataFolder = dataFolder;
 	}
 	
-	protected File dataFolder;
+	protected File dataFolder = null;
 	protected Connection connection = null;
+	protected String schema = null;
 }

@@ -13,8 +13,8 @@ public abstract class PersistenceStore
 	
 	public abstract void validateTable(PersistedClass persisted);
 	
-	public abstract boolean load(PersistedClass persisted);
-	public abstract boolean save(PersistedClass persisted);
+	public abstract boolean loadAll(PersistedClass persisted);
+	public abstract boolean saveAll(PersistedClass persisted);
 	
 	public void initialize(Persistence p)
 	{

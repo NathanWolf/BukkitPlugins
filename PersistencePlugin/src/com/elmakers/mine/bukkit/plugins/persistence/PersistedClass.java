@@ -60,6 +60,7 @@ public class PersistedClass
 				if (persist.id())
 				{
 					idField = pField;
+					pField.setIsIdField(true);
 				}
 				if (persist.order())
 				{
@@ -73,41 +74,23 @@ public class PersistedClass
 			Persist persist = method.getAnnotation(Persist.class);
 			if (persist != null)
 			{
-				Method setter = null;
-				Method getter = null;
-				String fieldName = getNameFromMethod(method);
-				if (fieldName.length() == 0)
+				PersistedField field = PersistedField.tryCreate(method, persistClass);
+				
+				if (field == null)
 				{
-					log.warning("Persistence: class " + persistClass.getName() + ": annotated field is too short");
+					log.warning("Persistence: class " + persistClass.getName() + ": getter/setter " + method.getName() + " failed to bind - missing matching getter/setter?");
 					continue;
 				}
 				
-				if (isSetter(method))
-				{
-					setter = method;
-					getter = findGetter(fieldName, persistClass);
-				}
-				else if (isGetter(method))
-				{
-					getter = method;
-					setter = findSetter(fieldName, persistClass);
-				}
-				
-				if (getter == null || setter == null)
-				{
-					log.warning("Persistence: class " + persistClass.getName() + ": annotated getter has no setter (or vice-versa)");
-					continue;
-				}
-				
-				PersistedField pField = new PersistedField(getter, setter);
-				fields.add(pField);
+				fields.add(field);
 				if (persist.id())
 				{
-					idField = pField;
+					idField = field;
+					field.setIsIdField(true);
 				}
 				if (persist.order())
 				{
-					orderByField = pField;
+					orderByField = field;
 				}
 			}
 		}
@@ -188,12 +171,17 @@ public class PersistedClass
 		return name;
 	}
 	
-	public List<Field> getPersistedFields()
+	public Class<? extends Object> getPersistClass()
 	{
-		List<Field> fields = new ArrayList<Field>();
+		return persistClass;
+	}
+	
+	public List<PersistedField> getPersistedFields()
+	{
+		List<PersistedField> fieldsCopy = new ArrayList<PersistedField>();
 		
-		// TDOD
-		return fields;
+		fieldsCopy.addAll(fields);
+		return fieldsCopy;
 	}
 	
 	/*
@@ -208,52 +196,6 @@ public class PersistedClass
 			store.validateTable(this);
 			loaded = true;
 		}
-	}
-	
-	protected boolean isGetter(Method method)
-	{
-		String methodName = method.getName();
-		return methodName.substring(0, 3).equals("get");
-	}
-	
-	protected boolean isSetter(Method method)
-	{
-		String methodName = method.getName();
-		return methodName.substring(0, 3).equals("get");
-	}
-	
-	protected String getNameFromMethod(Method method)
-	{
-		String methodName = method.getName();
-		return methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
-	}
-	
-	protected Method findSetter(String name, Class<? extends Object> c)
-	{
-		Method setter = null;
-		try
-		{
-			setter = c.getMethod("set" + name, Object.class);
-		}
-		catch (NoSuchMethodException e)
-		{
-			setter = null;
-		}
-		return setter;
-	}
-	
-	protected Method findGetter(String name, Class<?> c)
-	{
-		Method getter = null;
-		try
-		{
-			getter = c.getMethod("get" + name);
-		}
-		catch (NoSuchMethodException e)
-		{
-			getter = null;
-		}
-		return getter;
 	}
 	
 	protected Object getId(Object o)
