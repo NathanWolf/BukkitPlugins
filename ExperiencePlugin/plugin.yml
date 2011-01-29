@@ -1,0 +1,3 @@
+name: Experience
+main: com.elmakers.mine.bukkit.plugins.experience.ExperiencePlugin
+version: 0.10
