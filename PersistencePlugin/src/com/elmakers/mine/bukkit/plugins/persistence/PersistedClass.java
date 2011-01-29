@@ -194,6 +194,7 @@ public class PersistedClass
 		{
 			store.connect(schema);
 			store.validateTable(this);
+			store.loadAll(this);
 			loaded = true;
 		}
 	}

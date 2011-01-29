@@ -154,7 +154,7 @@ public class PersistedField
 	public static boolean isSetter(Method method)
 	{
 		String methodName = method.getName();
-		return methodName.substring(0, 3).equals("get");
+		return methodName.substring(0, 3).equals("set");
 	}
 	
 	public static String getNameFromMethod(Method method)

@@ -1,7 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.persistence.stores;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -193,7 +192,7 @@ public abstract class SqlStore extends PersistenceStore
 		List<PersistedField> fields = persisted.getPersistedFields();
 		for (PersistedField field : fields)
 		{
-			if (fieldCount == 0)
+			if (fieldCount != 0)
 			{
 				selectQuery += ", ";
 			}
@@ -205,7 +204,7 @@ public abstract class SqlStore extends PersistenceStore
 			log.warning("Persistence: class " + tableName + " has no fields");
 			return false;
 		}
-		selectQuery +=  " FROM tableName";
+		selectQuery +=  " FROM " + tableName + ";";
 		
 		try
 		{
