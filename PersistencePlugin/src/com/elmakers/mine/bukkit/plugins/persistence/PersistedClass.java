@@ -190,12 +190,13 @@ public class PersistedClass
 		
 	protected void checkLoadCache()
 	{
-		if (!loaded && cacheObjects)
+		if (loadState == LoadState.UNLOADED && cacheObjects)
 		{
+			loadState = LoadState.LOADING;
 			store.connect(schema);
 			store.validateTable(this);
 			store.loadAll(this);
-			loaded = true;
+			loadState = LoadState.LOADED;
 		}
 	}
 	
@@ -222,8 +223,15 @@ public class PersistedClass
 	 * Private data
 	 */
 	
+	enum LoadState
+	{
+		UNLOADED,
+		LOADING,
+		LOADED,
+	}
+	
 	protected boolean dirty = false;
-	protected boolean loaded = false;
+	protected LoadState loadState = LoadState.UNLOADED;
 	
 	protected boolean cacheObjects;
 	protected Class<? extends Object> persistClass;

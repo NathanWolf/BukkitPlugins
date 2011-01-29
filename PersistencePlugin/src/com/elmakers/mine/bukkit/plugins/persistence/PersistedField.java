@@ -130,12 +130,12 @@ public class PersistedField
 		if (isSetter(getterOrSetter))
 		{
 			setter = getterOrSetter;
-			getter = findGetter(fieldName, persistClass);
+			getter = findGetter(setter, persistClass);
 		}
 		else if (isGetter(getterOrSetter))
 		{
 			getter = getterOrSetter;
-			setter = findSetter(fieldName, persistClass);
+			setter = findSetter(getter, persistClass);
 		}
 		if (setter == null || getter == null)
 		{
@@ -163,13 +163,13 @@ public class PersistedField
 		return methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
 	}
 	
-	public static Method findSetter(String name, Class<? extends Object> c)
+	public static Method findSetter(Method getter, Class<? extends Object> c)
 	{
 		Method setter = null;
-		name = name.substring(0, 1).toUpperCase() + name.substring(1);
+		String name = "s" + getter.getName().substring(1);
 		try
 		{
-			setter = c.getMethod("set" + name, Object.class);
+			setter = c.getMethod(name, getter.getReturnType());
 		}
 		catch (NoSuchMethodException e)
 		{
@@ -178,13 +178,13 @@ public class PersistedField
 		return setter;
 	}
 	
-	public static Method findGetter(String name, Class<?> c)
+	public static Method findGetter(Method setter, Class<?> c)
 	{
 		Method getter = null;
-		name = name.substring(0, 1).toUpperCase() + name.substring(1);
+		String name = "g" + setter.getName().substring(1);
 		try
 		{
-			getter = c.getMethod("get" + name);
+			getter = c.getMethod(name);
 		}
 		catch (NoSuchMethodException e)
 		{
