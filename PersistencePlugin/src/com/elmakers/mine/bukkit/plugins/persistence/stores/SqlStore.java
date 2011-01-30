@@ -15,6 +15,7 @@ import java.util.List;
 import com.elmakers.mine.bukkit.plugins.persistence.DataType;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistedClass;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistedField;
+import com.elmakers.mine.bukkit.plugins.persistence.PersistedReference;
 
 public abstract class SqlStore extends PersistenceStore
 {
@@ -220,7 +221,7 @@ public abstract class SqlStore extends PersistenceStore
 			int index = 1;
 			for (PersistedField field : fields)
             {
-				Object value = field.get(o);
+				Object value = field.getColumnData(o);
 				
 				if (value != null)
 				{
@@ -269,6 +270,11 @@ public abstract class SqlStore extends PersistenceStore
 		
 		try
 		{
+			// Begin deferred referencing, to prevent the problem of DAO's referencing unloaded DAOs.
+			// DAOs will be loaded recursively as needed,
+			// and then all deferred references will be resolved afterward.
+			PersistedReference.beginDefer();
+			
 			PreparedStatement ps = connection.prepareStatement(selectQuery);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next())
@@ -280,6 +286,12 @@ public abstract class SqlStore extends PersistenceStore
 				}
 			}
 			rs.close();
+			
+			// Bind deferred references, to handle DAOs referencing other DAOs, even of the
+			// Same type. 
+			// DAOs will be loaded recursively as needed, and then references bound when everything has been
+			// resolved.
+			PersistedReference.endDefer();
 		}
 		catch (SQLException ex)
 		{
@@ -300,26 +312,17 @@ public abstract class SqlStore extends PersistenceStore
 			List<PersistedField> fields = persisted.getPersistedFields();
 	        for (PersistedField field : fields)
 	        {
-	        	Object value = rs.getObject(field.getColumnName());
-	        	DataType sqlType = field.getColumnType();
-	        	field.set(newObject, getDataValue(value, sqlType));
+        		Object value = rs.getObject(field.getColumnName());
+        		DataType sqlType = field.getColumnType();
+        		field.setColumnData(newObject, getDataValue(value, sqlType));
 	        }
 		}
-		catch (IllegalAccessException e)
-		{
-			newObject = null;
-			e.printStackTrace();
-		}
-		catch (InstantiationException e)
-		{
-			newObject = null;
-			e.printStackTrace();
-		}
-		catch (SQLException e)
+		catch (Exception e)
 		{
 			newObject = null;
 			log.warning("Persistence error getting fields for " + persisted.getTableName() + ": " + e.getMessage());
 		}
+
 		return newObject;
 	}
 	

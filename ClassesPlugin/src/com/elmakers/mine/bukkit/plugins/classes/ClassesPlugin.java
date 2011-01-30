@@ -38,9 +38,22 @@ public class ClassesPlugin extends JavaPlugin
 		
 		playerListener.setPersistence(persistence);
 		
-		UserGroup testGroup = new UserGroup();
-		persistence.put(testGroup);
-		persistence.save();
+		UserGroup testGroup = persistence.get("test", UserGroup.class);
+		if (testGroup == null)
+		{
+			testGroup = new UserGroup();
+			testGroup.setId("test");
+			testGroup.setName("Child Node");
+			UserGroup parentGroup = new UserGroup();
+			parentGroup.setId("testParent");
+			parentGroup.setName("Test Parent");
+			testGroup.setParent(parentGroup);
+			persistence.put(testGroup);
+			persistence.put(parentGroup);
+			persistence.save();
+		}
+		log.info("Test group: " + testGroup.getName());
+		log.info("Parent group: " + testGroup.getParent().getName());
 		
 		PluginManager pm = getServer().getPluginManager();
 			

@@ -94,6 +94,21 @@ public class PersistedField
 		return DataType.getTypeFromClass(fieldType);
 	}
 	
+	public String getColumnName()
+	{
+		return name;
+	}
+	
+	public Object getColumnData(Object o)
+	{
+		return get(o);
+	}
+	
+	public void setColumnData(Object o, Object data)
+	{
+		set(o, data);
+	}
+	
 	public Class<?> getType()
 	{
 		if (getter != null)
@@ -108,11 +123,6 @@ public class PersistedField
 	}
 	
 	public String getName()
-	{
-		return name;
-	}
-	
-	public String getColumnName()
 	{
 		return name;
 	}
