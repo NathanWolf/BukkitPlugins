@@ -88,6 +88,12 @@ public class PersistedField
 		return result;
 	}
 	
+	public DataType getColumnType()
+	{
+		Class<?> fieldType = getType();
+		return DataType.getTypeFromClass(fieldType);
+	}
+	
 	public Class<?> getType()
 	{
 		if (getter != null)
@@ -106,6 +112,11 @@ public class PersistedField
 		return name;
 	}
 	
+	public String getColumnName()
+	{
+		return name;
+	}
+	
 	public boolean isIdField()
 	{
 		return idField;
@@ -114,6 +125,22 @@ public class PersistedField
 	public void setIsIdField(boolean isId)
 	{
 		idField = isId;
+	}
+	
+	public static PersistedField tryCreate(Field field, Class<?> persistClass)
+	{
+		DataType dataType = DataType.getTypeFromClass(field.getType());
+		PersistedField pField = null;
+
+		if (dataType == DataType.OBJECT)
+		{
+			pField = new PersistedReference(field);
+		}
+		else if (dataType != DataType.NULL)
+		{
+			pField = new PersistedField(field);
+		}
+		return pField;
 	}
 	
 	public static PersistedField tryCreate(Method getterOrSetter, Class<?> persistClass)
@@ -142,7 +169,19 @@ public class PersistedField
 			return null;
 		}
 		
-		return new PersistedField(getter, setter);
+		PersistedField pField = null;
+		DataType dataType = DataType.getTypeFromClass(getter.getReturnType());
+		
+		if (dataType == DataType.OBJECT)
+		{
+			pField = new PersistedReference(getter, setter);
+		}
+		else if (dataType != DataType.NULL)
+		{
+			pField = new PersistedField(getter, setter);
+		}
+
+		return pField;
 	}
 	
 	public static boolean isGetter(Method method)
@@ -213,9 +252,14 @@ public class PersistedField
 		return getter;
 	}
 	
-	private Method getter;
-	private Method setter;
-	private Field field;
-	private String name;
-	private boolean idField = false;
+	public void bind()
+	{
+		
+	}
+	
+	private Method		getter;
+	private Method		setter;
+	private Field		field;
+	protected String	name;
+	protected boolean	idField	= false;
 }

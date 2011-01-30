@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import com.elmakers.mine.bukkit.plugins.persistence.DataType;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistedClass;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistedField;
 
@@ -21,9 +22,9 @@ public abstract class SqlStore extends PersistenceStore
 	public abstract String getDriverFileName();
 	public abstract String getMasterTableName();
 	public abstract String getConnectionString(String schema, String user, String password);
-	public abstract String getTypeName(SqlType dataType);
-	public abstract Object getFieldValue(Object field, SqlType dataType);
-	public abstract Object getDataValue(Object storedValue, SqlType dataType);
+	public abstract String getTypeName(DataType dataType);
+	public abstract Object getFieldValue(Object field, DataType dataType);
+	public abstract Object getDataValue(Object storedValue, DataType dataType);
 	
 	public boolean onConnect()
 	{
@@ -146,13 +147,14 @@ public abstract class SqlStore extends PersistenceStore
 			int fieldCount = 0;
 			for (PersistedField field : fields)
 			{
-				SqlType fieldType = getSqlType(field);
+				DataType fieldType = field.getColumnType();
+				String fieldName = field.getColumnName();
 				if (fieldCount != 0)
 				{
 					createStatement += ",";
 				}
 				fieldCount++;
-				createStatement += field.getName() + " " + getTypeName(fieldType);
+				createStatement += fieldName + " " + getTypeName(fieldType);
 				if (field.isIdField())
 				{
 					createStatement += " PRIMARY KEY";
@@ -200,7 +202,7 @@ public abstract class SqlStore extends PersistenceStore
 				valueList += ", ";
 			}
 			fieldCount++;
-			fieldList += field.getName();
+			fieldList += field.getColumnName();
 			valueList += "?";
 		}
 		if (fieldCount == 0)
@@ -222,7 +224,7 @@ public abstract class SqlStore extends PersistenceStore
 				
 				if (value != null)
 				{
-					ps.setObject(index, getFieldValue(value, getSqlType(field)));
+					ps.setObject(index, getFieldValue(value, field.getColumnType()));
 				}
 				else
 				{
@@ -256,7 +258,7 @@ public abstract class SqlStore extends PersistenceStore
 				selectQuery += ", ";
 			}
 			fieldCount++;
-			selectQuery += field.getName();
+			selectQuery += field.getColumnName();
 		}
 		if (fieldCount == 0)
 		{
@@ -298,8 +300,8 @@ public abstract class SqlStore extends PersistenceStore
 			List<PersistedField> fields = persisted.getPersistedFields();
 	        for (PersistedField field : fields)
 	        {
-	        	Object value = rs.getObject(field.getName());
-	        	SqlType sqlType = getSqlType(field);
+	        	Object value = rs.getObject(field.getColumnName());
+	        	DataType sqlType = field.getColumnType();
 	        	field.set(newObject, getDataValue(value, sqlType));
 	        }
 		}
@@ -333,19 +335,6 @@ public abstract class SqlStore extends PersistenceStore
 			isClosed = true;
 		}
 		return (connection != null && !isClosed);
-	}
-	
-	protected SqlType getSqlType(PersistedField field)
-	{
-		Class<?> fieldType = field.getType();
-		SqlType sqlType = SqlType.getTypeFromClass(fieldType);
-		
-		if (sqlType == SqlType.NULL)
-		{
-			log.warning("Persistence: field: " + field.getType().getName() + " not a supported type. Object refences not supported, yet.");
-		}
-				
-		return sqlType;
 	}
 
 	public void setDataFolder(File dataFolder)

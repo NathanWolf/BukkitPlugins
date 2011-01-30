@@ -174,6 +174,9 @@ public class Persistence
 			}
 			persistedClasses.add(persistedClass);
 			persistedClassMap.put(persistType, persistedClass);
+			
+			// Deferred bind refernces- to avoid circular reference issues
+			persistedClass.bindReferences();
 		}
 		return persistedClass;
 	}

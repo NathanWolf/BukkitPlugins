@@ -55,7 +55,14 @@ public class PersistedClass
 			Persist persist = field.getAnnotation(Persist.class);
 			if (persist != null)
 			{
-				PersistedField pField = new PersistedField(field);
+				PersistedField pField = PersistedField.tryCreate(field, persistClass);
+				
+				if (pField == null)
+				{
+					log.warning("Persistence: Field " + persistClass.getName() + "." + field.getName() + " is not persistable, type=" + field.getType().getName());
+					continue;
+				}
+				
 				fields.add(pField);
 				if (persist.id())
 				{
@@ -78,7 +85,7 @@ public class PersistedClass
 				
 				if (field == null)
 				{
-					log.warning("Persistence: class " + persistClass.getName() + ": getter/setter " + method.getName() + " failed to bind - missing matching getter/setter?");
+					log.warning("Persistence: Field " + persistClass.getName() + "." + method.getName() + " is not persistable, type=" + method.getReturnType().getName() +" (missing getter/setter?)");
 					continue;
 				}
 				
@@ -102,6 +109,14 @@ public class PersistedClass
 		}
 		
 		return (fields.size() > 0);
+	}
+	
+	public void bindReferences()
+	{
+		for (PersistedField field : fields)
+		{
+			field.bind();
+		}
 	}
 	
 	public void put(Object o)
@@ -176,6 +191,11 @@ public class PersistedClass
 	public Class<? extends Object> getPersistClass()
 	{
 		return persistClass;
+	}
+	
+	public PersistedField getIdField()
+	{
+		return idField;
 	}
 	
 	public List<PersistedField> getPersistedFields()

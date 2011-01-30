@@ -3,6 +3,8 @@ package com.elmakers.mine.bukkit.plugins.persistence.stores;
 import java.io.File;
 import java.util.Date;
 
+import com.elmakers.mine.bukkit.plugins.persistence.DataType;
+
 public class SqlLiteStore extends SqlStore
 {
 	@Override
@@ -22,7 +24,7 @@ public class SqlLiteStore extends SqlStore
 	}
 	
 	@Override
-	public String getTypeName(SqlType dataType)
+	public String getTypeName(DataType dataType)
 	{
 		switch (dataType)
 		{
@@ -41,17 +43,17 @@ public class SqlLiteStore extends SqlStore
 	}
 	
 	@Override
-	public Object getFieldValue(Object field, SqlType dataType)
+	public Object getFieldValue(Object field, DataType dataType)
 	{
 		if (field == null) return "null";
 		
-		if (dataType == SqlType.DATE)
+		if (dataType == DataType.DATE)
 		{
 			Date d = (Date)field;
 			Integer seconds = (int)(d.getTime() / 1000);
 			return seconds;
 		}
-		if (dataType == SqlType.BOOLEAN)
+		if (dataType == DataType.BOOLEAN)
 		{
 			Boolean flag = (Boolean)field;
 			Integer intValue = flag ? 1 : 0;
@@ -60,17 +62,17 @@ public class SqlLiteStore extends SqlStore
 		return field;
 	}
 	
-	public Object getDataValue(Object storedValue, SqlType dataType)
+	public Object getDataValue(Object storedValue, DataType dataType)
 	{
 		if (storedValue == null) return null;
 		
-		if (dataType == SqlType.DATE)
+		if (dataType == DataType.DATE)
 		{
 			Integer i = (Integer)storedValue;
 			Date d = new Date(i * 1000);
 			return d;
 		}
-		if (dataType == SqlType.BOOLEAN)
+		if (dataType == DataType.BOOLEAN)
 		{
 			Integer i = (Integer)storedValue;
 			Boolean b = i != 0;
