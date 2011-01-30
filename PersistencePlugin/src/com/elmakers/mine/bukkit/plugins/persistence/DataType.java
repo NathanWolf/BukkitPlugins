@@ -16,6 +16,11 @@ public enum DataType
 	LIST,
 	NULL;
 	
+	public String toString()
+	{
+		return this.name().toLowerCase();
+	}
+	
 	public static DataType getTypeFromClass(Class<?> fieldType)
 	{
 		DataType sqlType = NULL;

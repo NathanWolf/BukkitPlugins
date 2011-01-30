@@ -188,6 +188,11 @@ public class PersistedClass
 		return name;
 	}
 	
+	public String getSchema()
+	{
+		return schema;
+	}
+	
 	public Class<? extends Object> getPersistClass()
 	{
 		return persistClass;

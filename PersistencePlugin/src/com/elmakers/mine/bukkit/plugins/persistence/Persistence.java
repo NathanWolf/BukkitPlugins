@@ -103,6 +103,8 @@ public class Persistence
 	{
 		persistedClasses.clear();
 		persistedClassMap.clear();
+		schemaMap.clear();
+		schemas.clear();
 	}
 	
 	/*
@@ -148,6 +150,18 @@ public class Persistence
 		return store;
 	}
 	
+	public Schema getSchema(String schemaName)
+	{
+		return schemaMap.get(schemaName);
+	}
+	
+	public List<Schema> getSchemaList()
+	{
+		List<Schema> schemaList = new ArrayList<Schema>();
+		schemaList.addAll(schemas);
+		return schemaList;
+	}
+	
 	/*
 	 * Protected members
 	 */
@@ -172,6 +186,16 @@ public class Persistence
 				log.warning("No fields in class '" + persistType.getName() + "', Did you use @Persist?");
 				return null;
 			}
+			String schemaName = persistedClass.getSchema();
+			Schema schema = schemaMap.get(schemaName);
+			if (schema == null)
+			{
+				schema = new Schema();
+				schema.setName(schemaName);
+				schemas.add(schema);
+				schemaMap.put(schemaName, schema);
+			}
+			schema.addPersistedClass(persistedClass);
 			persistedClasses.add(persistedClass);
 			persistedClassMap.put(persistType, persistedClass);
 			
@@ -189,6 +213,9 @@ public class Persistence
 	
 	private final HashMap<Class<? extends Object>, PersistedClass> persistedClassMap = new HashMap<Class<? extends Object>, PersistedClass>(); 
 	private final List<PersistedClass> persistedClasses = new ArrayList<PersistedClass>(); 
+	private final List<Schema> schemas = new ArrayList<Schema>();
+	private final HashMap<String, Schema> schemaMap = new HashMap<String, Schema>();
+
 	private final Logger log = Logger.getLogger("Minecraft");
 	private final HashMap<String, PersistenceStore> schemaStores = new HashMap<String, PersistenceStore>();
 	private final List<PersistenceStore> stores = new ArrayList<PersistenceStore>();

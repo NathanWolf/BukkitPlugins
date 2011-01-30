@@ -2,8 +2,8 @@
 
 # 0.12
 
-- Support Lists.
-- Add console commands, help message
+- Support Lists- not fully functional yet.
+- Add basic console UI.
 
 ## 0.11
 
