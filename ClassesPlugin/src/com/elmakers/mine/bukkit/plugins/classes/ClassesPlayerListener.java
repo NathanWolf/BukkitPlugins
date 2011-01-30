@@ -4,7 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerListener;
 
-import com.elmakers.mine.bukkit.plugins.classes.dao.PlayerDAO;
+import com.elmakers.mine.bukkit.plugins.classes.dao.User;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 
 public class ClassesPlayerListener extends PlayerListener
@@ -19,10 +19,10 @@ public class ClassesPlayerListener extends PlayerListener
 	{
 		Player player = event.getPlayer();
 		String playerName = player.getName();
-		PlayerDAO playerData = persistence.get(playerName, PlayerDAO.class);
+		User playerData = persistence.get(playerName, User.class);
 		if (playerData == null)
 		{
-			playerData = new PlayerDAO(player);
+			playerData = new User(player);
 		}
 		playerData.update(player);
 		persistence.put(playerData);
@@ -34,7 +34,7 @@ public class ClassesPlayerListener extends PlayerListener
 	{
 		Player player = event.getPlayer();
 		String playerName = player.getName();
-		PlayerDAO playerData = persistence.get(playerName, PlayerDAO.class);
+		User playerData = persistence.get(playerName, User.class);
 		if (playerData != null)
 		{
 			playerData.disconnect(player);

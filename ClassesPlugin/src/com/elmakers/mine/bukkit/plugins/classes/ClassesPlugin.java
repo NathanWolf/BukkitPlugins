@@ -12,6 +12,7 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.elmakers.mine.bukkit.plugins.classes.dao.UserGroup;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 
@@ -36,6 +37,10 @@ public class ClassesPlugin extends JavaPlugin
 		if (!bindPersistence()) return;
 		
 		playerListener.setPersistence(persistence);
+		
+		UserGroup testGroup = new UserGroup();
+		persistence.put(testGroup);
+		persistence.save();
 		
 		PluginManager pm = getServer().getPluginManager();
 			

@@ -7,14 +7,14 @@ import org.bukkit.entity.Player;
 import com.elmakers.mine.bukkit.plugins.persistence.annotations.Persist;
 import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
 
-@PersistClass(name = "player", schema = "classes") 
-public class PlayerDAO
+@PersistClass(name = "users", schema = "classes") 
+public class User
 {
-	public PlayerDAO()
+	public User()
 	{
 	}
 	
-	public PlayerDAO(Player loggedIn)
+	public User(Player loggedIn)
 	{
 		id = loggedIn.getName();
 		lastDisconnect = null;
