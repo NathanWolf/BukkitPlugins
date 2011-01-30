@@ -3,6 +3,7 @@
 # 0.12
 
 - Support Lists.
+- Add console commands, help message
 
 ## 0.11
 
