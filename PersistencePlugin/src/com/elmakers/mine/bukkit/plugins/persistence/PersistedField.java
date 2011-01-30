@@ -150,6 +150,10 @@ public class PersistedField
 		{
 			pField = new PersistedField(field);
 		}
+		else if (dataType == DataType.LIST)
+		{
+			pField = new PersistedList(field);
+		}
 		return pField;
 	}
 	
@@ -185,6 +189,10 @@ public class PersistedField
 		if (dataType == DataType.OBJECT)
 		{
 			pField = new PersistedReference(getter, setter);
+		}
+		else if (dataType == DataType.LIST)
+		{
+			pField = new PersistedList(getter, setter);
 		}
 		else if (dataType != DataType.NULL)
 		{
@@ -267,9 +275,9 @@ public class PersistedField
 		
 	}
 	
-	private Method		getter;
-	private Method		setter;
-	private Field		field;
+	protected Method	getter;
+	protected Method	setter;
+	protected Field		field;
 	protected String	name;
 	protected boolean	idField	= false;
 }

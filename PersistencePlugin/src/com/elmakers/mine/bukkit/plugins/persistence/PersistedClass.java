@@ -237,7 +237,7 @@ public class PersistedClass
 		}
 	}
 	
-	protected Object getId(Object o)
+	public Object getId(Object o)
 	{
 		Object value = null;
 		if (idField != null)

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.12
+
+- Support Lists.
+
 ## 0.11
 
 - Support references to other DAO's, including circular class references, for storing structures such as trees.
