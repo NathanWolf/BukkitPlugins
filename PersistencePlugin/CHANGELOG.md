@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.13
+
+ - Implement reload console command, add save command and RESET command.
+ - Add list command for data querying.
+
 # 0.12
 
 - Support Lists- not fully functional yet.

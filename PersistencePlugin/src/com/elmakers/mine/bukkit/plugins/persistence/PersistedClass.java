@@ -173,6 +173,18 @@ public class PersistedClass
 		return cached.getObject();
 	}
 	
+	public void clear()
+	{
+		cacheMap.clear();
+		cache.clear();
+		loadState = LoadState.UNLOADED;
+	}
+	
+	public void reset()
+	{
+		store.reset(this);
+	}
+	
 	public boolean isDirty()
 	{
 		return dirty;

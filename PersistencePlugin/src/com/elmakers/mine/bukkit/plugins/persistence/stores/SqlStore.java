@@ -125,6 +125,28 @@ public abstract class SqlStore extends PersistenceStore
 		}
 		connection = null;
 	}
+	
+	@Override
+	public void reset(PersistedClass persisted)
+	{
+		String tableName = persisted.getTableName();
+		if (tableExists(tableName))
+		{
+			String dropQuery = "DROP TABLE " + tableName;
+			try
+			{
+				PreparedStatement ps = connection.prepareStatement(dropQuery);
+				ps.execute();
+			}
+			catch (SQLException ex)
+			{
+				ex.printStackTrace();
+				return;
+			}
+			log.info("Dropped table " + schema + "." + tableName);
+		}
+		return;
+	}
 
 	public boolean tableExists(String tableName)
 	{
