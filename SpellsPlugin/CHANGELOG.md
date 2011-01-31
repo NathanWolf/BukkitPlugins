@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.74
+
+ - Fix a really heinous bug that was keeping all spells from saving/loading their properties.
+ - Update to work with newest CraftBukkit changes.
+
 ## 0.73
 
  - Recall automatically drops a marker on death. (Requires a Craftbukkit update!)

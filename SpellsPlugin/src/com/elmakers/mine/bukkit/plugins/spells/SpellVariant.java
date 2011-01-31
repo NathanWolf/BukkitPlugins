@@ -63,7 +63,6 @@ public class SpellVariant implements Comparable<SpellVariant>
 		return spell;
 	}
 	
-	@Override
 	public int compareTo(SpellVariant other)
 	{
 		return getName().compareTo(other.getName());

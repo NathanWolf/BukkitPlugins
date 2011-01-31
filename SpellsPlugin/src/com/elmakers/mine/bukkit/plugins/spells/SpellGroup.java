@@ -8,7 +8,6 @@ class SpellGroup implements Comparable<SpellGroup>
 	public String groupName;
 	public List<SpellVariant> spells = new ArrayList<SpellVariant>();
 	
-	@Override
 	public int compareTo(SpellGroup other) 
 	{
 		return groupName.compareTo(other.groupName);

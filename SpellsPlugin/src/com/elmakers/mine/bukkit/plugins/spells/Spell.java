@@ -562,14 +562,11 @@ public abstract class Spell implements Comparable<Spell>
 	 * @param z
 	 * @return true if successful
 	 */
-	protected boolean setBlockAt(int blockType, int x, int y, int z)
+	protected void setBlockAt(int blockType, int x, int y, int z)
 	{
 		World world = player.getWorld();
-		Block block = world.getBlockAt(x, y, z);
-		block.setTypeId(blockType);
 		CraftWorld craftWorld = (CraftWorld) world;
-		craftWorld.updateBlock(x, y, z);
-		return block.getTypeId() == blockType;
+		craftWorld.updateBlock(x, y, z, blockType, null);
 	}
 
 	/**
@@ -711,7 +708,6 @@ public abstract class Spell implements Comparable<Spell>
 		targetingComplete = false;
 	}
 	
-	@Override
 	public int compareTo(Spell other)
 	{
 		return getName().compareTo(other.getName());

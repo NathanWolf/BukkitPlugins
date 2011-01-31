@@ -571,8 +571,8 @@ public class Spells
 	public void initialize(SpellsPlugin plugin)
 	{
 		this.plugin = plugin;
-		load();
 		addBuiltinSpells();
+		load();
 	}
 	
 	public void load()
@@ -868,7 +868,7 @@ public class Spells
 		addSpell(new ArrowSpell());
 		addSpell(new FrostSpell());
 		addSpell(new GillsSpell());
-		addSpell(new FamiliarSpell());
+		//addSpell(new FamiliarSpell());
 		addSpell(new ConstructSpell());
 		addSpell(new TransmuteSpell());
 		addSpell(new RecallSpell());

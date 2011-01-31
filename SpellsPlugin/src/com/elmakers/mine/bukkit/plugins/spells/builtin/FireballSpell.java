@@ -39,9 +39,9 @@ public class FireballSpell extends Spell {
 		
 		double d8 = 4D;
         Vec3D vec3d = getLocation(player, 1.0F);
-        fireball.p = playerLoc.getX() + vec3d.xCoord * d8;
-        fireball.q = playerLoc.getY() + (double)(height / 2.0F) + 0.5D;
-        fireball.r = playerLoc.getZ() + vec3d.zCoord * d8;
+        fireball.locX = playerLoc.getX() + vec3d.xCoord * d8;
+        fireball.locY = playerLoc.getY() + (double)(height / 2.0F) + 0.5D;
+        fireball.locZ = playerLoc.getZ() + vec3d.zCoord * d8;
         
         ((CraftWorld)player.getWorld()).getHandle().a(fireball);
 		return true;

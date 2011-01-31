@@ -35,7 +35,6 @@ public class SpellsPlugin extends JavaPlugin
 	 * Plugin interface
 	 */
 	
-	@Override
 	public void onEnable() 
 	{
 		bindDynmapPlugin();
@@ -68,7 +67,6 @@ public class SpellsPlugin extends JavaPlugin
         log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled");
 	}
 
-	@Override
 	public void onDisable() 
 	{
 		spells.clear();
