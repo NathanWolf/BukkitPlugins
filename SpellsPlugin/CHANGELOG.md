@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.75
+
+ - Fix the familiar spell. I needed mc-dev, now!
+ - Fix spell variants when used on the console.
+ - Tree variants now work, by the way! So does auto-recall-on-death.
+
 ## 0.74
 
  - Fix a really heinous bug that was keeping all spells from saving/loading their properties.

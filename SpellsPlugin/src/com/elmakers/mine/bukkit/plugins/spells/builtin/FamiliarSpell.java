@@ -5,26 +5,28 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-
-import net.minecraft.server.EntityLiving;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.Material;
-import org.bukkit.event.player.PlayerEvent;
-
-/*
+import net.minecraft.server.EntityChicken;
+import net.minecraft.server.EntityCow;
+import net.minecraft.server.EntityCreeper;
+import net.minecraft.server.EntityGhast;
+import net.minecraft.server.EntityPig;
 import net.minecraft.server.EntityPigZombie;
+import net.minecraft.server.EntitySheep;
 import net.minecraft.server.EntitySkeleton;
 import net.minecraft.server.EntitySpider;
+import net.minecraft.server.EntitySquid;
 import net.minecraft.server.EntityZombie;
+import net.minecraft.server.EntityLiving;
+import net.minecraft.server.EntityGiantZombie;
+import net.minecraft.server.World;
 
-import net.minecraft.server.WorldServer;
-
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.craftbukkit.entity.CraftLivingEntity;
+import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.Location;
-*/
+import org.bukkit.Material;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.SpellEventType;
@@ -58,7 +60,7 @@ public class FamiliarSpell extends Spell
 		{
 			if (familiar != null)
 			{
-				//((CraftLivingEntity)(familiar.getBukkitEntity())).setHealth(0);
+				familiar.health = 0;
 				familiar = null;
 			}
 		}
@@ -176,39 +178,36 @@ public class FamiliarSpell extends Spell
 		
 	protected EntityLiving spawnFamiliar(Block target, FamiliarType famType)
 	{
-		return null;
-		/*
 		Location location = new Location(player.getWorld(), target.getX(), target.getY(), target.getZ(), player.getLocation().getYaw(), player.getLocation().getPitch());
 		EntityLiving e = null;
 		CraftPlayer craftPlayer = (CraftPlayer)player;
 		CraftWorld craftWorld = (CraftWorld)craftPlayer.getWorld();
-		WorldServer world = craftWorld.getHandle();
+		World world = craftWorld.getHandle();
 		
 		switch (famType)
 		{
-			//case SHEEP: e = new EntitySheep(world); break;
-			//case PIG: e = new EntityPig(world); break;
-			//case CHICKEN: e = new EntityChicken(world); break;
-			//case COW: e = new EntityCow(world); break;
-			//case CREEPER: e = new EntityCreeper(world); break;
+			case SHEEP: e = new EntitySheep(world); break;
+			case PIG: e = new EntityPig(world); break;
+			case CHICKEN: e = new EntityChicken(world); break;
+			case COW: e = new EntityCow(world); break;
+			case CREEPER: e = new EntityCreeper(world); break;
 			case PIGZOMBIE: e = new EntityPigZombie(world); break;
 			case SKELETON: e = new EntitySkeleton(world); break;
 			case SPIDER: e = new EntitySpider(world); break;
-			//case SQUID: e = new EntitySquid(world); break;
-			//case GHAST: e = new EntityGhast(world); break;
+			case SQUID: e = new EntitySquid(world); break;
+			case GHAST: e = new EntityGhast(world); break;
 			case ZOMBIE: e = new EntityZombie(world); break;
-			//case GIANT: e = new EntityZombieSimple(world); break;
+			case GIANT: e = new EntityGiantZombie(world); break;
 			//case SLIME: e = new EntitySlime(world); break;
 			//case FISH: e = new EntityFish(world); break;
 		}
 		
 		if (e != null)
 		{
-			//e.getBukkitEntity().teleportTo(location);
-	       // world.a(e);
+			e.c(location.getX(), location.getY(), location.getZ(), location.getYaw(), 0.0F);
+	        world.a(e);
 		}
 		return e;
-		*/
 	}
 
 	protected PlayerFamiliar getFamiliar(String playerName)

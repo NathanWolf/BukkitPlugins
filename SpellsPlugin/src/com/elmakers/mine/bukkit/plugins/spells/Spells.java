@@ -667,7 +667,7 @@ public class Spells
 	{
 		// Must allow listeners to remove themselves during the event!
 		List<Spell> active = new ArrayList<Spell>();
-		active.addAll(quitListeners);
+		active.addAll(deathListeners);
 		for (Spell listener : active)
 		{
 			listener.onPlayerDeath(player, event);
@@ -755,7 +755,7 @@ public class Spells
     		parameters[i - 2] = split[i];
     	}
     	
-    	spell.getSpell().cast(parameters, event.getPlayer());
+    	castSpell(spell, parameters, event.getPlayer());
     }
    
     /**
@@ -868,7 +868,7 @@ public class Spells
 		addSpell(new ArrowSpell());
 		addSpell(new FrostSpell());
 		addSpell(new GillsSpell());
-		//addSpell(new FamiliarSpell());
+		addSpell(new FamiliarSpell());
 		addSpell(new ConstructSpell());
 		addSpell(new TransmuteSpell());
 		addSpell(new RecallSpell());

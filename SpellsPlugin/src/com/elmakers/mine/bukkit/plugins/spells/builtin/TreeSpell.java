@@ -57,6 +57,9 @@ public class TreeSpell extends Spell
 	
 	public static TreeType parseTreeString(String s, TreeType defaultTreeType)
 	{
+		if (s.equalsIgnoreCase("big")) return TreeType.BIG_TREE;
+		if (s.equalsIgnoreCase("tall")) return TreeType.TALL_REDWOOD;
+		
 		TreeType tree = defaultTreeType;
 		for (TreeType t : TreeType.values())
 		{
