@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.14
+
+ - Implement persistence of Lists of primitive objects. Lists of DAO references is not far behind.
+
 # 0.13
 
  - Implement reload console command, add save command and RESET command.

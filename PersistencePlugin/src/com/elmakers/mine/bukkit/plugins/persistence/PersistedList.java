@@ -24,6 +24,11 @@ public class PersistedList extends PersistedField
 	{
 		return listType;
 	}
+	
+	public DataType getListColumnType()
+	{
+		return DataType.getTypeFromClass(getListType());
+	}
 
 	@SuppressWarnings("unchecked")
 	public List<? extends Object> getList(Object o)
@@ -31,11 +36,25 @@ public class PersistedList extends PersistedField
 		return (List<? extends Object>)get(o);
 	}
 	
-	public String getTableName()
+	public String getTableName(PersistedClass persisted)
 	{
 		String tableName = name;
 		tableName = tableName.substring(0, 1).toUpperCase() + tableName.substring(1);
-		return tableName;
+		return persisted.getTableName() + tableName;
+	}
+	
+	public String getIdColumnName(PersistedClass persisted, PersistedField idField)
+	{
+		String tableName = persisted.getTableName();
+		String idFieldName = idField.getColumnName();
+		idFieldName = tableName.substring(0, 1).toLowerCase() + tableName.substring(1) 
+			+ idFieldName.substring(0, 1).toUpperCase() + idFieldName.substring(1);
+		return idFieldName;
+	}
+	
+	public String getDataColumnName()
+	{
+		return getColumnName();
 	}
 	
 	protected Type getGenericType()

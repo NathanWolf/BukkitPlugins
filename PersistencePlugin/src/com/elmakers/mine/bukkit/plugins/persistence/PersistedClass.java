@@ -248,7 +248,7 @@ public class PersistedClass
 		{
 			loadState = LoadState.LOADING;
 			store.connect(schema);
-			store.validateTable(this);
+			store.validateTables(this);
 			store.loadAll(this);
 			loadState = LoadState.LOADED;
 		}

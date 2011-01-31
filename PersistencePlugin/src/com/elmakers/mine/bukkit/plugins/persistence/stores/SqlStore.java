@@ -168,7 +168,7 @@ public abstract class SqlStore extends PersistenceStore
 	}
 	
 	@Override
-	public void validateTable(PersistedClass persisted)
+	public void validateTables(PersistedClass persisted)
 	{
 		String tableName = persisted.getTableName();
 		if (!tableExists(tableName))
@@ -180,6 +180,7 @@ public abstract class SqlStore extends PersistenceStore
 			{
 				if (field instanceof PersistedList)
 				{
+					
 					continue;
 				}
 				DataType fieldType = field.getColumnType();
@@ -203,8 +204,7 @@ public abstract class SqlStore extends PersistenceStore
 				return;
 			}
 			
-			log.info(createStatement);
-			log.info("Persistence: Create table " + schema + "." + tableName);
+			log.info("Persistence: Created table " + schema + "." + tableName);
 			try
 			{
 				PreparedStatement ps = connection.prepareStatement(createStatement);
@@ -217,8 +217,46 @@ public abstract class SqlStore extends PersistenceStore
 		}
 		else
 		{
-			// TODO: validate schema, migrate data if necessary
+			// TODO: validate schema, add columns if necessary
 		}
+		
+		for (PersistedField field : persisted.getPersistedFields())
+		{
+			if (!(field instanceof PersistedList)) continue;
+			
+			PersistedList listField = (PersistedList)field;
+			DataType idFieldType = persisted.getIdField().getColumnType();
+			
+			String valueField = listField.getDataColumnName();
+			String joinTableName = listField.getTableName(persisted);
+			
+			PersistedField idField = persisted.getIdField();
+			String idFieldName = listField.getIdColumnName(persisted, idField);
+			String joinFieldList = idFieldName + "," + valueField;
+			
+			DataType contentsDataType = listField.getListColumnType();
+			
+			// Check for list sub-tables
+			// Validate table schema for join table
+			if (!tableExists(joinTableName))
+			{	
+				String createSql = "CREATE TABLE " + joinTableName + "("
+					+	idFieldName + " " + getTypeName(idFieldType) + ", " + valueField + " " + getTypeName(contentsDataType)
+					+ ", PRIMARY KEY (" + joinFieldList + "))";
+				
+				try
+				{
+					PreparedStatement ps = connection.prepareStatement(createSql);
+					ps.execute();
+				}
+				catch (SQLException ex)
+				{
+					ex.printStackTrace();
+					log.info(createSql);
+				}
+			}
+		}
+		
 	}
 	
 	@Override
@@ -251,19 +289,15 @@ public abstract class SqlStore extends PersistenceStore
 		}
 		
 		String updateSql = "INSERT OR REPLACE INTO " + tableName + "(" + fieldList + ") VALUES (" + valueList + ")";
-
 		try
 		{
 			PreparedStatement updateStatement = connection.prepareStatement(updateSql);
-			
-			List<PersistedList> listFields = new ArrayList<PersistedList>();
 			
 			int index = 1;
 			for (PersistedField field : fields)
             {
 				if (field instanceof PersistedList)
 				{
-					listFields.add((PersistedList)field);
 					continue;
 				}
 				Object value = field.getColumnData(o);
@@ -280,100 +314,134 @@ public abstract class SqlStore extends PersistenceStore
             }
 			
 			updateStatement.execute();
-			
-			// Update list data
-			for (PersistedList listField : listFields)
+		}
+		catch (SQLException ex)
+		{
+			log.warning("Persistence: Error updating table " + tableName + ": " + ex.getMessage());
+			log.info(updateSql);
+			return false;
+		}	
+		
+		// Update list data
+		for (PersistedField field : fields)
+        {
+			if (!(field instanceof PersistedList))
 			{
-				Class<?> contentsType = listField.getListType();
-				DataType contentsDataType = DataType.getTypeFromClass(contentsType);
-				
-				if (contentsDataType == DataType.NULL)
-				{
-					log.warning("Error persisting list " + listField.getName() + " in " + persisted.getTableName());
-					continue;
-				}
-				
-				if (contentsDataType == DataType.LIST)
-				{
-					log.warning("Lists of lists not supported:" + listField.getName() + " in " + persisted.getTableName());
-					continue;
-				}
-				
-				if (contentsDataType == DataType.OBJECT)
-				{
-					log.warning("Lists of references not implemented yet " + listField.getName() + " in " + persisted.getTableName());
-					continue;
-				}
+				continue;
+			}
+			PersistedList listField = (PersistedList)field;
+			DataType contentsDataType = listField.getListColumnType();
+			
+			if (contentsDataType == DataType.NULL)
+			{
+				log.warning("Error persisting list " + listField.getName() + " in " + persisted.getTableName());
+				continue;
+			}
+			
+			if (contentsDataType == DataType.LIST)
+			{
+				log.warning("Lists of lists not supported:" + listField.getName() + " in " + persisted.getTableName());
+				continue;
+			}
+			
+			if (contentsDataType == DataType.OBJECT)
+			{
+				log.warning("Lists of references not implemented yet " + listField.getName() + " in " + persisted.getTableName());
+				continue;
+			}
 
-				// Construct table and column names
-				DataType idFieldType = persisted.getIdField().getColumnType();
-				String valueField = listField.getColumnName();
-				String fieldTableName = listField.getTableName();
-				String joinTableName = persisted.getTableName() + fieldTableName;
+			// Construct table and column names
+			String valueField = listField.getDataColumnName();
+			String joinTableName = listField.getTableName(persisted);
+			
+			PersistedField idField = persisted.getIdField();
+			String idFieldName = listField.getIdColumnName(persisted, idField);
+			String joinFieldList = idFieldName + "," + valueField;
+			
+			List<? extends Object> objectValues = listField.getList(o);
+			if (objectValues.size() > 0)
+			{
+				String listDelete = "DELETE FROM " + joinTableName + " WHERE " + idFieldName + " = ? "
+					+ " AND " + valueField + " NOT IN (";
 				
-				PersistedField idField = persisted.getIdField();
-				String idFieldName = idField.getColumnName();
-				idFieldName = tableName.substring(0, 1).toLowerCase() + tableName.substring(1) 
-					+ idFieldName.substring(0, 1).toUpperCase() + idFieldName.substring(1);
-				String joinFieldList = idFieldName + "," + valueField;
-				
-				// Validate table schema for join table
-				if (!tableExists(joinTableName))
-				{	
-					String createSql = "CREATE TABLE " + joinTableName + "("
-						+	idFieldName + " " + getTypeName(idFieldType) + ", " + valueField + " " + getTypeName(contentsDataType)
-						+ ", PRIMARY KEY (" + joinFieldList + "))";
-					
-					PreparedStatement createStatement = connection.prepareStatement(createSql);
-					createStatement.execute();
-				}
-				
-				List<? extends Object> objectValues = listField.getList(o);
-				if (objectValues.size() > 0)
+				try
 				{
-					String listDelete = "DELETE FROM " + joinTableName + " WHERE " + idFieldName + " = "
-						+ getFieldValue(idField.getColumnData(o), idField.getColumnType())
-						+ " AND " + valueField + " NOT IN (";
-					
 					boolean firstItem = true;
-					for (Object lisItem : objectValues)
+					for (@SuppressWarnings("unused") Object listItem : objectValues)
 					{
 						if (!firstItem)
 						{
 							listDelete += ", ";
 						}
 						firstItem = false;
-						listDelete += getFieldValue(lisItem, contentsDataType);
+						listDelete += "?";
 					}
-					
 					listDelete += ")";
 					
 					PreparedStatement deleteStatement = connection.prepareStatement(listDelete);
-					deleteStatement.execute();
-					
+					deleteStatement.setObject(1, getFieldValue(idField.getColumnData(o), idField.getColumnType()));
+					int index = 2;
 					for (Object listItem : objectValues)
 					{
-						String joinValueList = getFieldValue(idField.getColumnData(o), idField.getColumnType()) + "," + getFieldValue(listItem, contentsDataType);
-						String itemUpdateSql = "INSERT OR REPLACE INTO " + joinTableName + "(" + joinFieldList + ") VALUES (" + joinValueList + ")";
-						
+						if (listItem != null)
+						{
+							deleteStatement.setObject(index, getFieldValue(listItem, contentsDataType));
+						}
+						else
+						{
+							deleteStatement.setNull(index, java.sql.Types.NULL);
+						}
+						index++;
+					}
+					
+					deleteStatement.execute();
+					
+				}
+				catch (SQLException ex)
+				{
+					log.warning("Persistence: Error deleting from table " + tableName + ": " + ex.getMessage());
+					log.info(listDelete);
+					return false;
+				}	
+				
+				// Save list data
+				for (Object listItem : objectValues)
+				{
+					String itemUpdateSql = "INSERT OR REPLACE INTO " + joinTableName + "(" + joinFieldList + ") VALUES (?, ?)";
+					
+					try
+					{
 						PreparedStatement listUpdateStatement = connection.prepareStatement(itemUpdateSql);
+						listUpdateStatement.setObject(1, getFieldValue(idField.getColumnData(o), idField.getColumnType()));
+						listUpdateStatement.setObject(2, getFieldValue(listItem, contentsDataType));
 						listUpdateStatement.execute();
 					}
+					catch (SQLException ex)
+					{
+						log.warning("Persistence: Error updating list " + joinTableName + ": " + ex.getMessage());
+						log.info(itemUpdateSql);
+						return false;
+					}	
 				}
-				else
+			}
+			else
+			{
+				String listDelete = "DELETE FROM " + joinTableName;
+				
+				try
 				{
-					String listDelete = "DELETE FROM " + joinTableName;
 					PreparedStatement deleteStatement = connection.prepareStatement(listDelete);
 					deleteStatement.execute();
 				}
+				catch (SQLException ex)
+				{
+					log.warning("Persistence: Error deleting list " + joinTableName + ": " + ex.getMessage());
+					log.info(listDelete);
+					return false;
+				}
 			}
 		}
-		catch (SQLException ex)
-		{
-			log.warning("Persistence: Error updating table " + tableName + ": " + ex.getMessage());
-			return false;
-		}
-		
+
 		return true;
 	}
 
@@ -383,9 +451,18 @@ public abstract class SqlStore extends PersistenceStore
 		String tableName = persisted.getTableName();
 		String selectQuery = "SELECT ";
 		int fieldCount = 0;
+		int listCount = 0;
 		List<PersistedField> fields = persisted.getPersistedFields();
+		List<PersistedList> listFields = new ArrayList<PersistedList>();
+		
 		for (PersistedField field : fields)
 		{
+			if (field instanceof PersistedList)
+			{
+				listFields.add((PersistedList)field);
+				listCount++;
+				continue;
+			}
 			if (fieldCount != 0)
 			{
 				selectQuery += ", ";
@@ -393,7 +470,8 @@ public abstract class SqlStore extends PersistenceStore
 			fieldCount++;
 			selectQuery += field.getColumnName();
 		}
-		if (fieldCount == 0)
+		
+		if (fieldCount == 0 && listCount == 0)
 		{
 			log.warning("Persistence: class " + tableName + " has no fields");
 			return false;
@@ -406,7 +484,8 @@ public abstract class SqlStore extends PersistenceStore
 			// DAOs will be loaded recursively as needed,
 			// and then all deferred references will be resolved afterward.
 			PersistedReference.beginDefer();
-			
+				
+			List<Object> loadedObjects = new ArrayList<Object>();
 			PreparedStatement ps = connection.prepareStatement(selectQuery);
 			ResultSet rs = ps.executeQuery();
 			while (rs.next())
@@ -415,9 +494,62 @@ public abstract class SqlStore extends PersistenceStore
 				if (newObject != null)
 				{
 					persisted.put(newObject);
+					loadedObjects.add(newObject);
 				}
 			}
 			rs.close();
+			
+			// Populate lists
+			for (Object o : loadedObjects)
+			{
+				for (PersistedList listField : listFields)
+				{
+					DataType contentsDataType = listField.getListColumnType();
+					
+					if (contentsDataType == DataType.NULL)
+					{
+						log.warning("Error loading list " + listField.getName() + " in " + persisted.getTableName());
+						continue;
+					}
+					
+					if (contentsDataType == DataType.LIST)
+					{
+						log.warning("Lists of lists not supported:" + listField.getName() + " in " + persisted.getTableName());
+						continue;
+					}
+					
+					if (contentsDataType == DataType.OBJECT)
+					{
+						log.warning("Lists of references not implemented yet " + listField.getName() + " in " + persisted.getTableName());
+						continue;
+					}
+					
+					// Construct table and column names
+					String valueField = listField.getDataColumnName();
+					String joinTableName = listField.getTableName(persisted);
+					
+					PersistedField idField = persisted.getIdField();
+					String idFieldName = listField.getIdColumnName(persisted, idField);
+					
+					// Fetch list data
+					String listSelectSql = "SELECT " + valueField + " FROM " + joinTableName + " WHERE " + idFieldName + " = ?";
+					
+					PreparedStatement listSelect = connection.prepareStatement(listSelectSql);
+					listSelect.setObject(1, getFieldValue(idField.getColumnData(o), idField.getColumnType()));
+					
+					rs = listSelect.executeQuery();
+					List<Object> objectList = new ArrayList<Object>();
+					while (rs.next())
+					{
+						Object value = rs.getObject(valueField);
+						objectList.add(value);
+					}
+					rs.close();
+					
+					listField.set(o, objectList);
+
+				}
+			}
 			
 			// Bind deferred references, to handle DAOs referencing other DAOs, even of the
 			// Same type. 
@@ -444,6 +576,9 @@ public abstract class SqlStore extends PersistenceStore
 			List<PersistedField> fields = persisted.getPersistedFields();
 	        for (PersistedField field : fields)
 	        {
+	        	// Lists get populated in a second step
+	        	if (field instanceof PersistedList) continue;
+	        	
         		Object value = rs.getObject(field.getColumnName());
         		DataType sqlType = field.getColumnType();
         		field.setColumnData(newObject, getDataValue(value, sqlType));

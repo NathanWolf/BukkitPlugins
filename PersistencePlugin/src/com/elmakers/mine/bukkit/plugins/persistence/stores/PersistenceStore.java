@@ -11,7 +11,7 @@ public abstract class PersistenceStore
 	public abstract boolean connect(String schema);
 	public abstract void disconnect();
 	
-	public abstract void validateTable(PersistedClass persisted);
+	public abstract void validateTables(PersistedClass persisted);
 	
 	public abstract void reset(PersistedClass persisted);
 	
