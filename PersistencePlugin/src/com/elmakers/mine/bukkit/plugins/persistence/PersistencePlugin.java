@@ -39,7 +39,6 @@ public class PersistencePlugin extends JavaPlugin
 		pluginInstance = this;
 	}
 
-	@Override
 	public void onDisable()
 	{
 		if (persistence != null)
@@ -50,7 +49,6 @@ public class PersistencePlugin extends JavaPlugin
 		}
 	}
 
-	@Override
 	public void onEnable()
 	{
 		PluginManager pm = getServer().getPluginManager();
