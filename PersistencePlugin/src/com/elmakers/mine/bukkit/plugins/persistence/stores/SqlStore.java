@@ -1,9 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.persistence.stores;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -18,7 +15,6 @@ import com.elmakers.mine.bukkit.plugins.persistence.PersistedClass;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistedField;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistedList;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistedReference;
-import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 
 public abstract class SqlStore extends PersistenceStore
 {
@@ -56,13 +52,13 @@ public abstract class SqlStore extends PersistenceStore
 			}
 			if (!driversLoaded)
 			{
-				log.info("Persistence: Loading sqlite drivers from CraftBukkit folder");
+				log.info("Persistence: Loading sqlite drivers from lib folder");
 				String fileName = getDriverFileName();
 				
 				File dataPath = dataFolder.getAbsoluteFile();
 				File pluginsPath = new File(dataPath.getParent());
 				File cbPath = new File(pluginsPath.getParent());
-				File sqlLiteFile = new File(cbPath, fileName + ".jar");
+				File sqlLiteFile = new File(cbPath, "lib/" + fileName + ".jar");
 	            if (!sqlLiteFile.exists()) 
 	            {
 	                log.severe("Persistence: Failed to find sql driver: " + fileName + ".jar");
@@ -71,19 +67,10 @@ public abstract class SqlStore extends PersistenceStore
 	            
 	            try 
 	            {
-	            	URL u = new URL("jar:file:" + sqlLiteFile.getAbsolutePath() + "!/");
-	            	ClassLoader parentLoader = PersistencePlugin.class.getClassLoader();
-	        		URLClassLoader ucl = new URLClassLoader(new URL[] { u }, parentLoader);
-	        		Driver d = (Driver)Class.forName(jdbcClass, true, ucl).newInstance();
+	        		Driver d = (Driver)Class.forName(jdbcClass).newInstance();
 	        		DriverManager.registerDriver(new PersistenceJDBCDriver(d));
 	        		driversLoaded = true;
 	            } 
-	            catch (MalformedURLException ex) 
-	            {
-	                log.severe("Persistence: Exception while loading sql drivers");
-	                ex.printStackTrace();
-	                return false;
-	            }
 	            catch (IllegalAccessException ex) 
 	            {
 	                log.severe("Persistence: Exception while loading sql drivers");

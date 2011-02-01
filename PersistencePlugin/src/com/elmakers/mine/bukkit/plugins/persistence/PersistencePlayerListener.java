@@ -15,9 +15,9 @@ public class PersistencePlayerListener extends PlayerListener
 {
 	public void initialize(PersistencePlugin plugin, Persistence persistence)
 	{
-		Messaging messaging = persistence.getMessaging();
+		Messaging messaging = persistence.getMessaging(plugin);
 		
-		persistCommand = messaging.getCommand(plugin, PersistenceDefaults.persistCommand);
+		persistCommand = messaging.getCommand(PersistenceDefaults.persistCommand);
 		
 		shortHelpMessage = messaging.getMessage("shortHelpMessage", PersistenceDefaults.shortHelpMessage);
 	}
@@ -384,7 +384,7 @@ public class PersistencePlayerListener extends PlayerListener
 		PersistedClass persisted = getEntity(player, schemaName, entityName);
 		if (persisted == null) return;
 		
-		player.sendMessage("RESETTING entity: " + schemaName + "." + entityName);
+		resettingEntityMessage.sendTo(player, schemaName, entityName);
 		persisted.reset();
 	}
 	
@@ -408,4 +408,5 @@ public class PersistencePlayerListener extends PlayerListener
 	private Command persistCommand;
 	
 	private Message shortHelpMessage;
+	private Message resettingEntityMessage;
 }

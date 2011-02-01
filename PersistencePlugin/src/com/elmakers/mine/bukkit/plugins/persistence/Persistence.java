@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.bukkit.plugin.Plugin;
+
 import com.elmakers.mine.bukkit.plugins.persistence.messages.Messaging;
 import com.elmakers.mine.bukkit.plugins.persistence.stores.PersistenceStore;
 import com.elmakers.mine.bukkit.plugins.persistence.stores.SqlLiteStore;
@@ -35,9 +37,9 @@ public class Persistence
 	/*
 	 * Sub-APIs:
 	 */
-	public Messaging getMessaging()
+	public Messaging getMessaging(Plugin plugin)
 	{
-		return messaging;
+		return new Messaging(plugin, this);
 	}
 	
 	public <T> void getAll(List<T> objects, Class<T> objectType)
@@ -124,9 +126,6 @@ public class Persistence
 	{
 		this.dataFolder = dataFolder;
 		dataFolder.mkdirs();
-		
-		// Initialize messaging
-		messaging.initialize(this);
 
 		// TODO : load configuration, sql connection params, etc?
 	}
@@ -222,8 +221,6 @@ public class Persistence
 	 */
 	
 	private File dataFolder = null;
-	
-	public final Messaging messaging = new Messaging();
 	
 	private final HashMap<Class<? extends Object>, PersistedClass> persistedClassMap = new HashMap<Class<? extends Object>, PersistedClass>(); 
 	private final List<PersistedClass> persistedClasses = new ArrayList<PersistedClass>(); 

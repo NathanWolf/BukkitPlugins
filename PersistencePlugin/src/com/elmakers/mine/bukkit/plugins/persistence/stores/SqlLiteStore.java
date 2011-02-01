@@ -11,7 +11,7 @@ public class SqlLiteStore extends SqlStore
 	public String getDriverClassName() { return "org.sqlite.JDBC"; }
 
 	@Override
-	public String getDriverFileName() { return "sqlitejdbc"; }
+	public String getDriverFileName() { return "sqlite"; }
 	
 	@Override
 	public String getMasterTableName() { return "sqlite_master"; }

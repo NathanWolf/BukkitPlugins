@@ -3,6 +3,7 @@
 # 0.16
 
  - Implement Messaging utility, for consolidated storage of messages and commands.
+ - Remove complex jar loading mechanism, use manifest classpath instead. Thanks A LOT, tkelly!
 
 # 0.15
 

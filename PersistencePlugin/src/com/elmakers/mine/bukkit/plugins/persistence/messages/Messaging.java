@@ -8,9 +8,10 @@ import com.elmakers.mine.bukkit.plugins.persistence.messages.dao.Message;
 
 public class Messaging
 {
-	public void initialize(Persistence persistence)
+	public Messaging(Plugin plugin, Persistence persistence)
 	{
 		this.persistence = persistence;
+		this.plugin = plugin;
 	}
 	
 	public Message getMessage(String id, String defaultString)
@@ -24,7 +25,7 @@ public class Messaging
 		return message;
 	}
 	
-	public Command getCommand(Plugin plugin, String id)
+	public Command getCommand(String id)
 	{
 		Command command = persistence.get(id, Command.class);
 		if (command == null)
@@ -36,4 +37,5 @@ public class Messaging
 	}
 	
 	private Persistence persistence;
+	private Plugin plugin;
 }

@@ -33,4 +33,5 @@ public class PersistenceDefaults
 	};
 	
 	public static final String shortHelpMessage = "Use \"%s help\" for help.";
+	public static final String resettingEntityMessage = "RESETTING entity: %s.%s";
 }

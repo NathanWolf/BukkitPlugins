@@ -73,7 +73,18 @@ public class Message
 		this.enabled = enabled;
 	}
 	
-	String id;
-	String message;
-	boolean enabled = true;
+	public void setPluginId(String pluginId)
+	{
+		this.pluginId = pluginId;
+	}
+
+	public String getPluginId()
+	{
+		return pluginId;
+	}
+
+	private String id;
+	private String message;
+	private String pluginId;
+	private boolean enabled = true;
 }
