@@ -7,8 +7,20 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerListener;
 
+import com.elmakers.mine.bukkit.plugins.persistence.messages.Messaging;
+import com.elmakers.mine.bukkit.plugins.persistence.messages.dao.Command;
+import com.elmakers.mine.bukkit.plugins.persistence.messages.dao.Message;
+
 public class PersistencePlayerListener extends PlayerListener
 {
+	public void initialize(PersistencePlugin plugin, Persistence persistence)
+	{
+		Messaging messaging = persistence.getMessaging();
+		
+		persistCommand = messaging.getCommand(plugin, PersistenceDefaults.persistCommand);
+		
+		shortHelpMessage = messaging.getMessage("shortHelpMessage", PersistenceDefaults.shortHelpMessage);
+	}
 
 	@Override
 	public void onPlayerCommand(PlayerChatEvent event)
@@ -19,20 +31,18 @@ public class PersistencePlayerListener extends PlayerListener
 		// Currently only ops can use Persistence commands.
 		if (!player.isOp()) return;
 		
-		String[] split = event.getMessage().split(" ");
-    	String commandString = split[0];
-    	
-    	if (!commandString.equalsIgnoreCase("/persist")) return;
-    	
+		String[] parameters = persistCommand.checkCommand(event.getMessage());
+		if (parameters == null) return;
+		
     	event.setCancelled(true);
     	
-    	if (split.length == 1)
+    	if (parameters.length == 0)
     	{
-    		player.sendMessage("Use \"/persist help\" for help.");
+    		shortHelpMessage.sendTo(player, persistCommand.getCommandMatch());
     		return;
     	}
     	
-    	String command = split[1];
+    	String command = parameters[0];
     	
     	if (command.equalsIgnoreCase("help"))
     	{
@@ -49,12 +59,12 @@ public class PersistencePlayerListener extends PlayerListener
     	
     	if (command.equalsIgnoreCase("reload"))
     	{
-    		if (split.length < 3)
+    		if (parameters.length < 2)
     		{
     			player.sendMessage("Use: \"/persist reload <schema>.<entity>");
     			return;
     		}
-    		String[] entityPath = split[2].split("\\.");
+    		String[] entityPath = parameters[1].split("\\.");
     		if (entityPath.length < 2)
     		{
     			player.sendMessage("Use: \"/persist reload <schema>.<entity>");
@@ -68,12 +78,12 @@ public class PersistencePlayerListener extends PlayerListener
     	
        	if (command.equals("RESET"))
     	{
-    		if (split.length < 3)
+    		if (parameters.length < 2)
     		{
     			player.sendMessage("Use: \"/perist RESET <schema>.<entity>");
     			return;
     		}
-    		String[] entityPath = split[2].split("\\.");
+    		String[] entityPath = parameters[1].split("\\.");
     		if (entityPath.length < 2)
     		{
     			player.sendMessage("Use: \"/persist RESET <schema>.<entity>");
@@ -94,13 +104,13 @@ public class PersistencePlayerListener extends PlayerListener
     	
     	if (command.equalsIgnoreCase("describe"))
     	{
-    		if (split.length < 3)
+    		if (parameters.length < 2)
     		{
     			listSchemas(player);
     			return;
     		}
     		
-    		String[] entityPath = split[2].split("\\.");
+    		String[] entityPath = parameters[1].split("\\.");
     		if (entityPath.length == 1)
     		{
     			describeSchema(player, entityPath[0]);
@@ -114,13 +124,13 @@ public class PersistencePlayerListener extends PlayerListener
     	
     	if (command.equalsIgnoreCase("list"))
     	{
-    		if (split.length < 3)
+    		if (parameters.length < 2)
     		{
     			player.sendMessage("Use: \"/persist list <schema>.<entity>[.<id>]");
     			return;
     		}
     		
-    		String[] entityPath = split[2].split("\\.");
+    		String[] entityPath = parameters[1].split("\\.");
     		if (entityPath.length < 2)
     		{
     			player.sendMessage("Use: \"/persist list <schema>.<entity>[.<id>]");
@@ -380,21 +390,13 @@ public class PersistencePlayerListener extends PlayerListener
 	
 	protected void printHelp(Player player)
 	{
-		String helpMessage = 
-			"Persistence:\r"
-		+	"/persist save : Save cached entities\r"
-		+	"/persist describe : List all schemas\r"
-		+	"/persist describe <schema> : List entities in a schema\r"
-		+	"/persist describe <schema>.<entity> : Describe an entity\r"
-		+	"/persist list <schema>.<entity> : List all entity ids\r"
-		+	"/persist list <schema>.<entity>.<id> : List an entity\r"
-		+	"/persist reload <schema>.<entity> : Reload entities\r"
-		+	"/persist RESET <schema>.<entity> : DROP entity table!";
-		
-		String[] lines = helpMessage.split("\r");
-		for (String line : lines)
+		player.sendMessage(PersistenceDefaults.helpHeader);
+		for (int i = 0; i < PersistenceDefaults.subCommands.length; i++)
 		{
-			player.sendMessage(line);
+			String helpLine = PersistenceDefaults.subCommands[i] + " : "
+				+ PersistenceDefaults.subCommandHelp[i];
+			
+			player.sendMessage(helpLine);
 		}
 	}
 	
@@ -402,5 +404,8 @@ public class PersistencePlayerListener extends PlayerListener
 	private int maxColumnWidth = 10;
 	private int maxLineLength = 50;
 	private int maxIdCount = 50;
-
+	
+	private Command persistCommand;
+	
+	private Message shortHelpMessage;
 }

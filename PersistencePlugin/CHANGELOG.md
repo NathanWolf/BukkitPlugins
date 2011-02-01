@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.16
+
+ - Implement Messaging utility, for consolidated storage of messages and commands.
+
 # 0.15
 
  - Escape all table and column names, to allow for entity names with spaces, and also so I can use "group".

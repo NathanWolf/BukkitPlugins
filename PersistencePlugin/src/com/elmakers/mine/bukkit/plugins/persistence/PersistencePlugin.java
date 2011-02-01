@@ -19,12 +19,8 @@ public class PersistencePlugin extends JavaPlugin
 	
 	public Persistence getPersistence()
 	{
-		return Persistence.getInstance();
-	}
-	
-	public static PersistencePlugin getInstance()
-	{
-		return pluginInstance;
+		persistence = Persistence.getInstance();
+		return persistence;
 	}
 
 	/*
@@ -52,6 +48,7 @@ public class PersistencePlugin extends JavaPlugin
 	public void onEnable()
 	{
 		PluginManager pm = getServer().getPluginManager();
+		playerListener.initialize(this, persistence);
 		
         pm.registerEvent(Type.PLAYER_COMMAND, playerListener, Priority.Normal, this);
         
@@ -59,10 +56,20 @@ public class PersistencePlugin extends JavaPlugin
         log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled");
 	}
 	
+	/*
+	 * Helper functions
+	 */
+	
 	public static Logger getLogger()
 	{
 		return log;
 	}
+	
+	
+	public static PersistencePlugin getInstance()
+	{
+		return pluginInstance;
+	}	
 	
 	/*
 	 * Private data
