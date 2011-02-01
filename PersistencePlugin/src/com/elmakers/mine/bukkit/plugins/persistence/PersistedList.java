@@ -135,6 +135,12 @@ public class PersistedList extends PersistedField
         }
 	}
 	
+	
+	public void setContained(boolean contained)
+	{
+		this.contained = contained;
+	}
+	
 	public static void beginDefer()
 	{
 		deferStackDepth++;
@@ -196,10 +202,12 @@ public class PersistedList extends PersistedField
 		}
 	}
 
+	private static int deferStackDepth = 0;
+	private final static HashMap<Object, DeferredReferenceList> deferListMap = new HashMap<Object, DeferredReferenceList>();
+
 	protected Class<?> listType;
 	protected DataType listDataType;
-	private static int deferStackDepth = 0;
-	private PersistedClass referenceType = null;
-	private final static HashMap<Object, DeferredReferenceList> deferListMap = new HashMap<Object, DeferredReferenceList>();
+	protected boolean contained;
+	protected PersistedClass referenceType = null;
 	
 }

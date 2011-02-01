@@ -68,6 +68,11 @@ public class PersistedReference extends PersistedField
 		deferredReferences.add(new DeferredReference(this, o, deferredId));
 	}
 	
+	public void setContained(boolean contained)
+	{
+		this.contained = contained;
+	}
+	
 	public static void beginDefer()
 	{
 		deferStackDepth++;
@@ -101,7 +106,9 @@ public class PersistedReference extends PersistedField
 	}
 	
 	private static int deferStackDepth = 0;
-	private PersistedClass referenceType = null;
 	private final static List<DeferredReference> deferredReferences = new ArrayList<DeferredReference>();
+
+	protected PersistedClass referenceType = null;
+	protected boolean contained = false;
 
 }

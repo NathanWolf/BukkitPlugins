@@ -177,15 +177,11 @@ public abstract class SqlStore extends PersistenceStore
 		String tableName = persisted.getTableName();
 		if (!tableExists(tableName))
 		{
-			List<PersistedField> fields = persisted.getPersistedFields();
+			List<PersistedField> fields = persisted.getInternalFields();
 			String createStatement = "CREATE TABLE \"" + tableName + "\" (";
 			int fieldCount = 0;
 			for (PersistedField field : fields)
 			{
-				if (field instanceof PersistedList)
-				{
-					continue;
-				}
 				DataType fieldType = field.getColumnType();
 				String fieldName = field.getColumnName();
 				if (fieldCount != 0)
@@ -220,14 +216,12 @@ public abstract class SqlStore extends PersistenceStore
 		}
 		else
 		{
-			// TODO: validate schema, add columns if necessary
+			// TODO: validate schema, migrate data or add columns
 		}
 		
-		for (PersistedField field : persisted.getPersistedFields())
+		List<PersistedList> listFields = persisted.getExternalFields();
+		for (PersistedList listField : listFields)
 		{
-			if (!(field instanceof PersistedList)) continue;
-			
-			PersistedList listField = (PersistedList)field;
 			DataType idFieldType = persisted.getIdField().getColumnType();
 			
 			String valueField = listField.getDataColumnName();
@@ -269,13 +263,12 @@ public abstract class SqlStore extends PersistenceStore
 		String fieldList = "";
 		String valueList = "";
 		int fieldCount = 0;
-		List<PersistedField> fields = persisted.getPersistedFields();
+
+		List<PersistedField> fields = persisted.getInternalFields();
+		List<PersistedList> listFields = persisted.getExternalFields();
+
 		for (PersistedField field : fields)
 		{
-			if (field instanceof PersistedList)
-			{
-				continue;
-			}
 			if (fieldCount != 0)
 			{
 				fieldList += ", ";
@@ -299,10 +292,6 @@ public abstract class SqlStore extends PersistenceStore
 			int index = 1;
 			for (PersistedField field : fields)
             {
-				if (field instanceof PersistedList)
-				{
-					continue;
-				}
 				Object value = field.getColumnData(o);
 				
 				if (value != null)
@@ -326,13 +315,8 @@ public abstract class SqlStore extends PersistenceStore
 		}	
 		
 		// Update list data
-		for (PersistedField field : fields)
+		for (PersistedList listField : listFields)
         {
-			if (!(field instanceof PersistedList))
-			{
-				continue;
-			}
-			PersistedList listField = (PersistedList)field;
 			DataType contentsDataType = listField.getListColumnType();
 			
 			if (contentsDataType == DataType.NULL)
@@ -448,18 +432,11 @@ public abstract class SqlStore extends PersistenceStore
 		String tableName = persisted.getTableName();
 		String selectQuery = "SELECT ";
 		int fieldCount = 0;
-		int listCount = 0;
-		List<PersistedField> fields = persisted.getPersistedFields();
-		List<PersistedList> listFields = new ArrayList<PersistedList>();
+		List<PersistedField> fields = persisted.getInternalFields();
+		List<PersistedList> listFields = persisted.getExternalFields();
 		
 		for (PersistedField field : fields)
 		{
-			if (field instanceof PersistedList)
-			{
-				listFields.add((PersistedList)field);
-				listCount++;
-				continue;
-			}
 			if (fieldCount != 0)
 			{
 				selectQuery += ", ";
@@ -468,7 +445,7 @@ public abstract class SqlStore extends PersistenceStore
 			selectQuery += "\"" + field.getColumnName() + "\"";
 		}
 		
-		if (fieldCount == 0 && listCount == 0)
+		if (fieldCount == 0)
 		{
 			log.warning("Persistence: class " + tableName + " has no fields");
 			return false;

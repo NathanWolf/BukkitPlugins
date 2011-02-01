@@ -48,30 +48,20 @@ public class PersistedClass
 		 */
 		
 		idField = null;
-		orderByField = null;
 
-		for (Field field : persistClass.getDeclaredFields())
+		for (Field classField : persistClass.getDeclaredFields())
 		{
-			Persist persist = field.getAnnotation(Persist.class);
+			Persist persist = classField.getAnnotation(Persist.class);
 			if (persist != null)
 			{
-				PersistedField pField = PersistedField.tryCreate(field, persistClass);
-				
-				if (pField == null)
+				PersistedField field = PersistedField.tryCreate(classField, persistClass);		
+				if (field == null)
 				{
-					log.warning("Persistence: Field " + persistClass.getName() + "." + field.getName() + " is not persistable, type=" + field.getType().getName());
-					continue;
+					log.warning("Persistence: Field " + persistClass.getName() + "." + classField.getName() + " is not persistable, type=" + classField.getType().getName());
 				}
-				
-				fields.add(pField);
-				if (persist.id())
+				else
 				{
-					idField = pField;
-					pField.setIsIdField(true);
-				}
-				if (persist.order())
-				{
-					orderByField = pField;
+					addField(field, persist);
 				}
 			}
 		}
@@ -82,22 +72,13 @@ public class PersistedClass
 			if (persist != null)
 			{
 				PersistedField field = PersistedField.tryCreate(method, persistClass);
-				
 				if (field == null)
 				{
-					log.warning("Persistence: Field " + persistClass.getName() + "." + method.getName() + " is not persistable, type=" + method.getReturnType().getName() +" (missing getter/setter?)");
-					continue;
+					log.warning("Persistence: Field " + persistClass.getName() + "." + method.getName() + " is not persistable, type=" + method.getReturnType().getName());
 				}
-				
-				fields.add(field);
-				if (persist.id())
+				else
 				{
-					idField = field;
-					field.setIsIdField(true);
-				}
-				if (persist.order())
-				{
-					orderByField = field;
+					addField(field, persist);
 				}
 			}
 		}
@@ -109,6 +90,41 @@ public class PersistedClass
 		}
 		
 		return (fields.size() > 0);
+	}
+	
+	public boolean addField(PersistedField field, Persist persist)
+	{
+		if (persist.id())
+		{
+			if (idField != null)
+			{
+				log.warning("Persistence: class " + persistClass.getName() + ": can't have more than one id field");
+				return false;
+			}
+			idField = field;
+			field.setIsIdField(true);
+		}
+		
+		if (field instanceof PersistedList)
+		{
+			PersistedList list = (PersistedList)field;
+			externalFields.add(list);
+			list.setContained(persist.contained());
+		}
+		else if (field instanceof PersistedReference)
+		{
+			PersistedReference reference = (PersistedReference)field;
+			internalFields.add(reference);
+			reference.setContained(persist.contained());
+		}
+		else
+		{
+			internalFields.add(field);
+		}
+
+		fields.add(field);
+		
+		return true;
 	}
 	
 	public void bindReferences()
@@ -215,12 +231,20 @@ public class PersistedClass
 		return idField;
 	}
 	
+	
+	public List<PersistedField> getInternalFields()
+	{
+		return internalFields;
+	}
+	
+	public List<PersistedList> getExternalFields()
+	{
+		return externalFields;
+	}
+	
 	public List<PersistedField> getPersistedFields()
 	{
-		List<PersistedField> fieldsCopy = new ArrayList<PersistedField>();
-		
-		fieldsCopy.addAll(fields);
-		return fieldsCopy;
+		return fields;
 	}
 	
 	public void save()
@@ -292,8 +316,10 @@ public class PersistedClass
 	protected Class<? extends Object> persistClass;
 	
 	protected List<PersistedField> fields = new ArrayList<PersistedField>();
+	protected List<PersistedField> internalFields = new ArrayList<PersistedField>();
+	protected List<PersistedList> externalFields = new ArrayList<PersistedList>();
+	
 	protected PersistedField idField;
-	protected PersistedField orderByField;
 	
 	protected String schema;
 	protected String name;

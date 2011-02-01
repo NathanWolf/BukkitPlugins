@@ -10,6 +10,6 @@ import java.lang.annotation.Target;
 public @interface Persist
 {
 	boolean id() default false;
-	boolean order() default false;
 	boolean auto() default false;
+	boolean contained() default false;
 }
