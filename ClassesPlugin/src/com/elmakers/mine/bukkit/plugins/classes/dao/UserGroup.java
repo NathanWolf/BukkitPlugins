@@ -3,7 +3,7 @@ package com.elmakers.mine.bukkit.plugins.classes.dao;
 import com.elmakers.mine.bukkit.plugins.persistence.annotations.Persist;
 import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
 
-@PersistClass(name = "groups", schema = "classes") 
+@PersistClass(name = "group", schema = "classes") 
 public class UserGroup
 {
 	private String 		id;

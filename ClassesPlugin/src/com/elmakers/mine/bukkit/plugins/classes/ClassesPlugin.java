@@ -12,7 +12,6 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.elmakers.mine.bukkit.plugins.classes.dao.UserGroup;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 
@@ -25,36 +24,17 @@ public class ClassesPlugin extends JavaPlugin
 		super(pluginLoader, instance, desc, folder, plugin, cLoader);
 	}
 
-	@Override
 	public void onDisable()
 	{
 		
 	}
 
-	@Override
 	public void onEnable()
 	{
 		if (!bindPersistence()) return;
 		
 		playerListener.setPersistence(persistence);
-		
-		UserGroup testGroup = persistence.get("test", UserGroup.class);
-		if (testGroup == null)
-		{
-			testGroup = new UserGroup();
-			testGroup.setId("test");
-			testGroup.setName("Child Node");
-			UserGroup parentGroup = new UserGroup();
-			parentGroup.setId("testParent");
-			parentGroup.setName("Test Parent");
-			testGroup.setParent(parentGroup);
-			persistence.put(testGroup);
-			persistence.put(parentGroup);
-			persistence.save();
-		}
-		log.info("Test group: " + testGroup.getName());
-		log.info("Parent group: " + testGroup.getParent().getName());
-		
+				
 		PluginManager pm = getServer().getPluginManager();
 			
 		pm.registerEvent(Type.PLAYER_COMMAND, playerListener, Priority.Normal, this);

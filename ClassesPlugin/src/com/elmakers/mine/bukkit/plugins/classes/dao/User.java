@@ -1,13 +1,15 @@
 package com.elmakers.mine.bukkit.plugins.classes.dao;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.bukkit.entity.Player;
 
 import com.elmakers.mine.bukkit.plugins.persistence.annotations.Persist;
 import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
 
-@PersistClass(name = "users", schema = "classes") 
+@PersistClass(name = "player", schema = "classes") 
 public class User
 {
 	public User()
@@ -41,6 +43,16 @@ public class User
 	{
 		online = false;
 		lastDisconnect = new Date();
+	}
+	
+	public void addToGroup(UserGroup group)
+	{
+		groups.add(group);
+	}
+	
+	public void removeFromGroup(UserGroup group)
+	{
+		groups.remove(group);
 	}
 	
 	@Persist(id=true)
@@ -120,6 +132,17 @@ public class User
 		this.online = online;
 	}
 	
+	@Persist
+	public void setGroups(List<UserGroup> groups)
+	{
+		this.groups = groups;
+	}
+
+	public List<UserGroup> getGroups()
+	{
+		return groups;
+	}
+
 	private String 		name;
 	private String 		id;
 	private boolean 	superUser;
@@ -127,5 +150,6 @@ public class User
 	private Date		lastLogin;
 	private	Date		lastDisconnect;
 	private boolean		online;
+	private List<UserGroup> groups = new ArrayList<UserGroup>();
 
 }
