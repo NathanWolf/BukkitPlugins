@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class PersistedList extends PersistedField
@@ -27,13 +29,32 @@ public class PersistedList extends PersistedField
 	
 	public DataType getListColumnType()
 	{
-		return DataType.getTypeFromClass(getListType());
+		if (referenceType != null)
+		{
+			Class<?> referenceIdType = referenceType.getIdField().getType();
+			return DataType.getTypeFromClass(referenceIdType);
+		}
+		return listDataType;
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<? extends Object> getList(Object o)
+	public List<Object> getListData(Object o)
 	{
-		return (List<? extends Object>)get(o);
+		List<? extends Object> listItems = (List<? extends Object>)get(o);
+		List<Object> listCopy = new ArrayList<Object>();
+		if (referenceType == null)
+		{
+			listCopy.addAll(listItems);
+		}
+		else
+		{
+			for (Object reference : listItems)
+			{
+				Object referenceId = referenceType.getId(reference);
+				listCopy.add(referenceId);
+			}
+		}
+		return listCopy;
 	}
 	
 	public String getTableName(PersistedClass persisted)
@@ -54,7 +75,15 @@ public class PersistedList extends PersistedField
 	
 	public String getDataColumnName()
 	{
-		return getColumnName();
+		if (referenceType == null)
+		{
+			return getColumnName();
+		}
+		
+		String referenceId = referenceType.getIdField().getColumnName();
+		referenceId = referenceId.substring(0, 1).toUpperCase() + referenceId.substring(1);
+		
+		return getColumnName() + referenceId;
 	}
 	
 	protected Type getGenericType()
@@ -93,8 +122,84 @@ public class PersistedList extends PersistedField
             {
             	listType = (Class<?>)pt.getActualTypeArguments()[0];
             }
-        }  
+        }
+        listDataType = DataType.getTypeFromClass(listType);
 	}
 	
+	@Override
+	public void bind()
+	{
+        if (listDataType == DataType.OBJECT)
+        {
+        	referenceType = Persistence.getInstance().getPersistedClass(listType);
+        }
+	}
+	
+	public static void beginDefer()
+	{
+		deferStackDepth++;
+	}
+	
+	public void setList(Object instance, List<Object> items)
+	{
+		if (referenceType == null)
+		{
+			set(instance, items);
+			return;
+		}
+		
+		// Defer id lookup
+		DeferredReferenceList list = deferListMap.get(instance);
+		if (list == null)
+		{
+			list = new DeferredReferenceList(this);
+			deferListMap.put(instance, list);
+		}
+		list.idList = items;
+	}
+	
+	public static void endDefer()
+	{
+		deferStackDepth--;
+		if (deferStackDepth > 0) return;
+		
+		for (Object instance : deferListMap.keySet())
+		{
+			List<Object> references = new ArrayList<Object>();
+			DeferredReferenceList ref = deferListMap.get(instance);
+			for (Object id : ref.idList)
+			{
+				if (id == null) 
+				{
+					references.add(null);
+				}
+				else
+				{
+					Object reference = ref.referenceList.referenceType.get(id);
+					references.add(reference);
+				}
+			}
+			
+			ref.referenceList.set(instance, references);
+		}
+		deferListMap.clear();
+	}
+	
+	class DeferredReferenceList
+	{
+		public PersistedList referenceList;
+		public List<Object> idList;
+		
+		public DeferredReferenceList(PersistedList listField)
+		{
+			referenceList = listField;
+		}
+	}
+
 	protected Class<?> listType;
+	protected DataType listDataType;
+	private static int deferStackDepth = 0;
+	private PersistedClass referenceType = null;
+	private final static HashMap<Object, DeferredReferenceList> deferListMap = new HashMap<Object, DeferredReferenceList>();
+	
 }

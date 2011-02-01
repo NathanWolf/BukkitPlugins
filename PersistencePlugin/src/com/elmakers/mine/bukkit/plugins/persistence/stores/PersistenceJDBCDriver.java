@@ -7,13 +7,13 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 /*
- * This class is used as a shim to dynamically load JDB drivers.
+ * This class is used as a shim to dynamically load JDBC drivers.
  */
-class DriverShim implements Driver
+class PersistenceJDBCDriver implements Driver
 {
 	private Driver	driver;
 
-	DriverShim(Driver d)
+	PersistenceJDBCDriver(Driver d)
 	{
 		this.driver = d;
 	}

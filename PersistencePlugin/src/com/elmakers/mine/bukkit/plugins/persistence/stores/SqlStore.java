@@ -18,6 +18,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.PersistedClass;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistedField;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistedList;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistedReference;
+import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 
 public abstract class SqlStore extends PersistenceStore
 {
@@ -39,17 +40,23 @@ public abstract class SqlStore extends PersistenceStore
 	{
 		this.schema = schema;
 		
-		try 
+		// Try to load drivers if necessary
+		if (!driversLoaded)
 		{
 			// Check to see if the driver is loaded
 			String jdbcClass = getDriverClassName();
 			try
 			{
 				Class.forName(jdbcClass);
+				driversLoaded = true;
 			}
 			catch (ClassNotFoundException e)
 			{
-				log.info("Persistence: Loading sqlite drivers from plugins folder");
+				driversLoaded = false;
+			}
+			if (!driversLoaded)
+			{
+				log.info("Persistence: Loading sqlite drivers from CraftBukkit folder");
 				String fileName = getDriverFileName();
 				
 				File dataPath = dataFolder.getAbsoluteFile();
@@ -65,9 +72,11 @@ public abstract class SqlStore extends PersistenceStore
 	            try 
 	            {
 	            	URL u = new URL("jar:file:" + sqlLiteFile.getAbsolutePath() + "!/");
-	        		URLClassLoader ucl = new URLClassLoader(new URL[] { u });
+	            	ClassLoader parentLoader = PersistencePlugin.class.getClassLoader();
+	        		URLClassLoader ucl = new URLClassLoader(new URL[] { u }, parentLoader);
 	        		Driver d = (Driver)Class.forName(jdbcClass, true, ucl).newInstance();
-	        		DriverManager.registerDriver(new DriverShim(d));
+	        		DriverManager.registerDriver(new PersistenceJDBCDriver(d));
+	        		driversLoaded = true;
 	            } 
 	            catch (MalformedURLException ex) 
 	            {
@@ -91,13 +100,21 @@ public abstract class SqlStore extends PersistenceStore
 				{
 					log.severe("Persistence: JDBC class not found in sql jar");
 				}
-			}			
-			// Create or connect to the database
-			
-			// TODO: user, password
-			String user = "";
-			String password = "";
-					
+				catch(SQLException e)
+				{
+					connection = null;
+					log.severe("Permissions: SQL errors loading sqllite drivers: " + e.getMessage());
+				}
+			}
+		}
+		// Create or connect to the database
+		
+		// TODO: user, password
+		String user = "";
+		String password = "";
+				
+		try
+		{
 			connection = DriverManager.getConnection(getConnectionString(schema, user, password));
 		}
 		catch(SQLException e)
@@ -132,7 +149,7 @@ public abstract class SqlStore extends PersistenceStore
 		String tableName = persisted.getTableName();
 		if (tableExists(tableName))
 		{
-			String dropQuery = "DROP TABLE " + tableName;
+			String dropQuery = "DROP TABLE \"" + tableName + "\"";
 			try
 			{
 				PreparedStatement ps = connection.prepareStatement(dropQuery);
@@ -150,7 +167,7 @@ public abstract class SqlStore extends PersistenceStore
 
 	public boolean tableExists(String tableName)
 	{
-		String checkQuery = "SELECT name FROM " + getMasterTableName() + " WHERE type='table' AND name='" + tableName + "'";
+		String checkQuery = "SELECT name FROM \"" + getMasterTableName() + "\" WHERE type='table' AND name='" + tableName + "'";
 		boolean tableExists = false;
 		try
 		{
@@ -174,13 +191,12 @@ public abstract class SqlStore extends PersistenceStore
 		if (!tableExists(tableName))
 		{
 			List<PersistedField> fields = persisted.getPersistedFields();
-			String createStatement = "CREATE TABLE " + tableName + "(";
+			String createStatement = "CREATE TABLE \"" + tableName + "\" (";
 			int fieldCount = 0;
 			for (PersistedField field : fields)
 			{
 				if (field instanceof PersistedList)
 				{
-					
 					continue;
 				}
 				DataType fieldType = field.getColumnType();
@@ -190,7 +206,7 @@ public abstract class SqlStore extends PersistenceStore
 					createStatement += ",";
 				}
 				fieldCount++;
-				createStatement += fieldName + " " + getTypeName(fieldType);
+				createStatement += "\"" + fieldName + "\" " + getTypeName(fieldType);
 				if (field.isIdField())
 				{
 					createStatement += " PRIMARY KEY";
@@ -232,7 +248,7 @@ public abstract class SqlStore extends PersistenceStore
 			
 			PersistedField idField = persisted.getIdField();
 			String idFieldName = listField.getIdColumnName(persisted, idField);
-			String joinFieldList = idFieldName + "," + valueField;
+			String joinFieldList = "\"" + idFieldName + "\", \"" + valueField + "\"";
 			
 			DataType contentsDataType = listField.getListColumnType();
 			
@@ -240,8 +256,8 @@ public abstract class SqlStore extends PersistenceStore
 			// Validate table schema for join table
 			if (!tableExists(joinTableName))
 			{	
-				String createSql = "CREATE TABLE " + joinTableName + "("
-					+	idFieldName + " " + getTypeName(idFieldType) + ", " + valueField + " " + getTypeName(contentsDataType)
+				String createSql = "CREATE TABLE \"" + joinTableName + "\" (\""
+					+	idFieldName + "\" " + getTypeName(idFieldType) + ", \"" + valueField + "\" " + getTypeName(contentsDataType)
 					+ ", PRIMARY KEY (" + joinFieldList + "))";
 				
 				try
@@ -279,7 +295,7 @@ public abstract class SqlStore extends PersistenceStore
 				valueList += ", ";
 			}
 			fieldCount++;
-			fieldList += field.getColumnName();
+			fieldList += "\"" + field.getColumnName() + "\"";
 			valueList += "?";
 		}
 		if (fieldCount == 0)
@@ -288,7 +304,7 @@ public abstract class SqlStore extends PersistenceStore
 			return false;
 		}
 		
-		String updateSql = "INSERT OR REPLACE INTO " + tableName + "(" + fieldList + ") VALUES (" + valueList + ")";
+		String updateSql = "INSERT OR REPLACE INTO \"" + tableName + "\" (" + fieldList + ") VALUES (" + valueList + ")";
 		try
 		{
 			PreparedStatement updateStatement = connection.prepareStatement(updateSql);
@@ -343,12 +359,6 @@ public abstract class SqlStore extends PersistenceStore
 				log.warning("Lists of lists not supported:" + listField.getName() + " in " + persisted.getTableName());
 				continue;
 			}
-			
-			if (contentsDataType == DataType.OBJECT)
-			{
-				log.warning("Lists of references not implemented yet " + listField.getName() + " in " + persisted.getTableName());
-				continue;
-			}
 
 			// Construct table and column names
 			String valueField = listField.getDataColumnName();
@@ -356,13 +366,13 @@ public abstract class SqlStore extends PersistenceStore
 			
 			PersistedField idField = persisted.getIdField();
 			String idFieldName = listField.getIdColumnName(persisted, idField);
-			String joinFieldList = idFieldName + "," + valueField;
+			String joinFieldList = "\"" + idFieldName + "\", \"" + valueField + "\"";
 			
-			List<? extends Object> objectValues = listField.getList(o);
+			List<Object> objectValues = listField.getListData(o);
 			if (objectValues.size() > 0)
 			{
-				String listDelete = "DELETE FROM " + joinTableName + " WHERE " + idFieldName + " = ? "
-					+ " AND " + valueField + " NOT IN (";
+				String listDelete = "DELETE FROM \"" + joinTableName + "\" WHERE \"" + idFieldName + "\" = ? "
+					+ " AND \"" + valueField + "\" NOT IN (";
 				
 				try
 				{
@@ -407,7 +417,7 @@ public abstract class SqlStore extends PersistenceStore
 				// Save list data
 				for (Object listItem : objectValues)
 				{
-					String itemUpdateSql = "INSERT OR REPLACE INTO " + joinTableName + "(" + joinFieldList + ") VALUES (?, ?)";
+					String itemUpdateSql = "INSERT OR REPLACE INTO \"" + joinTableName + "\" (" + joinFieldList + ") VALUES (?, ?)";
 					
 					try
 					{
@@ -426,7 +436,7 @@ public abstract class SqlStore extends PersistenceStore
 			}
 			else
 			{
-				String listDelete = "DELETE FROM " + joinTableName;
+				String listDelete = "DELETE FROM \"" + joinTableName + "\"";
 				
 				try
 				{
@@ -468,7 +478,7 @@ public abstract class SqlStore extends PersistenceStore
 				selectQuery += ", ";
 			}
 			fieldCount++;
-			selectQuery += field.getColumnName();
+			selectQuery += "\"" + field.getColumnName() + "\"";
 		}
 		
 		if (fieldCount == 0 && listCount == 0)
@@ -476,7 +486,7 @@ public abstract class SqlStore extends PersistenceStore
 			log.warning("Persistence: class " + tableName + " has no fields");
 			return false;
 		}
-		selectQuery +=  " FROM " + tableName + ";";
+		selectQuery +=  " FROM \"" + tableName + "\";";
 		
 		try
 		{
@@ -499,7 +509,15 @@ public abstract class SqlStore extends PersistenceStore
 			}
 			rs.close();
 			
+			// Bind deferred references, to handle DAOs referencing other DAOs, even of the
+			// Same type. 
+			// DAOs will be loaded recursively as needed, and then references bound when everything has been
+			// resolved.
+			PersistedReference.endDefer();
+			
 			// Populate lists
+			// Defer load lists of entities
+			PersistedList.beginDefer();
 			for (Object o : loadedObjects)
 			{
 				for (PersistedList listField : listFields)
@@ -517,13 +535,7 @@ public abstract class SqlStore extends PersistenceStore
 						log.warning("Lists of lists not supported:" + listField.getName() + " in " + persisted.getTableName());
 						continue;
 					}
-					
-					if (contentsDataType == DataType.OBJECT)
-					{
-						log.warning("Lists of references not implemented yet " + listField.getName() + " in " + persisted.getTableName());
-						continue;
-					}
-					
+									
 					// Construct table and column names
 					String valueField = listField.getDataColumnName();
 					String joinTableName = listField.getTableName(persisted);
@@ -532,7 +544,7 @@ public abstract class SqlStore extends PersistenceStore
 					String idFieldName = listField.getIdColumnName(persisted, idField);
 					
 					// Fetch list data
-					String listSelectSql = "SELECT " + valueField + " FROM " + joinTableName + " WHERE " + idFieldName + " = ?";
+					String listSelectSql = "SELECT \"" + valueField + "\" FROM \"" + joinTableName + "\" WHERE \"" + idFieldName + "\" = ?";
 					
 					PreparedStatement listSelect = connection.prepareStatement(listSelectSql);
 					listSelect.setObject(1, getFieldValue(idField.getColumnData(o), idField.getColumnType()));
@@ -546,16 +558,12 @@ public abstract class SqlStore extends PersistenceStore
 					}
 					rs.close();
 					
-					listField.set(o, objectList);
-
+					listField.setList(o, objectList);
 				}
 			}
 			
-			// Bind deferred references, to handle DAOs referencing other DAOs, even of the
-			// Same type. 
-			// DAOs will be loaded recursively as needed, and then references bound when everything has been
-			// resolved.
-			PersistedReference.endDefer();
+			// Done loading lists, finally defer-load any entities from lists
+			PersistedList.endDefer();
 		}
 		catch (SQLException ex)
 		{
@@ -615,4 +623,5 @@ public abstract class SqlStore extends PersistenceStore
 	protected File dataFolder = null;
 	protected Connection connection = null;
 	protected String schema = null;
+	protected static boolean driversLoaded = false;
 }

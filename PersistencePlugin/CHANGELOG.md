@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.15
+
+ - Escape all table and column names, to allow for entity names with spaces, and also so I can use "group".
+ - Support lists of objects.
+
 # 0.14
 
  - Implement persistence of Lists of primitive objects. Lists of DAO references is not far behind.
