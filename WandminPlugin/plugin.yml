@@ -1,3 +1,18 @@
 name: Wandmin
 main: com.elmakers.mine.bukkit.plugins.wandmin.WandminPlugin
-version: 0.27
+version: 0.28
+website: http://mine.elmakers.com
+author: NathanWolf
+description : A Magic Wand for "casting" console commands
+commands:
+  wandmin:
+    description: Configure your wands
+    usage: |
+           /wandmin commands : List all bound commands
+           /wandmin spells : List all bound commands
+           /wandmin wands  : List all of your wands
+           /wandmin next   : Switch to the next wand
+           /wandmin create <name>    : Create a wand
+           /wandmin bind <command>   : Bind a command
+           /wandmin unbind <command> : Remove a command
+           /wandmin destroy <name>   : Destroy a wand

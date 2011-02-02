@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.wandmin;
 
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Type;
 import org.bukkit.event.player.PlayerChatEvent;
@@ -19,7 +20,13 @@ public class WandCommand
 	
 	public void use(WandminPlugin plugin, Player player)
 	{
-		plugin.getServer().getPluginManager().callEvent(new PlayerChatEvent(Type.PLAYER_COMMAND, player, "/" + command));
+		CraftServer server = (CraftServer)plugin.getServer();
+		
+		// Try new way first, then old way.
+		if (!server.dispatchCommand(player, command))
+		{
+			server.getPluginManager().callEvent(new PlayerChatEvent(Type.PLAYER_COMMAND, player, "/" + command));
+		}
 	}
 	
 	public String getCommand()

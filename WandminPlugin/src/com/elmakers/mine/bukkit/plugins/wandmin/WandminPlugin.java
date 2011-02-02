@@ -12,40 +12,217 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bukkit.Server;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
-import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.plugins.wandmin.utilities.PluginProperties;
 
 public class WandminPlugin extends JavaPlugin 
 {
-	private final String propertiesFile = "wandmin.properties";
+	@Override
+	public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] parameters)
+	{
+		// Only works in-game, for now.
+		if (!(sender instanceof Player)) return false;
 	
-	private Persistence persistence = null;
+		String commandString = command.getName();
+    	if (!commandString.equalsIgnoreCase("wandmin"))
+    	{
+    		return false;
+    	}
+  	
+		Player player = (Player)sender;		
+		WandPermissions permissions = getPermissions(player.getName());
 
-	private int wandTypeId = 280;
-	private String commandFile = "wand-commands.txt";
-	private String wandCommand = "wandmin";
+		if (!permissions.canUse())
+		{
+			return true;
+		}
 	
-	private final Logger log = Logger.getLogger("Minecraft");
-	private final HashMap<String, WandPermissions> permissions = new HashMap<String, WandPermissions>();
-	private final WandminPlayerListener playerListener = new WandminPlayerListener();
-	private final HashMap<String, PlayerWandList> playerWands = new HashMap<String, PlayerWandList>();
+    	PlayerWandList wands = getPlayerWands(player);
+    	
+    	if (parameters.length < 1)
+    	{
+    		showHelp(wands);
+    		return true;
+    	}
+
+    	String wandCommand = parameters[0];
+    	if (wandCommand.equalsIgnoreCase("help"))
+    	{
+    		showHelp(wands);
+    		return true;
+    	}
+    	
+    	if (wandCommand.equalsIgnoreCase("reload") && permissions.canAdminister())
+    	{
+    		load();
+    		player.sendMessage("Wands reloaded");
+    		return true;
+    	}
+
+    	if (wandCommand.equalsIgnoreCase("next"))
+    	{
+    		Wand wand = wands.getCurrentWand();
+    		if (wand == null)
+    		{
+    			player.sendMessage("Create a wand first");
+    			return true;
+    		}
+    		wands.nextWand();
+    		wand = wands.getCurrentWand();
+    		player.sendMessage(" " + wand.getName() + " : " + wand.getCurrentCommand().getName());
+    		return true;
+    	}
+
+    	if (wandCommand.equalsIgnoreCase("wands"))
+    	{
+    		player.sendMessage("You have " + wands.getWands().size() + " wands:");
+    		for (Wand wand : wands.getWands())
+    		{
+    			String prefix = " ";
+    			if (wand == wands.getCurrentWand())
+    			{
+    				prefix = "*";
+    			}
+    			String wandMessage = prefix + wand.getName();
+    			String wandDescription = wand.getDescription();
+    			if (wandDescription != null && wandDescription.length() > 0)
+    			{
+    				wandMessage = wandMessage + " : " + wandDescription;
+    			}
+    			player.sendMessage(wandMessage);
+    		}
+    		return true;
+    	}
+    	
+    	if (wandCommand.equalsIgnoreCase("spells") || wandCommand.equalsIgnoreCase("commands"))
+    	{
+    		Wand wand = wands.getCurrentWand();
+    		if (wand == null)
+    		{
+    			player.sendMessage("Create a wand first");
+    			return true;
+    		}
+    		player.sendMessage("You have " + wand.getCommands().size() + " spells on your " + wand.getName() + " wand:");
+    		player.sendMessage(wand.getName());
+    		for (WandCommand wandCommandPart : wand.getCommands())
+    		{
+    			String prefix = " ";
+    			if (wandCommandPart == wand.getCurrentCommand())
+    			{
+    				prefix = "*";
+    			}
+    			String commandMessage = prefix + wandCommandPart.getName();
+    			String commandDescription = wandCommandPart.getDescription();
+    			if (commandDescription != null && commandDescription.length() > 0)
+    			{
+    				commandMessage = commandMessage + " : " + commandDescription;
+    			}
+    			player.sendMessage(commandMessage);
+    		}
+    		return true;
+    	}
+    	
+    	// All mod stuff from here
+    	if (!permissions.canModify())
+    	{
+    		showHelp(wands);
+    		return true;
+    	}
+    	
+    	// One param
+    	if (parameters.length < 2)
+		{
+			showHelp(wands);
+			return true;
+		}
+    	
+    	String castCommand = "";
+    	for (int i = 1; i < parameters.length; i++) 
+    	{
+    		castCommand += parameters[i];
+			if (i != parameters.length - 1)
+			{
+				castCommand += " ";
+			}
+		}
+    	
+    	if (wandCommand.equalsIgnoreCase("create"))
+    	{
+    		String wandName = parameters[1];
+    		wands.addWand(wandName);
+    		player.sendMessage("Added wand '" + wandName + "'");
+    		return true;
+    	}
+    	
+    	if (wandCommand.equalsIgnoreCase("destroy"))
+    	{
+    		String wandName = parameters[1];
+    		wands.removeWand(wandName);
+    		player.sendMessage("Removed wand '" + wandName + "'");
+    		return true;
+    	}
+
+    	// Needs a wand
+    	Wand wand = wands.getCurrentWand();
+    	if (wand == null)
+    	{
+    		player.sendMessage("Create a wand first");
+    		return true;
+    	}
+    	
+    	if (wandCommand.equalsIgnoreCase("bind"))
+    	{
+    		wand.addCommand(castCommand);
+    		player.sendMessage("Bound wand '" + wand.getName() + "' to '" + castCommand + "'");
+    		return true;
+    	}
+
+    	if (wandCommand.equalsIgnoreCase("unbind"))
+    	{
+    		wand.removeCommand(castCommand);
+    		player.sendMessage("Unbound wand '" + wand.getName() + "' from '" + castCommand + "'");
+    		return true;
+    	}
+		
+		return true;
+	}
 	
-	private boolean allCanUse = true;
-	private boolean allCanAdminister = true;
-	private boolean allCanModify = true;
 	
-	private PlayerWandList defaultWands = null;
-	
+	private void showHelp(PlayerWandList wands)
+	{
+		Player player = wands.getPlayer();
+		WandPermissions permissions = getPermissions(player.getName());
+		// TODO - pull this from plugin description
+		player.sendMessage("Usage: /wandmin [command] [parameters]");
+		player.sendMessage(" commands : List the bound commands");
+		player.sendMessage(" spells : List the bound commands");
+		player.sendMessage(" wands : List all of your wands");
+		player.sendMessage(" next : Switch to the next wand");
+
+		if (permissions.canModify())
+		{
+			player.sendMessage(" create [name] : Create a magic wand");
+			player.sendMessage(" bind [command] : Bind a command to your wand");
+			player.sendMessage(" unbind [command] : Unbind a command from your wand");
+			player.sendMessage(" destroy [name] : Destroy one of your wands");
+		}
+		
+		if (permissions.canAdminister())
+		{
+			player.sendMessage(" reload : Reload the configuration");
+		}
+		
+	}
+
 	public WandminPlugin(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File dataFolder, File plugin, ClassLoader cLoader) 
 	{
 		super(pluginLoader, instance, desc, dataFolder, plugin, cLoader);
@@ -62,7 +239,6 @@ public class WandminPlugin extends JavaPlugin
 		
         pm.registerEvent(Type.PLAYER_ANIMATION, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_ITEM, playerListener, Priority.Normal, this);
-        pm.registerEvent(Type.PLAYER_COMMAND, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_QUIT, playerListener, Priority.Normal, this);
         
@@ -83,7 +259,6 @@ public class WandminPlugin extends JavaPlugin
 		
 		// Get and set all properties
 		commandFile = properties.getString("wand-commands-file", commandFile);
-		wandCommand = properties.getString("wand-command", wandCommand);
 		wandTypeId = properties.getInteger("wand-type-id", wandTypeId);
 		String wandDefault = properties.getString("wand-default", "");
 		String wandUsers = properties.getString("wand-users", "");
@@ -162,7 +337,7 @@ public class WandminPlugin extends JavaPlugin
 	public WandPermissions getPermissions(String playerName)
 	{
 		WandPermissions player = permissions.get(playerName);
-		
+
 		if (player == null)
 		{
 			player = new WandPermissions();
@@ -171,7 +346,13 @@ public class WandminPlugin extends JavaPlugin
 			player.setCanUse(allCanUse);
 			permissions.put(playerName, player);
 		}
-		
+
+		Player loggedIn = getServer().getPlayer(playerName);
+		if (loggedIn != null && loggedIn.isOp())
+		{
+			player.setCanAdminister(true);
+		}
+
 		return player;
 	}	
 	
@@ -332,13 +513,9 @@ public class WandminPlugin extends JavaPlugin
 		return wandTypeId;
 	}
 	
-	public String getWandCommand()
-	{
-		return wandCommand;
-	}
-	
 	public void bindPersistencePlugin() 
 	{
+		/*
 		Plugin checkForPersistence = this.getServer().getPluginManager().getPlugin("Persistence");
 	    if(checkForPersistence != null) 
 	    {
@@ -350,5 +527,23 @@ public class WandminPlugin extends JavaPlugin
 	    	log.warning("The Wandmin plugin depends on Persistence - please install it!");
 	    	this.getServer().getPluginManager().disablePlugin(this);
 	    }
+	    */
 	}
+	
+	private final String propertiesFile = "wandmin.properties";
+
+	private int wandTypeId = 280;
+	private String commandFile = "wand-commands.txt";
+	
+	private final Logger log = Logger.getLogger("Minecraft");
+	private final HashMap<String, WandPermissions> permissions = new HashMap<String, WandPermissions>();
+	private final WandminPlayerListener playerListener = new WandminPlayerListener();
+	private final HashMap<String, PlayerWandList> playerWands = new HashMap<String, PlayerWandList>();
+	
+	private boolean allCanUse = true;
+	private boolean allCanAdminister = true;
+	private boolean allCanModify = true;
+	
+	private PlayerWandList defaultWands = null;
+
 }
