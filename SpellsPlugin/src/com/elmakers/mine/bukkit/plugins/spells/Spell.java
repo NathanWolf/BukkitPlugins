@@ -145,7 +145,7 @@ public abstract class Spell implements Comparable<Spell>
 	/**
 	 * Listener method, called on player move for registered spells.
 	 * 
-	 * @Param player The player that died
+	 * @param player The player that died
 	 * @param event The original entity death event
 	 * @see Spells#registerEvent(SpellEventType, Spell)
 	 */
@@ -724,7 +724,7 @@ public abstract class Spell implements Comparable<Spell>
 	/**
 	 * Used internally to initialize the Spell, do not call.
 	 * 
-	 * @param plugin The spells instance
+	 * @param instance The spells instance
 	 */
 	public void setPlugin(Spells instance)
 	{
@@ -736,7 +736,7 @@ public abstract class Spell implements Comparable<Spell>
 	 * 
 	 * @param parameters
 	 * @param player
-	 * @return
+	 * @return true if the spell succeed, false if failed
 	 * @see Spells#castSpell(SpellVariant, Player)
 	 */
 	public boolean cast(String[] parameters, Player player)

@@ -16,11 +16,13 @@ import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class MineSpell extends Spell
 {
-	static final String		DEFAULT_MINEABLE	= "14,15,16,56,73,74";
-	static final String		DEFAULT_MINED	= "14,15,263,264,331,331";
+	static final String		DEFAULT_MINEABLE	= "14,15,16, 56, 73, 74, 21";
+	static final String		DEFAULT_MINED		= "14,15,263,264,331,331,351";
+	static final String		DEFAULT_DATA		= "0 ,0 ,0  ,0  ,0  ,0  ,4";
 	
 	private List<Material>	mineableMaterials	= new ArrayList<Material>();
 	private List<Material>	minedMaterials	= new ArrayList<Material>();
+	private List<Integer>	minedData	= new ArrayList<Integer>();
 	private int maxRecursion = 16;
 	
 	@Override
@@ -46,9 +48,11 @@ public class MineSpell extends Spell
 		
 		int index = mineableMaterials.indexOf(mineMaterial);
 		mineMaterial = minedMaterials.get(index);
+		byte data = (byte)(int)minedData.get(index);
 		
 		Location itemDrop = new Location(world, target.getX(), target.getY(), target.getZ(), 0, 0);
-		player.getWorld().dropItemNaturally(itemDrop, new ItemStack(mineMaterial, minedBlocks.getCount()));
+		ItemStack items = new ItemStack(mineMaterial, (int)minedBlocks.getCount(), (short)0 , data);
+		player.getWorld().dropItemNaturally(itemDrop, items);
 		
 		// This isn't undoable, since we can't pick the items back up!
 		// So, don't add it to the undo queue.
@@ -117,8 +121,9 @@ public class MineSpell extends Spell
 	@Override
 	public void onLoad(PluginProperties properties)
 	{
-		mineableMaterials = properties.getMaterials("spells-mine-mineable", DEFAULT_MINEABLE);
-		minedMaterials = properties.getMaterials("spells-mine-mined", DEFAULT_MINED);
+		mineableMaterials = PluginProperties.parseMaterials(DEFAULT_MINEABLE);
+		minedMaterials = PluginProperties.parseMaterials(DEFAULT_MINED);
+		minedData = PluginProperties.parseIntegers(DEFAULT_DATA);
 		maxRecursion = properties.getInteger("spells-mine-recursion", maxRecursion);
 	}
 

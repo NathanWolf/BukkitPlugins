@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.78
+
+ - Absorb and mine now handle variants properly (mine can mine LL now)- thanks to Firestar for sharing the code that clued me in!
+ - Absorb now gives you the material directly, instead of dropping it at your feet.
+
 ## 0.77
  
  - API release, many protected Spell methods made public. Some javadocs added.

@@ -169,4 +169,16 @@ public class PluginProperties extends Properties
 		
 		return strings;
 	}
+	
+	public List<Integer> getIntegers(String key, String csvList)
+	{
+		if (containsKey(key)) 
+		{
+			csvList = getProperty(key);
+		}
+		
+		put(key, csvList);
+		
+		return parseIntegers(csvList);
+	}
 }
