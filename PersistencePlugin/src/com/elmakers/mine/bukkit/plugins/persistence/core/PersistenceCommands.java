@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.elmakers.mine.bukkit.plugins.persistence.Messaging;
@@ -22,18 +23,22 @@ public class PersistenceCommands
 		persistCommand = messaging.getCommand(PersistenceDefaults.persistCommand);
 	}
 
-	public boolean process(Player player, Command cmd, String[] parameters)
+	public boolean process(CommandSender messageOutput, Command cmd, String[] parameters)
 	{
 		Persistence persistence = Persistence.getInstance();
 		
 		// Currently only ops can use Persistence commands.
-		if (!player.isOp()) return false;
+		if (messageOutput instanceof Player)
+		{
+			Player player = (Player)messageOutput;
+			if (!player.isOp()) return false;
+		}
 		
 		if (!persistCommand.checkCommand(cmd)) return false;
     	
     	if (parameters.length == 0)
     	{
-    		shortHelpMessage.sendTo(player, persistCommand.getCommandMatch());
+    		shortHelpMessage.sendTo(messageOutput, persistCommand.getCommandMatch());
     		return true;
     	}
     	
@@ -41,14 +46,14 @@ public class PersistenceCommands
     	
     	if (command.equalsIgnoreCase("help"))
     	{
-    		printHelp(player);
+    		printHelp(messageOutput);
     		return true;
     	}
 
     	if (command.equalsIgnoreCase("save"))
     	{
     		persistence.save();
-    		player.sendMessage("Data saved");
+    		messageOutput.sendMessage("Data saved");
     		return true;
     	}
     	
@@ -56,18 +61,18 @@ public class PersistenceCommands
     	{
     		if (parameters.length < 2)
     		{
-    			player.sendMessage("Use: \"/persist reload <schema>.<entity>");
+    			messageOutput.sendMessage("Use: \"/persist reload <schema>.<entity>");
     			return true;
     		}
     		String[] entityPath = parameters[1].split("\\.");
     		if (entityPath.length < 2)
     		{
-    			player.sendMessage("Use: \"/persist reload <schema>.<entity>");
+    			messageOutput.sendMessage("Use: \"/persist reload <schema>.<entity>");
     			return true;
     		}
     		String schemaName = entityPath[0];
     		String entityName = entityPath[1];	
-    		reloadEntity(player, schemaName, entityName);
+    		reloadEntity(messageOutput, schemaName, entityName);
     		return true;
     	}
     	
@@ -75,25 +80,25 @@ public class PersistenceCommands
     	{
     		if (parameters.length < 2)
     		{
-    			player.sendMessage("Use: \"/perist RESET <schema>.<entity>");
+    			messageOutput.sendMessage("Use: \"/perist RESET <schema>.<entity>");
     			return true;
     		}
     		String[] entityPath = parameters[1].split("\\.");
     		if (entityPath.length < 2)
     		{
-    			player.sendMessage("Use: \"/persist RESET <schema>.<entity>");
+    			messageOutput.sendMessage("Use: \"/persist RESET <schema>.<entity>");
     			return true;
     		}
     		String schemaName = entityPath[0];
     		String entityName = entityPath[1];	
-    		resetEntity(player, schemaName, entityName);
+    		resetEntity(messageOutput, schemaName, entityName);
     		return true;
     	}
        	
        	if (command.equalsIgnoreCase("reset"))
        	{
-       		player.sendMessage("Use: \"/persist RESET <schema>.<entity>");
-       		player.sendMessage("Be VERY sure!");
+       		messageOutput.sendMessage("Use: \"/persist RESET <schema>.<entity>");
+       		messageOutput.sendMessage("Be VERY sure!");
        		return true;
        	}
     	
@@ -101,18 +106,18 @@ public class PersistenceCommands
     	{
     		if (parameters.length < 2)
     		{
-    			listSchemas(player);
+    			listSchemas(messageOutput);
     			return true;
     		}
     		
     		String[] entityPath = parameters[1].split("\\.");
     		if (entityPath.length == 1)
     		{
-    			describeSchema(player, entityPath[0]);
+    			describeSchema(messageOutput, entityPath[0]);
     		}
     		else
     		{
-    			describeEntity(player, entityPath[0], entityPath[1]);
+    			describeEntity(messageOutput, entityPath[0], entityPath[1]);
     		}
     		return true;
     	}
@@ -121,14 +126,14 @@ public class PersistenceCommands
     	{
     		if (parameters.length < 2)
     		{
-    			player.sendMessage("Use: \"/persist list <schema>.<entity>[.<id>]");
+    			messageOutput.sendMessage("Use: \"/persist list <schema>.<entity>[.<id>]");
     			return true;
     		}
     		
     		String[] entityPath = parameters[1].split("\\.");
     		if (entityPath.length < 2)
     		{
-    			player.sendMessage("Use: \"/persist list <schema>.<entity>[.<id>]");
+    			messageOutput.sendMessage("Use: \"/persist list <schema>.<entity>[.<id>]");
     			return true;
     		}
     		
@@ -137,30 +142,30 @@ public class PersistenceCommands
     		
     		if (entityPath.length == 2)
     		{
-    			listEntityIds(player, schemaName, entityName);
+    			listEntityIds(messageOutput, schemaName, entityName);
     			return true;
     		}
     		
     		String id = entityPath[2];
-    		listEntity(player, schemaName, entityName, id);
+    		listEntity(messageOutput, schemaName, entityName, id);
     		
     		return true;
     	}
     	
-    	player.sendMessage("Unknown /persist command. Type \"/persist help\" for help.");
+    	messageOutput.sendMessage("Unknown /persist command. Type \"/persist help\" for help.");
     	return true;
 	}
 	
-	protected void listEntity(Player player, String schemaName, String entityName, String id)
+	protected void listEntity(CommandSender messageOutput, String schemaName, String entityName, String id)
 	{
-		PersistedClass persisted = getEntity(player, schemaName, entityName);
+		PersistedClass persisted = getEntity(messageOutput, schemaName, entityName);
 		if (persisted == null) return;
 		
 		Object instance = persisted.get(id);
 		
 		if (instance == null)
 		{
-			player.sendMessage("Can't find entity " + schemaName + "." + entityName + ", " + persisted.getIdField().getName() + "=" + id);
+			messageOutput.sendMessage("Can't find entity " + schemaName + "." + entityName + ", " + persisted.getIdField().getName() + "=" + id);
 			return;
 		}
 		
@@ -182,16 +187,16 @@ public class PersistenceCommands
 			rows.add(row);
 		}
 		
-		player.sendMessage("Entity " + schemaName + "." + entityName + ":");
+		messageOutput.sendMessage("Entity " + schemaName + "." + entityName + ":");
 		for (String row : rows)
 		{
-			player.sendMessage(row);
+			messageOutput.sendMessage(row);
 		}
 	}
 	
-	protected void listEntities(Player player, String schemaName, String entityName)
+	protected void listEntities(CommandSender messageOutput, String schemaName, String entityName)
 	{
-		PersistedClass persisted = getEntity(player, schemaName, entityName);
+		PersistedClass persisted = getEntity(messageOutput, schemaName, entityName);
 		if (persisted == null) return;
 		
 		String heading = "";
@@ -241,10 +246,10 @@ public class PersistenceCommands
 			}
 		}
 		
-		player.sendMessage(heading);
+		messageOutput.sendMessage(heading);
 		for (String row : rows)
 		{
-			player.sendMessage(row);
+			messageOutput.sendMessage(row);
 		}
 		
 	}
@@ -254,15 +259,15 @@ public class PersistenceCommands
 		return String.format("%1$-" + maxColumnWidth + "s", column);
 	}
 	
-	protected void listEntityIds(Player player, String schemaName, String entityName)
+	protected void listEntityIds(CommandSender messageOutput, String schemaName, String entityName)
 	{
-		PersistedClass persisted = getEntity(player, schemaName, entityName);
+		PersistedClass persisted = getEntity(messageOutput, schemaName, entityName);
 		if (persisted == null) return;
 		
 		List<Object> entities = new ArrayList<Object>();
 		persisted.getAll(entities);
 		
-		player.sendMessage(schemaName + "." + entityName + ", " + entities.size() + " entities:");
+		messageOutput.sendMessage(schemaName + "." + entityName + ", " + entities.size() + " entities:");
 		
 		int idCount = 0;
 		List<String> idLines = new ArrayList<String>();
@@ -302,98 +307,98 @@ public class PersistenceCommands
 		}
 		for (String idLine : idLines)
 		{
-			player.sendMessage(idLine);
+			messageOutput.sendMessage(idLine);
 		}
 	}
 	
-	protected void listSchemas(Player player)
+	protected void listSchemas(CommandSender messageOutput)
 	{
 		Persistence persistence = Persistence.getInstance();
-		player.sendMessage("Schemas:");
+		messageOutput.sendMessage("Schemas:");
 		List<Schema> schemas = persistence.getSchemaList();
 		for (Schema schema : schemas)
 		{
 			String schemaMessage = " " + schema.getName() + " [" + schema.getPersistedClasses().size() + "]";
-			player.sendMessage(schemaMessage);
+			messageOutput.sendMessage(schemaMessage);
 		}
 	}
 	
-	protected PersistedClass getEntity(Player player, String schemaName, String entityName)
+	protected PersistedClass getEntity(CommandSender messageOutput, String schemaName, String entityName)
 	{
 		Persistence persistence = Persistence.getInstance();
 		Schema schema = persistence.getSchema(schemaName);
 		if (schema == null)
 		{
-			player.sendMessage("Unknown schema: " + schemaName);
+			messageOutput.sendMessage("Unknown schema: " + schemaName);
 			return null;
 		}
 		PersistedClass persisted = schema.getPersistedClass(entityName);
 		if (persisted == null)
 		{
-			player.sendMessage("Unknown entity: " + schemaName + "." + entityName);
+			messageOutput.sendMessage("Unknown entity: " + schemaName + "." + entityName);
 			return null;
 		}
 		return persisted;
 	}
 	
-	protected void describeSchema(Player player, String schemaName)
+	protected void describeSchema(CommandSender messageOutput, String schemaName)
 	{
 		Persistence persistence = Persistence.getInstance();
 		Schema schema = persistence.getSchema(schemaName);
 		if (schema == null)
 		{
-			player.sendMessage("Unknown schema: " + schemaName);
+			messageOutput.sendMessage("Unknown schema: " + schemaName);
 			return;
 		}		
-		player.sendMessage("Schema " + schemaName + ":");
+		messageOutput.sendMessage("Schema " + schemaName + ":");
 		for (PersistedClass persisted : schema.getPersistedClasses())
 		{
 			String schemaMessage = " " + persisted.getTableName();
-			player.sendMessage(schemaMessage);
+			messageOutput.sendMessage(schemaMessage);
 		}
 	}
 
-	protected void describeEntity(Player player, String schemaName, String entityName)
+	protected void describeEntity(CommandSender messageOutput, String schemaName, String entityName)
 	{
-		PersistedClass persisted = getEntity(player, schemaName, entityName);
+		PersistedClass persisted = getEntity(messageOutput, schemaName, entityName);
 		if (persisted == null) return;
 		
-		player.sendMessage("Entity " + schemaName + "." + entityName + ":");
+		messageOutput.sendMessage("Entity " + schemaName + "." + entityName + ":");
 		for (PersistedField field : persisted.getPersistedFields())
 		{
 			String entityMessage = " " + field.getName() + " : " + field.getColumnType();
-			player.sendMessage(entityMessage);
+			messageOutput.sendMessage(entityMessage);
 		}
 	}
 	
-	protected void reloadEntity(Player player, String schemaName, String entityName)
+	protected void reloadEntity(CommandSender messageOutput, String schemaName, String entityName)
 	{
-		PersistedClass persisted = getEntity(player, schemaName, entityName);
+		PersistedClass persisted = getEntity(messageOutput, schemaName, entityName);
 		if (persisted == null) return;
 		
-		player.sendMessage("Reloading entity: " + schemaName + "." + entityName);
+		messageOutput.sendMessage("Reloading entity: " + schemaName + "." + entityName);
 		persisted.clear();
 	}
 	
-	protected void resetEntity(Player player, String schemaName, String entityName)
+	protected void resetEntity(CommandSender messageOutput, String schemaName, String entityName)
 	{
-		PersistedClass persisted = getEntity(player, schemaName, entityName);
+		PersistedClass persisted = getEntity(messageOutput, schemaName, entityName);
 		if (persisted == null) return;
 		
-		resettingEntityMessage.sendTo(player, schemaName, entityName);
+		resettingEntityMessage.sendTo(messageOutput, schemaName, entityName);
 		persisted.reset();
 	}
 	
-	protected void printHelp(Player player)
+	protected void printHelp(CommandSender messageOutput)
 	{
 		// TODO: Get this dynamically from the CommandData store
-		player.sendMessage(PersistenceDefaults.helpHeader);
+		messageOutput.sendMessage(PersistenceDefaults.helpHeader);
 		for (int i = 0; i < PersistenceDefaults.subCommands.length; i++)
 		{
 			String helpLine = PersistenceDefaults.subCommands[i] + " : "
 				+ PersistenceDefaults.subCommandHelp[i];
 			
-			player.sendMessage(helpLine);
+			messageOutput.sendMessage(helpLine);
 		}
 	}
 	

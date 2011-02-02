@@ -9,7 +9,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
  * @author nathan
  *
  */
-@PersistClass(name = "group", schema = "classes") 
+@PersistClass(name = "group", schema = "global") 
 public class Group
 {
 	@Persist(id=true)

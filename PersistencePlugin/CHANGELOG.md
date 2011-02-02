@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.19
+
+ - Fully support Bukkit command interface, you can now use persistence commands from the server console!
+
 # 0.18
 
  - Integrate Classes plugin directly into Persistence

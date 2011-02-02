@@ -19,7 +19,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
  * @author NathanWolf
  *
  */
-@PersistClass(name = "player", schema = "classes") 
+@PersistClass(name = "player", schema = "global") 
 public class PlayerData
 {
 	/**

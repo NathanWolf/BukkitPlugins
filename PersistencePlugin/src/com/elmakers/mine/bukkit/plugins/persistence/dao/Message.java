@@ -1,6 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
 
 import com.elmakers.mine.bukkit.plugins.persistence.annotations.Persist;
 import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
@@ -34,13 +34,13 @@ public class Message
 	 * @param player The player to send a message to
 	 * @param parameters A list of optional parameters to parameterize the string with
 	 */
-	public void sendTo(Player player, Object ... parameters)
+	public void sendTo(CommandSender receiver, Object ... parameters)
 	{
 		if (!enabled) return;
 		String[] lines = getLines(parameters);
 		for (String line : lines)
 		{
-			player.sendMessage(line);
+			receiver.sendMessage(line);
 		}
 	}
 	
