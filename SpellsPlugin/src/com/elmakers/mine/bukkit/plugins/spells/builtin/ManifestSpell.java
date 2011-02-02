@@ -51,9 +51,13 @@ public class ManifestSpell extends Spell
 		}
 		
 		int amount = defaultAmount;
+		byte data = 0;
 		castMessage(player, "Manifesting some " + material.name().toLowerCase());
-		ItemStack itemStack = new ItemStack(material, amount);
-		player.getWorld().dropItem(player.getLocation(), itemStack);
+		for (int i = 0; i < amount; i++)
+		{
+			ItemStack itemStack = new ItemStack(material, 1, (short)0 , data);
+			player.getInventory().addItem(itemStack);
+		}
 
 		return true;
 	}

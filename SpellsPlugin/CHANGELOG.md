@@ -3,7 +3,7 @@
 ## 0.78
 
  - Absorb and mine now handle variants properly (mine can mine LL now)- thanks to Firestar for sharing the code that clued me in!
- - Absorb now gives you the material directly, instead of dropping it at your feet.
+ - Absorb and manifest now give you the material directly, instead of dropping it at your feet.
 
 ## 0.77
  
