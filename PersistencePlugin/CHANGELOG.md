@@ -1,5 +1,12 @@
 # CHANGELOG
 
+# 0.17
+
+ - Update to use the command standard. The persist command is now defined in the YML file.
+ - Start work on basic CommandData framework. I'd like to support sub-commands, such as all the sub-commands of /persist,
+   and also support auto-generating the help based on this data.
+ - Get about halfway there on contained object support.
+
 # 0.16
 
  - Implement Messaging utility, for consolidated storage of messages and commands.

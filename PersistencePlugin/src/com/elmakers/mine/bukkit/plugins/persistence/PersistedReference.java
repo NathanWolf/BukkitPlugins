@@ -24,30 +24,51 @@ public class PersistedReference extends PersistedField
 		referenceType = Persistence.getInstance().getPersistedClass(getType());
 	}
 	
+	
+	
 	@Override
 	public String getColumnName()
 	{
 		if (referenceType == null) return null;
 		
 		String idName = referenceType.getIdField().getColumnName();
-		idName = idName.substring(0, 1).toUpperCase() + idName.substring(1);
-		return name + idName;
+		idName = name + idName.substring(0, 1).toUpperCase() + idName.substring(1);
+		return idName;
+	}
+
+	@Override
+	public String[] getColumnNames()
+	{
+		if (referenceType == null) return null;
+		// TODO : support contained objects
+		
+		return new String[] { getColumnName() };
 	}
 	
 	@Override
 	public DataType getColumnType()
-	{
-		if (referenceType == null) return DataType.NULL;
+	{	
+		if (referenceType == null) return null;
 		
-		Class<?> referenceIdType = referenceType.getIdField().getType();
-		return DataType.getTypeFromClass(referenceIdType);
+		return DataType.getTypeFromClass(referenceType.getIdField().getType());
+	}
+		
+	@Override
+	public DataType[] getColumnTypes()
+	{
+		if (referenceType == null) return null;
+		// TOOD : support contained objects
+		
+		return new DataType[] { getColumnType() };
 	}
 	
 	@Override
-	public Object getColumnData(Object o)
+	public Object getColumnValue(Object o)
 	{
 		if (referenceType == null) return null;
 		if (o == null) return null;
+		
+		// TODO : support contained objects
 		
 		Object referenceObject = get(o);
 		if (referenceObject == null) return null;
@@ -56,21 +77,11 @@ public class PersistedReference extends PersistedField
 	}
 	
 	@Override
-	public void setColumnData(Object o, Object deferredId)
+	public void setColumnValue(Object o, Object data)
 	{
 		if (referenceType == null) return;	
-		if (deferredId == null) 
-		{
-			set(o, null);
-			return;
-		}
 		
-		deferredReferences.add(new DeferredReference(this, o, deferredId));
-	}
-	
-	public void setContained(boolean contained)
-	{
-		this.contained = contained;
+		deferredReferences.add(new DeferredReference(this, o, data));
 	}
 	
 	public static void beginDefer()
@@ -109,6 +120,4 @@ public class PersistedReference extends PersistedField
 	private final static List<DeferredReference> deferredReferences = new ArrayList<DeferredReference>();
 
 	protected PersistedClass referenceType = null;
-	protected boolean contained = false;
-
 }

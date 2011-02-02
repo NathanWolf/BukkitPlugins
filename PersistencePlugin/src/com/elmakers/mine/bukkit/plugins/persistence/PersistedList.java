@@ -26,35 +26,51 @@ public class PersistedList extends PersistedField
 	{
 		return listType;
 	}
-	
-	public DataType getListColumnType()
-	{
-		if (referenceType != null)
-		{
-			Class<?> referenceIdType = referenceType.getIdField().getType();
-			return DataType.getTypeFromClass(referenceIdType);
-		}
-		return listDataType;
-	}
 
 	@SuppressWarnings("unchecked")
-	public List<Object> getListData(Object o)
+	public List<Object[]> getListValues(Object o)
 	{
+		// TODO : support contained lists.
+		
 		List<? extends Object> listItems = (List<? extends Object>)get(o);
-		List<Object> listCopy = new ArrayList<Object>();
-		if (referenceType == null)
+		List<Object[]> valueList = new ArrayList<Object[]>();
+		for (Object value : listItems)
 		{
-			listCopy.addAll(listItems);
-		}
-		else
-		{
-			for (Object reference : listItems)
+			if (referenceType == null)
 			{
-				Object referenceId = referenceType.getId(reference);
-				listCopy.add(referenceId);
+				valueList.add(new Object[] { value });
+			}
+			else
+			{
+				Object referenceId = referenceType.getId(value);
+				valueList.add(new Object[] { referenceId } );
 			}
 		}
-		return listCopy;
+		
+		return valueList;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Object> getListValueIds(Object o)
+	{
+		// TODO : support contained lists.
+		
+		List<? extends Object> listItems = (List<? extends Object>)get(o);
+		List<Object> valueList = new ArrayList<Object>();
+		for (Object value : listItems)
+		{
+			if (referenceType == null)
+			{
+				valueList.add(value);
+			}
+			else
+			{
+				Object referenceId = referenceType.getId(value);
+				valueList.add(referenceId);
+			}
+		}
+		
+		return valueList;
 	}
 	
 	public String getTableName(PersistedClass persisted)
@@ -67,10 +83,16 @@ public class PersistedList extends PersistedField
 	public String getIdColumnName(PersistedClass persisted, PersistedField idField)
 	{
 		String tableName = persisted.getTableName();
-		String idFieldName = idField.getColumnName();
-		idFieldName = tableName.substring(0, 1).toLowerCase() + tableName.substring(1) 
-			+ idFieldName.substring(0, 1).toUpperCase() + idFieldName.substring(1);
+		String[] idFieldNames = idField.getColumnNames();
+		String idFieldName = tableName.substring(0, 1).toLowerCase() + tableName.substring(1) 
+			+ idFieldNames[0].substring(0, 1).toUpperCase() + idFieldNames[0].substring(1);
 		return idFieldName;
+	}
+	
+	public int getDataColumnCount()
+	{
+		// TODO : support contained lists
+		return 1;
 	}
 	
 	public String getDataColumnName()
@@ -86,6 +108,39 @@ public class PersistedList extends PersistedField
 		return getColumnName() + referenceId;
 	}
 	
+	public DataType getListColumnType()
+	{
+		if (referenceType != null)
+		{
+			Class<?> referenceIdType = referenceType.getIdField().getType();
+			return DataType.getTypeFromClass(referenceIdType);
+		}
+		return listDataType;
+	}
+	
+	public DataType[] getListColumnTypes()
+	{
+		// TODO : support contained lists
+		return new DataType[] { getListColumnType() };
+	}
+	
+	public String[] getDataColumnNames()
+	{
+		// TODO : support contained lists
+		return new String[] { getDataColumnName() };
+	}
+		
+	@Override
+	public String[] getColumnNames()
+	{
+		String columnName = name;
+		if (columnName.charAt(columnName.length() - 1) == 's')
+		{
+			columnName = columnName.substring(0, columnName.length() - 1);
+		}
+		return new String[] { columnName };
+	}
+	
 	protected Type getGenericType()
 	{
 		Type genericType = null;
@@ -98,17 +153,6 @@ public class PersistedList extends PersistedField
 			genericType = field.getGenericType();
 		}
 		return genericType;
-	}
-	
-	@Override
-	public String getColumnName()
-	{
-		String columnName = name;
-		if (columnName.charAt(columnName.length() - 1) == 's')
-		{
-			columnName = columnName.substring(0, columnName.length() - 1);
-		}
-		return columnName;
 	}
 	
 	protected void findListType()
@@ -133,12 +177,6 @@ public class PersistedList extends PersistedField
         {
         	referenceType = Persistence.getInstance().getPersistedClass(listType);
         }
-	}
-	
-	
-	public void setContained(boolean contained)
-	{
-		this.contained = contained;
 	}
 	
 	public static void beginDefer()
@@ -207,7 +245,6 @@ public class PersistedList extends PersistedField
 
 	protected Class<?> listType;
 	protected DataType listDataType;
-	protected boolean contained;
 	protected PersistedClass referenceType = null;
 	
 }

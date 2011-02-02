@@ -101,6 +101,11 @@ public class PersistedClass
 				log.warning("Persistence: class " + persistClass.getName() + ": can't have more than one id field");
 				return false;
 			}
+			if (persist.contained())
+			{
+				log.warning("Persistence: class " + persistClass.getName() + ": an id field can't be a contained entity");
+				return false;
+			}
 			idField = field;
 			field.setIsIdField(true);
 		}
@@ -119,6 +124,12 @@ public class PersistedClass
 		}
 		else
 		{
+			if (persist.contained())
+			{
+				log.warning("Persistence: class " + persistClass.getName() + ": only List and Object fields may be contained");
+				return false;
+			}
+			field.setAutogenerate(persist.auto());
 			internalFields.add(field);
 		}
 

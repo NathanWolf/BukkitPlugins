@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.persistence.messages.dao;
 
+import org.bukkit.command.Command;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
@@ -7,14 +8,14 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.annotations.Persist;
 
 @PersistClass(name="command", schema="global")
-public class Command
+public class CommandData
 {
-	public Command()
+	public CommandData()
 	{
 		
 	}
 	
-	public Command(Plugin plugin, String id, String command)
+	public CommandData(Plugin plugin, String id, String command)
 	{
 		PluginDescriptionFile pdfFile = plugin.getDescription();
 		this.pluginId = pdfFile.getName();
@@ -22,21 +23,10 @@ public class Command
 		this.command = command;
 	}
 	
-	public String[] checkCommand(String consoleMessage)
+	public boolean checkCommand(Command cmd)
 	{
-		String[] consolePieces = consoleMessage.split(" ");
-		String commandCheck = getCommandMatch();
-		if (consolePieces == null || consolePieces.length < 0 || !commandCheck.equalsIgnoreCase(consolePieces[0]))
-		{
-			return null;
-		}
-		
-		String[] parameters = new String[consolePieces.length - 1];
-		for (int i = 1; i < consolePieces.length; i++)
-		{
-			parameters[i - 1] = consolePieces[i];
-		}
-		return parameters;
+		// TODO: permissions check, etc
+		return command.equalsIgnoreCase(cmd.getName());
 	}
 	
 	public String getCommandMatch()

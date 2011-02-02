@@ -3,43 +3,36 @@ package com.elmakers.mine.bukkit.plugins.persistence;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerChatEvent;
-import org.bukkit.event.player.PlayerListener;
 
 import com.elmakers.mine.bukkit.plugins.persistence.messages.Messaging;
-import com.elmakers.mine.bukkit.plugins.persistence.messages.dao.Command;
+import com.elmakers.mine.bukkit.plugins.persistence.messages.dao.CommandData;
 import com.elmakers.mine.bukkit.plugins.persistence.messages.dao.Message;
 
-public class PersistencePlayerListener extends PlayerListener
+public class PersistenceCommands
 {
+
 	public void initialize(PersistencePlugin plugin, Persistence persistence)
 	{
-		Messaging messaging = persistence.getMessaging(plugin);
-		
-		persistCommand = messaging.getCommand(PersistenceDefaults.persistCommand);
-		
+		Messaging messaging = persistence.getMessaging(plugin);	
 		shortHelpMessage = messaging.getMessage("shortHelpMessage", PersistenceDefaults.shortHelpMessage);
+		persistCommand = messaging.getCommand(PersistenceDefaults.persistCommand);
 	}
 
-	@Override
-	public void onPlayerCommand(PlayerChatEvent event)
+	public boolean process(Player player, Command cmd, String[] parameters)
 	{
 		Persistence persistence = Persistence.getInstance();
-		Player player = event.getPlayer();
 		
 		// Currently only ops can use Persistence commands.
-		if (!player.isOp()) return;
+		if (!player.isOp()) return false;
 		
-		String[] parameters = persistCommand.checkCommand(event.getMessage());
-		if (parameters == null) return;
-		
-    	event.setCancelled(true);
+		if (!persistCommand.checkCommand(cmd)) return false;
     	
     	if (parameters.length == 0)
     	{
     		shortHelpMessage.sendTo(player, persistCommand.getCommandMatch());
-    		return;
+    		return true;
     	}
     	
     	String command = parameters[0];
@@ -47,14 +40,14 @@ public class PersistencePlayerListener extends PlayerListener
     	if (command.equalsIgnoreCase("help"))
     	{
     		printHelp(player);
-    		return;
+    		return true;
     	}
 
     	if (command.equalsIgnoreCase("save"))
     	{
     		persistence.save();
     		player.sendMessage("Data saved");
-    		return;
+    		return true;
     	}
     	
     	if (command.equalsIgnoreCase("reload"))
@@ -62,18 +55,18 @@ public class PersistencePlayerListener extends PlayerListener
     		if (parameters.length < 2)
     		{
     			player.sendMessage("Use: \"/persist reload <schema>.<entity>");
-    			return;
+    			return true;
     		}
     		String[] entityPath = parameters[1].split("\\.");
     		if (entityPath.length < 2)
     		{
     			player.sendMessage("Use: \"/persist reload <schema>.<entity>");
-    			return;
+    			return true;
     		}
     		String schemaName = entityPath[0];
     		String entityName = entityPath[1];	
     		reloadEntity(player, schemaName, entityName);
-    		return;
+    		return true;
     	}
     	
        	if (command.equals("RESET"))
@@ -81,25 +74,25 @@ public class PersistencePlayerListener extends PlayerListener
     		if (parameters.length < 2)
     		{
     			player.sendMessage("Use: \"/perist RESET <schema>.<entity>");
-    			return;
+    			return true;
     		}
     		String[] entityPath = parameters[1].split("\\.");
     		if (entityPath.length < 2)
     		{
     			player.sendMessage("Use: \"/persist RESET <schema>.<entity>");
-    			return;
+    			return true;
     		}
     		String schemaName = entityPath[0];
     		String entityName = entityPath[1];	
     		resetEntity(player, schemaName, entityName);
-    		return;
+    		return true;
     	}
        	
        	if (command.equalsIgnoreCase("reset"))
        	{
        		player.sendMessage("Use: \"/persist RESET <schema>.<entity>");
        		player.sendMessage("Be VERY sure!");
-       		return;
+       		return true;
        	}
     	
     	if (command.equalsIgnoreCase("describe"))
@@ -107,7 +100,7 @@ public class PersistencePlayerListener extends PlayerListener
     		if (parameters.length < 2)
     		{
     			listSchemas(player);
-    			return;
+    			return true;
     		}
     		
     		String[] entityPath = parameters[1].split("\\.");
@@ -119,7 +112,7 @@ public class PersistencePlayerListener extends PlayerListener
     		{
     			describeEntity(player, entityPath[0], entityPath[1]);
     		}
-    		return;
+    		return true;
     	}
     	
     	if (command.equalsIgnoreCase("list"))
@@ -127,14 +120,14 @@ public class PersistencePlayerListener extends PlayerListener
     		if (parameters.length < 2)
     		{
     			player.sendMessage("Use: \"/persist list <schema>.<entity>[.<id>]");
-    			return;
+    			return true;
     		}
     		
     		String[] entityPath = parameters[1].split("\\.");
     		if (entityPath.length < 2)
     		{
     			player.sendMessage("Use: \"/persist list <schema>.<entity>[.<id>]");
-    			return;
+    			return true;
     		}
     		
     		String schemaName = entityPath[0];
@@ -143,16 +136,17 @@ public class PersistencePlayerListener extends PlayerListener
     		if (entityPath.length == 2)
     		{
     			listEntityIds(player, schemaName, entityName);
-    			return;
+    			return true;
     		}
     		
     		String id = entityPath[2];
     		listEntity(player, schemaName, entityName, id);
     		
-    		return;
+    		return true;
     	}
     	
     	player.sendMessage("Unknown /persist command. Type \"/persist help\" for help.");
+    	return true;
 	}
 	
 	protected void listEntity(Player player, String schemaName, String entityName, String id)
@@ -390,6 +384,7 @@ public class PersistencePlayerListener extends PlayerListener
 	
 	protected void printHelp(Player player)
 	{
+		// TODO: Get this dynamically from the CommandData store
 		player.sendMessage(PersistenceDefaults.helpHeader);
 		for (int i = 0; i < PersistenceDefaults.subCommands.length; i++)
 		{
@@ -405,8 +400,8 @@ public class PersistencePlayerListener extends PlayerListener
 	private int maxLineLength = 50;
 	private int maxIdCount = 50;
 	
-	private Command persistCommand;
-	
+	private CommandData persistCommand;	
 	private Message shortHelpMessage;
 	private Message resettingEntityMessage;
+
 }

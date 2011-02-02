@@ -3,7 +3,7 @@ package com.elmakers.mine.bukkit.plugins.persistence.messages;
 import org.bukkit.plugin.Plugin;
 
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
-import com.elmakers.mine.bukkit.plugins.persistence.messages.dao.Command;
+import com.elmakers.mine.bukkit.plugins.persistence.messages.dao.CommandData;
 import com.elmakers.mine.bukkit.plugins.persistence.messages.dao.Message;
 
 public class Messaging
@@ -25,12 +25,12 @@ public class Messaging
 		return message;
 	}
 	
-	public Command getCommand(String id)
+	public CommandData getCommand(String id)
 	{
-		Command command = persistence.get(id, Command.class);
+		CommandData command = persistence.get(id, CommandData.class);
 		if (command == null)
 		{
-			command = new Command(plugin, id, id);
+			command = new CommandData(plugin, id, id);
 			persistence.put(command);
 		}
 		return command;
