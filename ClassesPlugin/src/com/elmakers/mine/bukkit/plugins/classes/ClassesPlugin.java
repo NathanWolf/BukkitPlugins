@@ -40,6 +40,9 @@ public class ClassesPlugin extends JavaPlugin
 		pm.registerEvent(Type.PLAYER_COMMAND, playerListener, Priority.Normal, this);
 		pm.registerEvent(Type.PLAYER_QUIT, playerListener, Priority.Normal, this);
 		pm.registerEvent(Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
+
+		PluginDescriptionFile pdfFile = this.getDescription();
+        log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled");
 	}
 	
 	public boolean bindPersistence() 
