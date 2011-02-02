@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.59
+
+ - Transition to Bukkit Command interface
+ - Give items directly to player instead of dropping on the ground
+
 ## 0.58
 
  - Moved code out of plugin handler.

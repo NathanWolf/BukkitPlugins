@@ -4,18 +4,15 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
-import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerItemEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import org.bukkit.craftbukkit.entity.CraftPlayer;
-import org.bukkit.craftbukkit.inventory.CraftInventory;
 
 import com.elmakers.mine.bukkit.plugins.spells.SpellVariant;
 import com.elmakers.mine.bukkit.plugins.spells.Spells;
-
 
 class WandPlayerListener extends PlayerListener 
 {
@@ -207,97 +204,6 @@ class WandPlayerListener extends PlayerListener
 				player.sendMessage(spell.getName() + " : " + spell.getDescription());
 			}
 		}
-    }
-	
-	private void showHelp(Player player)
-	{
-		WandPermissions permissions = wands.getPermissions(player.getName());
-			
-		player.sendMessage("How to use your wand:");
-		player.sendMessage(" Type /spells to see what spells you know");
-		player.sendMessage(" Place a spell item in your first inventory slot");
-		player.sendMessage(" Left-click your wand to cast!");
-		player.sendMessage(" Right-click to cycle spells in your inventory");
-
-		if (permissions.canModify())
-		{
-			player.sendMessage("/wand <spellname> : Give the item necessary to cast a spell");
-		}
-		if (permissions.canAdminister())
-		{
-			player.sendMessage("/wand reload : Reload the configuration");
-		}
-		
-	}
-	
-	/**
-     * Commands sent from in game to us.
-     *
-     * @param player The player who sent the command.
-     * @param split The input line split by spaces.
-     * @return <code>boolean</code> - True denotes that the command existed, false the command doesn't.
-     */
-    @Override
-    public void onPlayerCommand(PlayerChatEvent event) 
-    {
-    	Player player = event.getPlayer();
-    	WandPermissions permissions = wands.getPermissions(player.getName());
-
-		if (event.isCancelled() || !permissions.canUse())
-		{
-			return;
-		}
-		
-    	String[] split = event.getMessage().split(" ");
-    	String commandString = split[0];
-    	
-    	if (!commandString.equalsIgnoreCase("/wand"))
-    	{
-    		return;
-    	}
-    	
-    	event.setCancelled(true);
-    	
-    	if (!permissions.canModify() || !permissions.canModify())
-    	{
-    		showHelp(player);
-    		return;
-    	}
-    	
-    	if (split.length <= 1)
-    	{
-    		boolean gaveWand = false;
-  
-			Inventory inventory = player.getInventory();
-			CraftInventory cInventory = (CraftInventory)inventory;
-			if (!cInventory.contains(wands.getWandTypeId()))
-			{
-				ItemStack itemStack = new ItemStack(Material.getMaterial(wands.getWandTypeId()), 1);
-				player.getWorld().dropItem(player.getLocation(), itemStack);
-				gaveWand = true;
-			}
-			
-    		if (!gaveWand)
-    		{
-    			showHelp(player);
-    		}
-    		else
-    		{
-    			player.sendMessage("Use /wand again for help, /spells for spell list");
-    		}
-    		return;
-    	}
-    	
-    	SpellVariant spell = wands.getSpells().getSpell(split[1], player.getName());
-    	if (spell == null)
-    	{
-    		player.sendMessage("Spell '" + split[1] + "' unknown, Use /spells for spell list");
-    		return;
-    	}
-    	
-		ItemStack itemStack = new ItemStack(spell.getMaterial(), 1);
-		player.getWorld().dropItem(player.getLocation(), itemStack);
-    	
     }
 
 }
