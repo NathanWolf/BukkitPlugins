@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.77
+ 
+ - API release, many protected Spell methods made public. Some javadocs added.
+
+## 0.76
+
+ - Updated to work with Bukkit#210
+
 ## 0.75
 
  - Fix the familiar spell. I needed mc-dev, now!

@@ -16,7 +16,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.CraftWorld;
 
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
@@ -35,58 +34,131 @@ public abstract class Spell implements Comparable<Spell>
 	 */
 	protected Player						player;
 	protected Spells						spells;
-	
-	/*
-	 * Spell abstract interface- you must override these.
+
+	/**
+	 * Called when this spell is cast.
+	 * 
+	 * This is where you do your work!
+	 * 
+	 * If parameters were passed to this spell, either via a variant or the command line,
+	 * they will be passed in here.
+	 * 
+	 * @param parameters Any parameters that were passed to this spell
+	 * @return true if the spell worked, false if it failed
 	 */
 	public abstract boolean onCast(String[] parameters);
 
+	/**
+	 * You must specify a unique name (id) for your spell.
+	 * 
+	 * This is also the name of the default variant, used for casting this spell's default behavior.
+	 * 
+	 * @return The name of this spell
+	 */
 	protected abstract String getName();
 
+	/**
+	 * You must specify a category for this spell.
+	 * 
+	 * This is used for grouping spells when displaying the in-game spell explorer, and can
+	 * be used for permissions as well.
+	 * 
+	 * Check the builtins spells for examples of common categories.
+	 * 
+	 * @return This spell's category.
+	 */
 	public abstract String getCategory();
 
+	/**
+	 * A brief description of this spell.
+	 * 
+	 * This is displayed in the in-game help screen, so keep it short.
+	 * 
+	 * @return This spells' description.
+	 */
 	public abstract String getDescription();
 	
+	/**
+	 * The material used to represent this spell.
+	 * 
+	 * This will probably be dropped from this interface and managed by Wand in the future.
+	 * 
+	 * @return The material used to represent this spell's icon in the Wand UI.
+	 */
 	public abstract Material getMaterial();
 
-	/*
-	 * Spell optional interface- you may override these.
+
+	/**
+	 * Called on load, you can load data here and set defaults.
+	 * 
+	 * This will be modified to use Persistence for loading in the future.
+	 * 
+	 * @param properties The spells properties file.
 	 */
 	public void onLoad(PluginProperties properties)
 	{
 
 	}
 
+	/**
+	 * Called when a material selection spell is cancelled mid-selection.
+	 */
 	public void onCancel()
 	{
 
 	}
 	
-	/*
-	 *  Listener methods- you must register to receive these
+
+	/**
+	 * Listener method, called on player move for registered spells.
+	 * 
+	 * @param event The original player move event
+	 * @see Spells#registerEvent(SpellEventType, Spell)
 	 */
 	public void onPlayerMove(PlayerMoveEvent event)
 	{
 		
 	}
 	
+	/**
+	 * Listener method, called on player maerial selection for registered spells.
+	 * 
+	 * @param player The player that has chosen a material
+	 * @see Spells#registerEvent(SpellEventType, Spell)
+	 */
 	public void onMaterialChoose(Player player)
 	{
 		
 	}
 	
+	/**
+	 * Listener method, called on player quit for registered spells.
+	 * 
+	 * @param event The player who just quit
+	 * @see Spells#registerEvent(SpellEventType, Spell)
+	 */
 	public void onPlayerQuit(PlayerEvent event)
 	{
 
 	}
 	
+	/**
+	 * Listener method, called on player move for registered spells.
+	 * 
+	 * @Param player The player that died
+	 * @param event The original entity death event
+	 * @see Spells#registerEvent(SpellEventType, Spell)
+	 */
 	public void onPlayerDeath(Player player, EntityDeathEvent event)
 	{
 
 	}
 	
-	/*
-	 * Constructor - override to add additional spell variants
+
+	/**
+	 * Default constructor, used to register spells.
+	 * 
+	 * Override this constructor to add new default variants.
 	 */
 	public Spell()
 	{
@@ -96,12 +168,12 @@ public abstract class Spell implements Comparable<Spell>
 	/*
 	 * General helper functions
 	 */
-	protected ItemStack getBuildingMaterial()
+	public ItemStack getBuildingMaterial()
 	{
 		return getBuildingMaterial(false);
 	}
 	
-	protected ItemStack getBuildingMaterial(boolean allowAir)
+	public ItemStack getBuildingMaterial(boolean allowAir)
 	{
 		ItemStack result = null;
 		List<Material> buildingMaterials = spells.getBuildingMaterials();
@@ -120,20 +192,17 @@ public abstract class Spell implements Comparable<Spell>
 		return result;
 	}
 
-	/*
-	 * Targeting modification functions
-	 */
-	protected void targetThrough(Material mat)
+	public void targetThrough(Material mat)
 	{
 		targetThroughMaterials.put(mat, true);
 	}
 
-	protected void noTargetThrough(Material mat)
+	public void noTargetThrough(Material mat)
 	{
 		targetThroughMaterials.put(mat, false);
 	}
 	
-	protected boolean isTargetable(Material mat)
+	public boolean isTargetable(Material mat)
 	{
 		Boolean checkMat = targetThroughMaterials.get(mat);
 		if (reverseTargeting)
@@ -143,22 +212,22 @@ public abstract class Spell implements Comparable<Spell>
 		return (checkMat == null || !checkMat);
 	}
 
-	protected void setReverseTargeting(boolean reverse)
+	public void setReverseTargeting(boolean reverse)
 	{
 		reverseTargeting = reverse;
 	}
 	
-	protected boolean isReverseTargeting()
+	public boolean isReverseTargeting()
 	{
 		return reverseTargeting;
 	}
 	
-	protected void setTargetHeightRequired(int height)
+	public void setTargetHeightRequired(int height)
 	{
 		targetHeightRequired = height;
 	}
 	
-	protected int getTargetHeightRequired()
+	public int getTargetHeightRequired()
 	{
 		return targetHeightRequired;
 	}
@@ -166,17 +235,17 @@ public abstract class Spell implements Comparable<Spell>
 	/*
 	 * Ground / location search and test function functions
 	 */
-	protected boolean isOkToStandIn(Material mat)
+	public boolean isOkToStandIn(Material mat)
 	{
 		return (mat == Material.AIR || mat == Material.WATER || mat == Material.STATIONARY_WATER);
 	}
 
-	protected boolean isOkToStandOn(Material mat)
+	public boolean isOkToStandOn(Material mat)
 	{
 		return (mat != Material.AIR && mat != Material.LAVA && mat != Material.STATIONARY_LAVA);
 	}
 	
-	protected Location findPlaceToStand(Location playerLoc, boolean goUp)
+	public Location findPlaceToStand(Location playerLoc, boolean goUp)
 	{
 		int step;
 		if (goUp)
@@ -219,7 +288,7 @@ public abstract class Spell implements Comparable<Spell>
 		return null;
 	}
 	
-	protected double getDistance(Location source, Location target)
+	public double getDistance(Location source, Location target)
 	{
 		return Math.sqrt
 		(
@@ -229,7 +298,7 @@ public abstract class Spell implements Comparable<Spell>
 		);
 	}
 	
-	protected double getDistance(Player player, Block target)
+	public double getDistance(Player player, Block target)
 	{
 		Location loc = player.getLocation();
 		return Math.sqrt
@@ -239,22 +308,13 @@ public abstract class Spell implements Comparable<Spell>
 		+ 	Math.pow(loc.getZ() - target.getZ(), 2)
 		);
 	}
-	
-	/*
-	 * Player location / rotation querying
+
+	/**
+	 * Get the block the player is standing on.
+	 * 
+	 * @return The Block the player is standing on
 	 */
-
-	protected float getPlayerRotation()
-	{
-		float playerRot = player.getLocation().getYaw();
-		while (playerRot < 0)
-			playerRot += 360;
-		while (playerRot > 360)
-			playerRot -= 360;
-		return playerRot;
-	}
-
-	protected Block getPlayerBlock()
+	public Block getPlayerBlock()
 	{
 		Block playerBlock = null;
 		Location playerLoc = player.getLocation();
@@ -270,8 +330,13 @@ public abstract class Spell implements Comparable<Spell>
 		return playerBlock;
 	}
 
-
-	protected BlockFace getPlayerFacing()
+	
+	/**
+	 * Get the direction the player is facing as a BlockFace.
+	 * 
+	 * @return a BlockFace representing the direction the player is facing
+	 */
+	public BlockFace getPlayerFacing()
 	{
 		float playerRot = getPlayerRotation();
 
@@ -296,13 +361,17 @@ public abstract class Spell implements Comparable<Spell>
 		return direction;
 	}
 	
-	/*
-	 * Block navigation helpers- for moving in direction relative to a current direction
-	 */
 
-	// Should go in BlockFace?
-	// Also, there's probably some better matrix-y, math-y way to do this.
-	protected BlockFace goLeft(BlockFace direction)
+	/**
+	 * A helper function to go change a given direction to the direction "to the right".
+	 * 
+	 * There's probably some better matrix-y, math-y way to do this.
+	 * It'd be nice if this was in BlockFace.
+	 * 
+	 * @param direction The current direction
+	 * @return The direction to the left
+	 */
+	public static BlockFace goLeft(BlockFace direction)
 	{
 		switch (direction)
 		{
@@ -318,7 +387,16 @@ public abstract class Spell implements Comparable<Spell>
 		return direction;
 	}
 
-	protected BlockFace goRight(BlockFace direction)
+	/**
+	 * A helper function to go change a given direction to the direction "to the right".
+	 * 
+	 * There's probably some better matrix-y, math-y way to do this.
+	 * It'd be nice if this was in BlockFace.
+	 * 
+	 * @param direction The current direction
+	 * @return The direction to the right
+	 */
+	public static BlockFace goRight(BlockFace direction)
 	{
 		switch (direction)
 		{
@@ -334,12 +412,11 @@ public abstract class Spell implements Comparable<Spell>
 		return direction;
 	}
 	
-	/*
-	 * Aiming and projectile functions
-	 */
-	
-	/*
+
+	/**
 	 * Find a good location to spawn a projectile, such as a fireball.
+	 * 
+	 * @return The projectile spawn location
 	 */
 	protected Location getProjectileSpawnLocation()
 	{
@@ -359,48 +436,54 @@ public abstract class Spell implements Comparable<Spell>
 		return location;
 	}
 
-	protected Vector getAimVector()
+	/**
+	 * Get a Vector reprsenting the current aim direction
+	 * 
+	 * @return The player's aim vector
+	 */
+	public Vector getAimVector()
 	{
 		return new Vector((0 - Math.sin(Math.toRadians(playerLocation.getYaw()))), (0 - Math.sin(Math
 				.toRadians(playerLocation.getPitch()))), Math.cos(Math.toRadians(playerLocation.getYaw())));
 	}
 
-	protected void findTargetBlock()
-	{
-		if (targetingComplete)
-		{
-			return;
-		}
-
-		while (getNextBlock() != null)
-		{
-			Block block = getCurBlock();
-			if (isTargetable(block.getType()))
-			{
-				boolean enoughSpace = true;
-				for (int i = 1; i < targetHeightRequired; i++)
-				{
-					block = block.getFace(BlockFace.UP);
-					if (!isTargetable(block.getType()))
-					{
-						enoughSpace = false;
-						break;
-					}
-				}
-				if (enoughSpace) break;
-			}
-		}
-		targetingComplete = true;
-	}
 	
-	protected double getYRotation()
+	/**
+	 * Get the (simplified) player pitch.
+	 * 
+	 * @return Player Y-axis rotation (pitch)
+	 */
+	public double getYRotation()
 	{
 		return yRotation;
 	}
 	
-	protected double getXRotation()
+	/**
+	 * Get the (simplified) player yaw.
+	 * @return Player X-axis rotation (yaw)
+	 */
+	public double getXRotation()
 	{
 		return xRotation;
+	}
+	
+	/**
+	 * Gets the normal player rotation.
+	 * 
+	 * This differs from xRotation by 90 degrees. xRotation is ported from 
+	 * HitBlox, I really need to get rid of or refactor all that code, but it may be
+	 * worth just waiting for the Bukkit targeting implementation at this point.
+	 * 
+	 * @return The player X-rotation (yaw)
+	 */
+	public float getPlayerRotation()
+	{
+		float playerRot = player.getLocation().getYaw();
+		while (playerRot < 0)
+			playerRot += 360;
+		while (playerRot > 360)
+			playerRot -= 360;
+		return playerRot;
 	}
 	
 	/*
@@ -410,35 +493,21 @@ public abstract class Spell implements Comparable<Spell>
 	/**
 	 * Returns the block at the cursor, or null if out of range
 	 * 
-	 * @return Block
+	 * @return The target block
 	 */
-	protected Block getTargetBlock()
+	public Block getTargetBlock()
 	{
 		findTargetBlock();
 		return getCurBlock();
 	}
 
 	/**
-	 * Sets the type of the block at the cursor
-	 * 
-	 * @param type
-	 */
-	protected void setTargetBlock(int type)
-	{
-		findTargetBlock();
-		if (getCurBlock() != null)
-		{
-			setBlockAt(type, targetX, targetY, targetZ);
-		}
-	}
-
-	/**
 	 * Returns the block attached to the face at the cursor, or null if out of
 	 * range
 	 * 
-	 * @return Block
+	 * @return The face block
 	 */
-	protected Block getFaceBlock()
+	public Block getFaceBlock()
 	{
 		findTargetBlock();
 		if (getCurBlock() != null)
@@ -452,25 +521,11 @@ public abstract class Spell implements Comparable<Spell>
 	}
 
 	/**
-	 * Sets the type of the block attached to the face at the cursor
+	 * Move "steps" forward along line of vision and returns the block there
 	 * 
-	 * @param type
+	 * @return The block at the new location
 	 */
-	protected void setFaceBlock(int type)
-	{
-		findTargetBlock();
-		if (getCurBlock() != null)
-		{
-			setBlockAt(type, lastX, lastY, lastZ);
-		}
-	}
-
-	/**
-	 * Returns STEPS forward along line of vision and returns block
-	 * 
-	 * @return Block
-	 */
-	protected Block getNextBlock()
+	public Block getNextBlock()
 	{
 		lastX = targetX;
 		lastY = targetY;
@@ -503,9 +558,9 @@ public abstract class Spell implements Comparable<Spell>
 	/**
 	 * Returns the current block along the line of vision
 	 * 
-	 * @return Block
+	 * @return The block
 	 */
-	protected Block getCurBlock()
+	public Block getCurBlock()
 	{
 		if (length > range)
 		{
@@ -518,66 +573,26 @@ public abstract class Spell implements Comparable<Spell>
 	}
 
 	/**
-	 * Sets current block type id
-	 * 
-	 * @param type
-	 */
-	protected void setCurBlock(int type)
-	{
-		if (getCurBlock() != null)
-		{
-			setBlockAt(type, targetX, targetY, targetZ);
-		}
-	}
-
-	/**
 	 * Returns the previous block along the line of vision
 	 * 
-	 * @return Block
+	 * @return The block
 	 */
-	protected Block getLastBlock()
+	public Block getLastBlock()
 	{
 		return getBlockAt(lastX, lastY, lastZ);
 	}
 
 	/**
-	 * Sets previous block type id
-	 * 
-	 * @param type
-	 */
-	protected void setLastBlock(int type)
-	{
-		if (getLastBlock() != null)
-		{
-			setBlockAt(type, lastX, lastY, lastZ);
-		}
-	}
-
-	/**
-	 * Sets the block type at the specified location
-	 * 
-	 * @param blockType
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @return true if successful
-	 */
-	protected void setBlockAt(int blockType, int x, int y, int z)
-	{
-		World world = player.getWorld();
-		CraftWorld craftWorld = (CraftWorld) world;
-		craftWorld.updateBlock(x, y, z, blockType, null);
-	}
-
-	/**
 	 * Returns the block at the specified location
 	 * 
+	 * Just a wrapper for world.getBlock at this point.
+	 * 
 	 * @param x
 	 * @param y
 	 * @param z
-	 * @return block
+	 * @return block The block at the specified coordinates
 	 */
-	protected Block getBlockAt(int x, int y, int z)
+	public Block getBlockAt(int x, int y, int z)
 	{
 		World world = player.getWorld();
 		return world.getBlockAt(x, y, z);
@@ -587,6 +602,16 @@ public abstract class Spell implements Comparable<Spell>
 	 * Functions to send text to player- use these to respect "quiet" and "silent" modes.
 	 */
 	
+	/**
+	 * Send a message to a player when a spell is cast.
+	 * 
+	 * Will be replaced with the Message interface from Persistence soon.
+	 * 
+	 * Respects the "quiet" and "silent" properties settings.
+	 * 
+	 * @param player The player to send a message to 
+	 * @param message The message to send
+	 */
 	public void castMessage(Player player, String message)
 	{
 		if (!spells.isQuiet() && !spells.isSilent())
@@ -595,6 +620,18 @@ public abstract class Spell implements Comparable<Spell>
 		}
 	}
 
+	/**
+	 * Send a message to a player. 
+	 * 
+	 * Will be replaced with the Message interface from Persistence soon.
+	 * 
+	 * Use this to send messages to the player that are important.
+	 * 
+	 * Only respects the "silent" properties setting.
+	 * 
+	 * @param player The player to send the message to
+	 * @param message The message to send
+	 */
 	public void sendMessage(Player player, String message)
 	{
 		if (!spells.isSilent())
@@ -610,34 +647,34 @@ public abstract class Spell implements Comparable<Spell>
 	/**
 	 * Sets the current server time
 	 * 
-	 * @param time
-	 *            time (0-24000)
+	 * @param time specified server time (0-24000)
 	 */
 	public void setRelativeTime(long time)
 	{
 		long margin = (time - getTime()) % 24000;
-		// Java modulus is stupid.
+		
 		if (margin < 0)
 		{
 			margin += 24000;
 		}
-		spells.getPlugin().getServer().setTime(getTime() + margin);
+		player.getWorld().setTime(getTime() + margin);
 	}
 
 	/**
-	 * Returns actual server time (-2^63 to 2^63-1)
+	 * Return the in-game server time.
 	 * 
-	 * @return time server time
+	 * @return server time
 	 */
 	public long getTime()
 	{
-		return spells.getPlugin().getServer().getTime();
+		return player.getWorld().getTime();
 	}
 	
-	/*
-	 * Helper functions
+	/**
+	 * Check to see if the player is underwater
+	 * 
+	 * @return true if the player is underwater
 	 */
-	
 	public boolean isUnderwater()
 	{
 		Block playerBlock = getPlayerBlock();
@@ -645,30 +682,63 @@ public abstract class Spell implements Comparable<Spell>
 		return (playerBlock.getType() == Material.WATER || playerBlock.getType() == Material.STATIONARY_WATER);
 	}
 	
-	/*
-	 * Internal functions - do not call
+	/**
+	 * Get all the registered variants of this spell.
+	 * 
+	 * @return This spells' variants
 	 */
 	public List<SpellVariant> getVariants()
 	{
 		return variants;
 	}
 	
+	/**
+	 * Register a variant of this spell.
+	 * 
+	 * @param name
+	 * @param material
+	 * @param category
+	 * @param description
+	 * @param parameters
+	 */
 	protected void addVariant(String name, Material material, String category, String description, String[] parameters)
 	{
 		variants.add(new SpellVariant(this, name, material, category, description, parameters));
 	}
 	
+	/**
+	 * Register a variant of this spell.
+	 * 
+	 * @param name
+	 * @param material
+	 * @param category
+	 * @param description
+	 * @param parameter
+	 */
 	protected void addVariant(String name, Material material, String category, String description, String parameter)
 	{
 		String[] parameters = parameter.split(" ");
 		variants.add(new SpellVariant(this, name, material, category, description, parameters));
 	}
 	
-	public void setPlugin(Spells plugin)
+	/**
+	 * Used internally to initialize the Spell, do not call.
+	 * 
+	 * @param plugin The spells instance
+	 */
+	public void setPlugin(Spells instance)
 	{
-		this.spells = plugin;
+		this.spells = instance;
 	}
 	
+	/**
+	 * Called by Spells to cast this spell, do not call.
+	 * 
+	 * @param parameters
+	 * @param player
+	 * @return
+	 * @see Spells#castSpell(SpellVariant, Player)
+	 */
 	public boolean cast(String[] parameters, Player player)
 	{
 		this.player = player;
@@ -682,6 +752,12 @@ public abstract class Spell implements Comparable<Spell>
 		return onCast(parameters);
 	}
 
+	/**
+	 * Called by the Spells plugin to cancel this spell, do not call.
+	 * 
+	 * @param plugin The Spells plugin instance
+	 * @param player The player cancelling selection
+	 */
 	public void cancel(Spells plugin, Player player)
 	{
 		this.player = player;
@@ -707,7 +783,38 @@ public abstract class Spell implements Comparable<Spell>
 		lastZ = targetZ;
 		targetingComplete = false;
 	}
+
+	protected void findTargetBlock()
+	{
+		if (targetingComplete)
+		{
+			return;
+		}
+
+		while (getNextBlock() != null)
+		{
+			Block block = getCurBlock();
+			if (isTargetable(block.getType()))
+			{
+				boolean enoughSpace = true;
+				for (int i = 1; i < targetHeightRequired; i++)
+				{
+					block = block.getFace(BlockFace.UP);
+					if (!isTargetable(block.getType()))
+					{
+						enoughSpace = false;
+						break;
+					}
+				}
+				if (enoughSpace) break;
+			}
+		}
+		targetingComplete = true;
+	}
 	
+	/* Used for sorting spells
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
 	public int compareTo(Spell other)
 	{
 		return getName().compareTo(other.getName());

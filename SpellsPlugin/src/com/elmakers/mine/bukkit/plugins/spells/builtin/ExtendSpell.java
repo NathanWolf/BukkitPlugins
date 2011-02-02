@@ -3,8 +3,11 @@ package com.elmakers.mine.bukkit.plugins.spells.builtin;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.MaterialData;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
+import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 
 public class ExtendSpell extends Spell 
 {
@@ -16,46 +19,49 @@ public class ExtendSpell extends Spell
 		Block playerBlock = getPlayerBlock();
 		if (playerBlock == null) 
 		{
-			// no spot found to ascend
-			player.sendMessage("Nowhere to extend");
+			// no spot found to bridge
+			player.sendMessage("You need to be standing on something");
 			return false;
-		}		
-
-		float playerRot = getPlayerRotation();
-	
-		BlockFace direction = BlockFace.NORTH;
-		if (playerRot <= 45 || playerRot > 315)
-		{
-			direction = BlockFace.WEST;
 		}
-		else if (playerRot > 45 && playerRot <= 135)
-		{
-			direction = BlockFace.NORTH;
-		}
-		else if (playerRot > 135 && playerRot <= 225)
-		{
-			direction = BlockFace.EAST;
-		}
-		else if (playerRot > 225 && playerRot <= 315)
-		{
-			direction = BlockFace.SOUTH;
-		}
+		
+		BlockFace direction = getPlayerFacing();
 		Block attachBlock = playerBlock;
 		Block targetBlock = attachBlock.getFace(direction);
+		
+		Material material = targetBlock.getType();
+		byte data = targetBlock.getData();
+		
+		ItemStack buildWith = getBuildingMaterial();
+		if (buildWith != null)
+		{
+			material = buildWith.getType();
+			MaterialData targetData = buildWith.getData();
+			if (targetData != null)
+			{
+				data = targetData.getData();
+			}
+		}
+		
 		int distance = 0;
-		while (targetBlock.getType() != Material.AIR && distance <= MAX_SEARCH_DISTANCE)
+		while (isTargetable(targetBlock.getType()) && distance <= MAX_SEARCH_DISTANCE)
 		{
 			distance++;
 			attachBlock = targetBlock;
 			targetBlock = attachBlock.getFace(direction);
 		}
-		if (targetBlock.getType() != Material.AIR)
+		if (isTargetable(targetBlock.getType()))
 		{
-			player.sendMessage("Can't extend any further");
+			player.sendMessage("Can't bridge any further");
 			return false;
 		}
-		setBlockAt(attachBlock.getTypeId(), targetBlock.getX(), targetBlock.getY(), targetBlock.getZ());
-		castMessage(player, "You extend your target");
+		BlockList bridgeBlocks = new BlockList();
+		bridgeBlocks.addBlock(targetBlock);
+		targetBlock.setType(material);
+		targetBlock.setData(data);
+		
+		castMessage(player, "A bridge extends!");
+		spells.addToUndoQueue(player, bridgeBlocks);
+		
 		//castMessage(player, "Facing " + playerRot + " : " + direction.name() + ", " + distance + " spaces to " + attachBlock.getType().name());
 		
 		return true;

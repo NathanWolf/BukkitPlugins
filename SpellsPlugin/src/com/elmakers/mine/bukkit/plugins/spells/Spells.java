@@ -682,9 +682,7 @@ public class Spells
 	/**
      * Commands sent from in game to us.
      *
-     * @param player The player who sent the command.
-     * @param split The input line split by spaces.
-     * @return <code>boolean</code> - True denotes that the command existed, false the command doesn't.
+     * @param event The original player chat event
      */
     public void onPlayerCommand(PlayerChatEvent event) 
     {
