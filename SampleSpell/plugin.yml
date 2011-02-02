@@ -1,0 +1,3 @@
+name: SampleSpell
+main: org.sample.SampleSpellPlugin
+version: 0.01
