@@ -10,11 +10,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.elmakers.mine.bukkit.plugins.persistence.DataType;
-import com.elmakers.mine.bukkit.plugins.persistence.PersistedClass;
-import com.elmakers.mine.bukkit.plugins.persistence.PersistedField;
-import com.elmakers.mine.bukkit.plugins.persistence.PersistedList;
-import com.elmakers.mine.bukkit.plugins.persistence.PersistedReference;
+import com.elmakers.mine.bukkit.plugins.persistence.core.DataType;
+import com.elmakers.mine.bukkit.plugins.persistence.core.PersistedClass;
+import com.elmakers.mine.bukkit.plugins.persistence.core.PersistedField;
+import com.elmakers.mine.bukkit.plugins.persistence.core.PersistedList;
+import com.elmakers.mine.bukkit.plugins.persistence.core.PersistedReference;
 
 public abstract class SqlStore extends PersistenceStore
 {

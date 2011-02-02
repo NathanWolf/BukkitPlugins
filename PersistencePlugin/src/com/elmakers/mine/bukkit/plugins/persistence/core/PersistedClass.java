@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.persistence;
+package com.elmakers.mine.bukkit.plugins.persistence.core;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
+import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.plugins.persistence.annotations.Persist;
 import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.stores.PersistenceStore;

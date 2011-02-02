@@ -8,40 +8,50 @@ import java.util.logging.Logger;
 
 import org.bukkit.plugin.Plugin;
 
-import com.elmakers.mine.bukkit.plugins.persistence.messages.Messaging;
+import com.elmakers.mine.bukkit.plugins.persistence.core.PersistedClass;
+import com.elmakers.mine.bukkit.plugins.persistence.core.Schema;
 import com.elmakers.mine.bukkit.plugins.persistence.stores.PersistenceStore;
 import com.elmakers.mine.bukkit.plugins.persistence.stores.SqlLiteStore;
 
-/*
- * This class is a singleton.
+/** 
+ * The main Persistence interface.
+ * 
+ * This class is a singleton- use Persistence.getInstance or PersistencePlugin.getPersistence
+ * to retrieve the instance.
+ * 
+ * @author NathanWolf
  */
 public class Persistence
-{
-	/*
-	 * public API
-	 */
+{	
 	
-	public static Persistence getInstance()
-	{
-		synchronized(instanceLock)
-		{
-			if (instance == null)
-			{
-				instance = new Persistence();
-				instance.initialize(PersistencePlugin.getInstance().getDataFolder());
-			}
-		}
-		return instance;
-	}
-	
-	/*
-	 * Sub-APIs:
+	/**
+	 * Retrieves a Messaging interface for the specified plugin. 
+	 * 
+	 * Pass in your own plugin instance for access to data-driven in-game message strings and commands.
+	 * 
+	 * @param plugin The plugin for which to retrieve messages and commands
+	 * @return A Messaging instance for sending messages and processing commands
 	 */
 	public Messaging getMessaging(Plugin plugin)
 	{
 		return new Messaging(plugin, this);
 	}
 	
+	/**
+	 * Populates a list of all instances of a specified type.
+	 * 
+	 * This is a parameterized function. It will populate a list with object instances for a given type. An example call:
+	 * 
+	 * List<MyObject> myInstances = new ArrayList<MyObject>();
+	 * persistence.getAll(myInstances, MyObject.class);
+	 * 
+	 * This would populate the myInstances list with any persisted MyObject instances. You must ensure that your List is of a
+	 * compatible type with the objects you are retrieving.
+	 * 
+	 * @param <T> The base type of object. This is an invisible parameter, you don't need to worry about it
+	 * @param objects A List (needs not be empty) to populate with object instances
+	 * @param objectType The type of object to retrieve
+	 */
 	public <T> void getAll(List<T> objects, Class<T> objectType)
 	{	
 		synchronized(cacheLock)
@@ -56,6 +66,27 @@ public class Persistence
 		}
 	}
 	
+	/**
+	 * Merge a list of objects into the data store.
+	 * 
+	 * Use this method to completely replace the stored entity list for a type of entity. Entities not in the "objects" list will
+	 * be deleted, new objects will be added, and existing objects merged.
+	 * 
+	 * This is a parameterized function. It will populate a list with object instances for a given type. An example call:
+	 * 
+	 * List<MyObject> myInstances = new ArrayList<MyObject>();
+	 * ... Fill myInstances with some data
+	 * persistence.putAll(myInstances, MyObject.class);
+	 * 
+	 * This would replace all instances of MyObject with the instances in the myInstances list.
+	 * 
+	 * TODO: Currently, this method replaces all of the instances directly. This would
+	 * invalidate any externally maintained references, so it needs to merge data instead.
+	 * 
+	 * @param <T> The base type of object. This is an invisible parameter, you don't need to worry about it
+	 * @param objects A list of objects to store
+	 * @param objectType The type of object to replace instances
+	 */
 	public <T> void putAll(List<T> objects, Class<T> objectType)
 	{
 		synchronized(cacheLock)
@@ -70,6 +101,19 @@ public class Persistence
 		}
 	}
 	
+	/**
+	 * Retrieve an instance of the specified type.
+	 * 
+	 * This method retrieves an object instance from the data store, based on the object's id.
+	 * The id passed in should match the type of this object's id field- a String for a String id, for instance.
+	 * 
+	 * If an object with the specified id cannot be found, the method returns null;
+	 * 
+	 * @param <T> The base type of object. This is an invisible parameter, you don't need to worry about it
+	 * @param id The id of the object to lookup
+	 * @param objectType The type of object to search for
+	 * @return The object instance with the specified id, or null if not found
+	 */
 	@SuppressWarnings("unchecked")
 	public <T> T get(Object id, Class<T> objectType)
 	{
@@ -87,6 +131,17 @@ public class Persistence
 		}
 	}
 	
+	/**
+	 * Add an object to the data store.
+	 * 
+	 * This only adds the object to the cache. At save time, the cached object will trigger a data save.
+	 * 
+	 * If this is the first instance of this type of object to ever be stored, the schema and tables needed to store this object will be created
+	 * at save time. Then, the tables will be populated with this object's data.
+	 * 
+	 * @param persist The object to persist
+	 * @return false if, for some reason, the storage failed.
+	 */
 	public boolean put(Object persist)
 	{
 		synchronized(cacheLock)
@@ -102,6 +157,15 @@ public class Persistence
 		return true;		
 	}
 	
+	
+	/**
+	 * Force a save of all cached data.
+	 * 
+	 * This only saves dirty data- unmodified data is not saved back to the database.
+	 * Persistence calls save() internally on server shutdown, player login, and player logout. So, calling save is not
+	 * mandatory- you only need to use it to force an immediate save.
+	 * 
+	 */
 	public void save()
 	{
 		for (PersistedClass persistedClass : persistedClasses)
@@ -110,6 +174,13 @@ public class Persistence
 		}
 	}
 	
+	
+	/**
+	 * Clear all data.
+	 * 
+	 * This is currently the method used to clear the cache and reload data, however it is flawed.
+	 * It will probably be replaced with a "reload" method eventually.
+	 */
 	public void clear()
 	{
 		persistedClasses.clear();
@@ -118,31 +189,37 @@ public class Persistence
 		schemas.clear();
 	}
 	
-	/*
-	 * Internal functions - do not call
+	/**
+	 * Return the singleton instance for Persistence.
+	 * 
+	 * Will create the instance if it does not exist, but most likely the PersistencePlugin has done this already.
+	 * It is more adviseable to use PersistencePlugin.getPersistence().
+	 * 
+	 * @return the Persistence singleton instance
 	 */
-	
-	public void initialize(File dataFolder)
+	public static Persistence getInstance()
 	{
-		this.dataFolder = dataFolder;
-		dataFolder.mkdirs();
-
-		// TODO : load configuration, sql connection params, etc?
-	}
-	
-	public void disconnect()
-	{
-		synchronized(dataLock)
+		synchronized(instanceLock)
 		{
-			for (PersistenceStore store : stores)
+			if (instance == null)
 			{
-				store.disconnect();
+				instance = new Persistence();
+				instance.initialize(PersistencePlugin.getInstance().getDataFolder());
 			}
-			stores.clear();
-			schemaStores.clear();
 		}
+		return instance;
 	}
 	
+	/**
+	 * Retrieve or create the persistence store for a particular schema.
+	 * 
+	 * Each schema gets its own persistent connection and database schema.
+	 * 
+	 * This is an internal function that doesn't necessarily need to be called.
+	 * 
+	 * @param schema The schema name to retrieve
+	 * @return The data store for the given schema
+	 */
 	public PersistenceStore getStore(String schema)
 	{
 		PersistenceStore store = null;
@@ -161,11 +238,26 @@ public class Persistence
 		return store;
 	}
 	
+	/**
+	 * Retrieve a Schema definition, with a list of PersistedClasses.
+	 * 
+	 * This function is used for inspecting schemas and entities.
+	 * 
+	 * @param schemaName The schema to retrieve
+	 * @return A Schema definition class, containing entity classes
+	 */
 	public Schema getSchema(String schemaName)
 	{
 		return schemaMap.get(schemaName);
 	}
 	
+	/**
+	 * Retrieve a list of definitions for all known schemas.
+	 * 
+	 * This function is used for inspecting schemas and entities.
+	 * 
+	 * @return The list of schemas
+	 */
 	public List<Schema> getSchemaList()
 	{
 		List<Schema> schemaList = new ArrayList<Schema>();
@@ -173,20 +265,15 @@ public class Persistence
 		return schemaList;
 	}
 	
-	/*
-	 * Protected members
+	/**
+	 * Retrieve or create a persisted class definition for a given class type.
+	 * 
+	 * This is an internal function that doesn't necessarily need to be called.
+	 * 
+	 * @param persistType
+	 * @return The persisted class definition, or null if failure
 	 */
-	
-	protected PersistenceStore createStore()
-	{
-		// Only SqlLite supported for now!
-		// TODO : Support Mysql? Flatfile?
-		SqlLiteStore store = new SqlLiteStore();
-		store.setDataFolder(dataFolder);
-		return store;
-	}
-	
-	protected PersistedClass getPersistedClass(Class<? extends Object> persistType)
+	public PersistedClass getPersistedClass(Class<? extends Object> persistType)
 	{	
 		PersistedClass persistedClass = persistedClassMap.get(persistType);
 		if (persistedClass == null)
@@ -214,6 +301,40 @@ public class Persistence
 			persistedClass.bindReferences();
 		}
 		return persistedClass;
+	}
+	
+	/*
+	 * Protected members
+	 */
+	
+	protected PersistenceStore createStore()
+	{
+		// Only SqlLite supported for now!
+		// TODO : Support MySQL
+		SqlLiteStore store = new SqlLiteStore();
+		store.setDataFolder(dataFolder);
+		return store;
+	}
+	
+	protected void initialize(File dataFolder)
+	{
+		this.dataFolder = dataFolder;
+		dataFolder.mkdirs();
+
+		// TODO : load configuration, sql connection params, etc?
+	}
+	
+	protected void disconnect()
+	{
+		synchronized(dataLock)
+		{
+			for (PersistenceStore store : stores)
+			{
+				store.disconnect();
+			}
+			stores.clear();
+			schemaStores.clear();
+		}
 	}
 	
 	/*

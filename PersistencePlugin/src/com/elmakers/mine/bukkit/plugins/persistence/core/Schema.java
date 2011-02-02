@@ -1,9 +1,17 @@
-package com.elmakers.mine.bukkit.plugins.persistence;
+package com.elmakers.mine.bukkit.plugins.persistence.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * Describes a schema.
+ * 
+ * This can be used to retrieve all persisted classes in a schema.
+ * 
+ * @author nathan
+ *
+ */
 public class Schema
 {	
 	public String getName()

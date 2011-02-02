@@ -1,8 +1,9 @@
-package com.elmakers.mine.bukkit.plugins.persistence;
+package com.elmakers.mine.bukkit.plugins.persistence.core;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
 
 public class PersistedField
 {

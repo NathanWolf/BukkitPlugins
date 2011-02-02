@@ -2,9 +2,9 @@ package com.elmakers.mine.bukkit.plugins.persistence.stores;
 
 import java.util.logging.Logger;
 
-import com.elmakers.mine.bukkit.plugins.persistence.PersistedClass;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
+import com.elmakers.mine.bukkit.plugins.persistence.core.PersistedClass;
 
 public abstract class PersistenceStore
 {

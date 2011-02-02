@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.persistence;
+package com.elmakers.mine.bukkit.plugins.persistence.core;
 
 import java.util.Date;
 import java.util.List;

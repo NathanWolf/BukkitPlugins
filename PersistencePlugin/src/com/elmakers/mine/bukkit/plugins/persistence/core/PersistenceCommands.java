@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.persistence;
+package com.elmakers.mine.bukkit.plugins.persistence.core;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,9 +6,11 @@ import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
 
-import com.elmakers.mine.bukkit.plugins.persistence.messages.Messaging;
-import com.elmakers.mine.bukkit.plugins.persistence.messages.dao.CommandData;
-import com.elmakers.mine.bukkit.plugins.persistence.messages.dao.Message;
+import com.elmakers.mine.bukkit.plugins.persistence.Messaging;
+import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
+import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.CommandData;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
 
 public class PersistenceCommands
 {

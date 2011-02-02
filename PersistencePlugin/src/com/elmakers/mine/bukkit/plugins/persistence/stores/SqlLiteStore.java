@@ -3,7 +3,7 @@ package com.elmakers.mine.bukkit.plugins.persistence.stores;
 import java.io.File;
 import java.util.Date;
 
-import com.elmakers.mine.bukkit.plugins.persistence.DataType;
+import com.elmakers.mine.bukkit.plugins.persistence.core.DataType;
 
 public class SqlLiteStore extends SqlStore
 {

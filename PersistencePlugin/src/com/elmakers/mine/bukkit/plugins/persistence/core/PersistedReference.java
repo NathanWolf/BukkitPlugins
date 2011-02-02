@@ -1,9 +1,11 @@
-package com.elmakers.mine.bukkit.plugins.persistence;
+package com.elmakers.mine.bukkit.plugins.persistence.core;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ArrayList;
+
+import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 
 public class PersistedReference extends PersistedField
 {

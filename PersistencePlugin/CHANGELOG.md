@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.18
+
+ - Integrate Classes plugin directly into Persistence
+ - Re organize namespaces for clarity.
+
 # 0.17
 
  - Update to use the command standard. The persist command is now defined in the YML file.

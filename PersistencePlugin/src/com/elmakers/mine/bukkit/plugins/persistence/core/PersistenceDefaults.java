@@ -1,6 +1,6 @@
-package com.elmakers.mine.bukkit.plugins.persistence;
+package com.elmakers.mine.bukkit.plugins.persistence.core;
 
-public class PersistenceDefaults
+class PersistenceDefaults
 {
 	// Commands
 	public static final String persistCommand = "persist";

@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.persistence;
+package com.elmakers.mine.bukkit.plugins.persistence.core;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -7,6 +7,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 
 public class PersistedList extends PersistedField
 {
