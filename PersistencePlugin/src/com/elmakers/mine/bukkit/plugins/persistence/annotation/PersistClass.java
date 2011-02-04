@@ -48,6 +48,14 @@ public @interface PersistClass
 	 */
 	String name();
 	
+	/**
+	 * Specify that a class may only be used when contained in another class.
+	 * 
+	 * This allows a PersistClass to be used without an id.
+	 * 
+	 * @return
+	 */
+	boolean contained() default false;
 	
 	/**
 	 * Whether or not to keep this entity in the cache.
@@ -57,4 +65,5 @@ public @interface PersistClass
 	 * @return true if this is a cached object.
 	 */
 	boolean cache() default true;
+	
 }

@@ -31,7 +31,8 @@ public class PersistedReference extends PersistedField
 		if (contained)
 		{
 			// Create a sub-class of the reference class
-			referenceType = new PersistedClass(referenceType);
+			referenceType = new PersistedClass(referenceType, this);
+			referenceType.bindReferences();
 		}
 	}
 	
@@ -40,9 +41,24 @@ public class PersistedReference extends PersistedField
 	{
 		if (referenceType == null) return null;
 		
-		String idName = referenceType.getIdField().getDataName();
-		idName = name + idName.substring(0, 1).toUpperCase() + idName.substring(1);
-		return idName;
+		if (container != null)
+		{
+			return getContainedName(container.getDataName(), name);
+		}
+
+		PersistedField idField = referenceType.getIdField();
+		String dataName = name;
+		if (idField != null)
+		{
+			String idName = idField.getDataName();
+			String idRemainder = "";
+			if (idName.length() > 1)
+			{
+				idRemainder = idName.substring(1);
+			}
+			dataName += idName.substring(0, 1).toUpperCase() + idRemainder;
+		}
+		return dataName;
 	}
 
 	@Override
@@ -55,14 +71,14 @@ public class PersistedReference extends PersistedField
 	
 	public void populateHeader(DataTable dataTable)
 	{
-		if (contained)
+		if (contained && referenceType != null)
 		{
 			referenceType.populateHeader(dataTable);
 			return;
 		}
 		
 		DataRow headerRow = dataTable.getHeader();
-		DataField field = new DataField(getName(), getDataType());
+		DataField field = new DataField(getDataName(), getDataType());
 		if (headerRow != null)
 		{
 			headerRow.add(field);
@@ -75,7 +91,8 @@ public class PersistedReference extends PersistedField
 		
 		if (contained)
 		{
-			referenceType.populate(row, o);
+			Object containedData = get(o);
+			referenceType.populate(row, containedData);
 			return;
 		}
 		
@@ -89,7 +106,7 @@ public class PersistedReference extends PersistedField
 			}
 		}
 		
-		DataField field = new DataField(getName(), getDataType(), referenceId);
+		DataField field = new DataField(getDataName(), getDataType(), referenceId);
 		row.add(field);
 	}
 	
@@ -99,11 +116,12 @@ public class PersistedReference extends PersistedField
 		
 		if (contained)
 		{
-			referenceType.load(row, o);
+			Object newInstance = referenceType.createInstance(row);
+			set(o, newInstance);
 			return;
 		}
 		
-		DataField dataField = row.get(getName());
+		DataField dataField = row.get(getDataName());
 		Object referenceId = dataField.getValue();
 		
 		deferredReferences.add(new DeferredReference(this, o, referenceId));

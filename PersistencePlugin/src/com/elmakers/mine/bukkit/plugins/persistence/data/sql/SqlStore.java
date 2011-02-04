@@ -179,6 +179,7 @@ public abstract class SqlStore extends DataStore
 	@Override
 	public boolean validateTable(DataTable table)
 	{	
+	
 		if (!tableExists(table))
 		{
 			String tableName = table.getName();

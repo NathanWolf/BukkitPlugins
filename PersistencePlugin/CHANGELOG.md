@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.22
+
+ - Change contained classes so sub-field names get prefixed.
+ - Support containers of containers of containers...
+ - Allow for pure contained classes, which don't need an id.
+
 # 0.21
 
  - Finally support contained lists!

@@ -34,16 +34,11 @@ public class PersistedClass
 		
 	}
 	
-	public PersistedClass(PersistedClass copy)
+	public PersistedClass(PersistedClass copy, PersistedField container)
 	{
-		defaultStore = copy.defaultStore;
-		persistClass = copy.persistClass;
-		fields.addAll(copy.fields);
-		internalFields.addAll(copy.internalFields);
-		externalFields.addAll(copy.externalFields);
-		idField = copy.idField;
-		schema = copy.schema;
-		name = copy.name;
+		this.defaultStore = copy.defaultStore;
+		this.container = container;
+		bind(copy.persistClass);
 	}
 	
 	public boolean bind(Class<? extends Object> persistClass)
@@ -64,6 +59,7 @@ public class PersistedClass
 		cacheObjects = classSettings.cache();
 		schema = classSettings.schema();
 		name = classSettings.name();
+		contained = classSettings.contained();
 		
 		name = name.replace(" ", "_");
 		schema = schema.replace(" ", "_");
@@ -116,7 +112,7 @@ public class PersistedClass
 			}
 		}
 		
-		if (idField == null)
+		if (idField == null && !contained)
 		{
 			log.warning("Persistence: class " + persistClass.getName() + ": must specify one id field. Use an auto int if you need.");
 			return false;
@@ -179,6 +175,8 @@ public class PersistedClass
 			}
 			internalFields.add(field);
 		}
+		
+		field.setContainer(container);
 
 		fields.add(field);
 		
@@ -378,7 +376,6 @@ public class PersistedClass
 	
 	public void populate(DataRow row, Object instance)
 	{
-		
 		for (PersistedField field : internalFields)
 		{
 			field.save(row, instance);
@@ -451,11 +448,21 @@ public class PersistedClass
 		if (loadState == LoadState.UNLOADED && cacheObjects)
 		{
 			loadState = LoadState.LOADING;
-			if (store.connect())
+			try
 			{
-				validateTables(store);
-				loadCache();
-				loadState = LoadState.LOADED;
+				if (store.connect())
+				{
+					validateTables(store);
+					loadCache();
+					loadState = LoadState.LOADED;
+				}
+			}
+			catch(Exception e)
+			{
+				log.severe("Persistence: Exception loading cache for " + name);
+				clear();
+				e.printStackTrace();
+				return;
 			}
 		}
 	}
@@ -477,9 +484,30 @@ public class PersistedClass
 		for (PersistedList list : externalFields)
 		{
 			DataTable listTable = getListTable(list);
+			listTable.createHeader();
 			list.populateHeader(listTable);
 			store.validateTable(listTable);
 		}		
+	}
+	
+	public String getContainedIdName()
+	{
+		String idName = getTableName();
+		if (idField != null)
+		{
+			idName = PersistedField.getContainedName(idName, idField.getDataName());
+		}
+		return idName;
+	}
+	
+	public String getContainedIdName(PersistedField container)
+	{
+		String idName = container.getDataName();
+		if (idField != null)
+		{
+			idName = PersistedField.getContainedName(idName, idField.getDataName());
+		}
+		return idName;
 	}
 	
 	public void populateHeader(DataTable table)
@@ -652,27 +680,30 @@ public class PersistedClass
 		LOADED,
 	}
 	
-	protected boolean dirty = false;
-	protected LoadState loadState = LoadState.UNLOADED;
-	protected boolean cacheObjects;	
-	protected DataStore defaultStore = null;
-	protected int maxId = 1;
-	
-	protected HashMap<Object, CachedObject> cacheMap = new HashMap<Object, CachedObject>();
-	protected List<CachedObject>			cache =  new ArrayList<CachedObject>();
-	protected HashMap<Object, CachedObject>	removedMap =  new HashMap<Object, CachedObject>();
-	protected List<CachedObject>			removedFromCache =  new ArrayList<CachedObject>();
+	protected boolean						dirty				= false;
+	protected LoadState						loadState			= LoadState.UNLOADED;
 
-	protected Class<? extends Object> persistClass;
-	
-	protected List<PersistedField> fields = new ArrayList<PersistedField>();
-	protected List<PersistedField> internalFields = new ArrayList<PersistedField>();
-	protected List<PersistedList> externalFields = new ArrayList<PersistedList>();
-	
-	protected PersistedField idField;
-	
-	protected String schema;
-	protected String name;
-	
-	protected static Logger log = PersistencePlugin.getLogger();
+	protected boolean						contained			= false;
+	protected boolean						cacheObjects		= false;
+	protected DataStore						defaultStore		= null;
+	protected int							maxId				= 1;
+
+	protected HashMap<Object, CachedObject>	cacheMap			= new HashMap<Object, CachedObject>();
+	protected List<CachedObject>			cache				= new ArrayList<CachedObject>();
+	protected HashMap<Object, CachedObject>	removedMap			= new HashMap<Object, CachedObject>();
+	protected List<CachedObject>			removedFromCache	= new ArrayList<CachedObject>();
+
+	protected Class<? extends Object>		persistClass;
+
+	protected List<PersistedField>			fields				= new ArrayList<PersistedField>();
+	protected List<PersistedField>			internalFields		= new ArrayList<PersistedField>();
+	protected List<PersistedList>			externalFields		= new ArrayList<PersistedList>();
+
+	protected PersistedField 				idField 			= null;
+	protected PersistedField				container 			= null;
+
+	protected String						schema 				= null;
+	protected String						name 				= null;
+
+	protected static Logger					log					= PersistencePlugin.getLogger();
 }

@@ -51,12 +51,18 @@ public class PersistedList extends PersistedField
     		if (contained)
     		{
     			// Create a sub-class of the reference class
-    			referenceType = new PersistedClass(referenceType);
+    			referenceType = new PersistedClass(referenceType, this);
+    			referenceType.bindReferences();
     		}
         }
 	}
-	
+
 	public void load(DataTable subTable, List<Object> instances)
+	{
+		load(subTable, instances, null);
+	}
+	
+	public void load(DataTable subTable, List<Object> instances, PersistedField container)
 	{
 		// Load data for all lists in all instances at once, mapping to
 		// correct instances based on the id column.
@@ -71,8 +77,7 @@ public class PersistedList extends PersistedField
 			objectLists.put(instanceId, listData);
 		}
 		
-		PersistedField idField = owningType.getIdField();
-		String idName = idField.getDataName();
+		String idName = owningType.getContainedIdName(this);
 		
 		for (DataRow row : subTable.getRows())
 		{
@@ -87,7 +92,7 @@ public class PersistedList extends PersistedField
 				}
 				else
 				{
-					Object data = row.get(getDataName());
+					Object data = row.get(getReferenceIdName());
 					list.add(data);
 				}
 			}
@@ -116,7 +121,20 @@ public class PersistedList extends PersistedField
 		}
 	}
 	
+	public String getReferenceIdName()
+	{
+		if (referenceType == null) return null;
+		
+		// Construct a field name using the name of the reference id
+		return referenceType.getContainedIdName(this);
+	}
+
 	protected void populate(DataRow dataRow, Object instance, Object data)
+	{
+		populate(dataRow, instance, data, null);
+	}
+	
+	protected void populate(DataRow dataRow, Object instance, Object data, PersistedField container)
 	{
 		PersistedField idField = owningType.getIdField();
 		
@@ -126,7 +144,8 @@ public class PersistedList extends PersistedField
 		{
 			id = owningType.getId(instance);
 		}
-		DataField idData = new DataField(idField.getDataName(), idField.getDataType(), id);
+		String idName = owningType.getContainedIdName();
+		DataField idData = new DataField(idName, idField.getDataType(), id);
 		idData.setIdField(true);
 		dataRow.add(idData);
 		
@@ -148,13 +167,7 @@ public class PersistedList extends PersistedField
 		else
 		{	
 			PersistedField referenceIdField = referenceType.getIdField();
-			
-			// Construct a field name using the name of the reference id
-			String referenceFieldName = referenceIdField.getDataName();
-			referenceFieldName = referenceFieldName.substring(0, 1).toUpperCase() + referenceFieldName.substring(1);
-			referenceFieldName = getDataName() + referenceFieldName;
-			
-			DataField referenceIdData = new DataField(referenceFieldName, referenceIdField.getDataType());
+			DataField referenceIdData = new DataField(getReferenceIdName(), referenceIdField.getDataType());
 			if (data != null)
 			{
 				Object referenceId = referenceIdField.get(data);
@@ -165,11 +178,11 @@ public class PersistedList extends PersistedField
 		}	
 	}
 	
-	public void populateHeader(DataTable dataTable)
+	public void populateHeader(DataTable dataTable, PersistedField container)
 	{
 		dataTable.createHeader();
 		DataRow headerRow = dataTable.getHeader();
-		populate(headerRow, null, null);
+		populate(headerRow, null, null, container);
 	}
 	
 	public void save(DataTable table, Object instance)
