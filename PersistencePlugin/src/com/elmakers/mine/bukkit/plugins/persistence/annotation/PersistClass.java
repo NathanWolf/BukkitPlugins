@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.persistence.annotations;
+package com.elmakers.mine.bukkit.plugins.persistence.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * 
  * Other fields can be marked up with Persist to store data for this class.
  * 
- * @author nathan
+ * @author NathanWolf
  * @see Persist
  *
  */

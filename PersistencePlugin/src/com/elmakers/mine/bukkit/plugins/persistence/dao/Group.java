@@ -1,12 +1,13 @@
+
 package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotations.Persist;
-import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 /**
  * Represents a group, which can be assigned permissions and contain players and other groups.
  * 
- * @author nathan
+ * @author NathanWolf
  *
  */
 @PersistClass(name = "group", schema = "global") 

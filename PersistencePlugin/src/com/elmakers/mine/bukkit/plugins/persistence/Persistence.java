@@ -10,8 +10,8 @@ import org.bukkit.plugin.Plugin;
 
 import com.elmakers.mine.bukkit.plugins.persistence.core.PersistedClass;
 import com.elmakers.mine.bukkit.plugins.persistence.core.Schema;
-import com.elmakers.mine.bukkit.plugins.persistence.stores.PersistenceStore;
-import com.elmakers.mine.bukkit.plugins.persistence.stores.SqlLiteStore;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataStore;
+import com.elmakers.mine.bukkit.plugins.persistence.data.sql.SqlLiteStore;
 
 /** 
  * The main Persistence interface.
@@ -35,6 +35,11 @@ public class Persistence
 	public Messaging getMessaging(Plugin plugin)
 	{
 		return new Messaging(plugin, this);
+	}
+	
+	public static Logger getLogger()
+	{
+		return log;
 	}
 	
 	/**
@@ -220,9 +225,9 @@ public class Persistence
 	 * @param schema The schema name to retrieve
 	 * @return The data store for the given schema
 	 */
-	public PersistenceStore getStore(String schema)
+	public DataStore getStore(String schema)
 	{
-		PersistenceStore store = null;
+		DataStore store = null;
 		synchronized(dataLock)
 		{
 			schema = schema.toLowerCase();
@@ -230,7 +235,7 @@ public class Persistence
 			if (store == null)
 			{
 				store = createStore();
-				store.initialize(this);
+				store.initialize(schema, this);
 				schemaStores.put(schema, store);
 				stores.add(store);
 			}
@@ -307,7 +312,7 @@ public class Persistence
 	 * Protected members
 	 */
 	
-	protected PersistenceStore createStore()
+	protected DataStore createStore()
 	{
 		// Only SqlLite supported for now!
 		// TODO : Support MySQL
@@ -328,7 +333,7 @@ public class Persistence
 	{
 		synchronized(dataLock)
 		{
-			for (PersistenceStore store : stores)
+			for (DataStore store : stores)
 			{
 				store.disconnect();
 			}
@@ -348,9 +353,9 @@ public class Persistence
 	private final List<Schema> schemas = new ArrayList<Schema>();
 	private final HashMap<String, Schema> schemaMap = new HashMap<String, Schema>();
 
-	private final Logger log = Logger.getLogger("Minecraft");
-	private final HashMap<String, PersistenceStore> schemaStores = new HashMap<String, PersistenceStore>();
-	private final List<PersistenceStore> stores = new ArrayList<PersistenceStore>();
+	private static final Logger log = Logger.getLogger("Minecraft");
+	private final HashMap<String, DataStore> schemaStores = new HashMap<String, DataStore>();
+	private final List<DataStore> stores = new ArrayList<DataStore>();
 	
 	private static final Object dataLock = new Object();
 	private static final Object instanceLock = new Object();

@@ -9,10 +9,24 @@ import java.util.logging.Logger;
 
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
-import com.elmakers.mine.bukkit.plugins.persistence.annotations.Persist;
-import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
-import com.elmakers.mine.bukkit.plugins.persistence.stores.PersistenceStore;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataRow;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataTable;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataStore;
 
+/**
+ * Represents and manages a single persisted class.
+ * 
+ * This class binds to a Class, looking for @Persist and @PersistClass
+ * tags.
+ * 
+ * It will keep track of the persisted fields of a class, and handle
+ * creating and caching object instances of that class.
+ * 
+ * @author NathanWolf
+ *
+ */
 public class PersistedClass
 {
 	public boolean bind(Class<? extends Object> persistClass)
@@ -37,7 +51,7 @@ public class PersistedClass
 		name = name.replace(" ", "_");
 		schema = schema.replace(" ", "_");
 		
-		store = Persistence.getInstance().getStore(schema);
+		defaultStore = Persistence.getInstance().getStore(schema);
 		
 		if (!cacheObjects)
 		{
@@ -56,7 +70,7 @@ public class PersistedClass
 			Persist persist = classField.getAnnotation(Persist.class);
 			if (persist != null)
 			{
-				PersistedField field = PersistedField.tryCreate(classField, persistClass);		
+				PersistedField field = PersistedField.tryCreate(classField, this);		
 				if (field == null)
 				{
 					log.warning("Persistence: Field " + persistClass.getName() + "." + classField.getName() + " is not persistable, type=" + classField.getType().getName());
@@ -73,7 +87,7 @@ public class PersistedClass
 			Persist persist = method.getAnnotation(Persist.class);
 			if (persist != null)
 			{
-				PersistedField field = PersistedField.tryCreate(method, persistClass);
+				PersistedField field = PersistedField.tryCreate(method, this);
 				if (field == null)
 				{
 					log.warning("Persistence: Field " + persistClass.getName() + "." + method.getName() + " is not persistable, type=" + method.getReturnType().getName());
@@ -151,14 +165,24 @@ public class PersistedClass
 	public void put(Object o)
 	{
 		checkLoadCache();
-		Object idField = getId(o);
-		CachedObject co = cacheMap.get(idField);
+				
+		Object id = getId(o);
+		CachedObject co = cacheMap.get(id);
 		if (co == null)
 		{
 			co = addToCache(o);
-		}	
+		}
+		
+		// TODO: merge
 		co.setCached(cacheObjects);
 		co.setObject(o);
+		dirty = true;
+	}
+	
+	public void remove(Object o)
+	{
+		Object id = getId(o);
+		removeFromCache(id);
 		dirty = true;
 	}
 
@@ -211,7 +235,22 @@ public class PersistedClass
 	
 	public void reset()
 	{
-		store.reset(this);
+		reset(defaultStore);
+	}
+	
+	public void reset(DataStore store)
+	{
+		if (!store.connect()) return;
+		
+		DataTable resetTable = getClassTable(); 
+		store.reset(resetTable);
+		
+		// Reset any list sub-tables
+		for (PersistedList list : externalFields)
+		{
+			DataTable listTable = getListTable(list);
+			store.reset(listTable);
+		}
 	}
 	
 	public boolean isDirty()
@@ -234,7 +273,7 @@ public class PersistedClass
 		return schema;
 	}
 	
-	public Class<? extends Object> getPersistClass()
+	public Class<? extends Object> getType()
 	{
 		return persistClass;
 	}
@@ -243,7 +282,6 @@ public class PersistedClass
 	{
 		return idField;
 	}
-	
 	
 	public List<PersistedField> getInternalFields()
 	{
@@ -262,33 +300,239 @@ public class PersistedClass
 	
 	public void save()
 	{
+		save(defaultStore);
+	}
+	
+	public void save(DataStore store)
+	{
 		if (loadState != LoadState.LOADED) return;
 		if (!dirty) return;
 		
-		for (CachedObject cached : cache)
+		// Drop removed objects
+		if (removedFromCache.size() > 0)
 		{
-			if (!cached.isDirty()) continue;
-			store.save(this, cached.getObject());
-			cached.setSaved();
+			DataTable clearTable = getClassTable();
+			populate(clearTable, removedFromCache);			
+			store.clear(clearTable);
+			
+			removedFromCache.clear();
+			removedMap.clear();
 		}
 		
+		// Save dirty objects
+		List<CachedObject> dirtyObjects = new ArrayList<CachedObject>();
+		for (CachedObject cached : cache)
+		{
+			if (cached.isDirty())
+			{
+				dirtyObjects.add(cached);
+			}
+		}
+		
+		save(dirtyObjects, store);
 		dirty = false;
+	}
+	
+	protected void populate(DataTable dataTable, List<CachedObject> instances)
+	{
+		for (CachedObject instance : instances)
+		{
+			DataRow instanceRow = new DataRow(dataTable);
+			for (PersistedField field : internalFields)
+			{
+				field.save(instanceRow, instance.getObject());
+			}
+			dataTable.addRow(instanceRow);
+		}
+	}
+	
+	public void save(List<CachedObject> instances)
+	{
+		save(instances, defaultStore);
+	}
+	
+	public void save(List<CachedObject> instances, DataStore store)
+	{
+		if (!store.connect()) return;
+		
+		// Save main class data
+		DataTable classTable = getClassTable();
+		populate(classTable, instances);
+		store.save(classTable);
+		
+		// Save list data
+		for (PersistedList list : externalFields)
+		{
+			DataTable listTable = getListTable(list);
+			List<Object> instanceIds = new ArrayList<Object>();
+			
+			for (CachedObject instance : instances)
+			{
+				Object id = getId(instance.getObject());
+				instanceIds.add(id);			
+				list.save(listTable, instance.getObject());
+			}
+			
+			// First, delete removed items
+			store.clearIds(listTable, instanceIds);
+			
+			// Save new list data
+			store.save(listTable);
+		}	
+		
+		for (CachedObject cached : instances)
+		{
+			cached.setSaved();
+		}
 	}
 	
 	/*
 	 * Protected members
 	 */
-		
+	
+	protected DataTable getClassTable()
+	{
+		DataTable classTable = new DataTable(getTableName());
+		return classTable;
+	}
+	
+	protected DataTable getListTable(PersistedList list)
+	{
+		DataTable listTable = new DataTable(list.getTableName());
+		return listTable;
+	}
+	
 	protected void checkLoadCache()
+	{
+		checkLoadCache(defaultStore);
+	}
+	
+	protected void checkLoadCache(DataStore store)
 	{
 		if (loadState == LoadState.UNLOADED && cacheObjects)
 		{
 			loadState = LoadState.LOADING;
-			store.connect(schema);
-			store.validateTables(this);
-			store.loadAll(this);
-			loadState = LoadState.LOADED;
+			if (store.connect())
+			{
+				validateTables(store);
+				loadCache();
+				loadState = LoadState.LOADED;
+			}
 		}
+	}
+	
+	protected void validateTables(DataStore store)
+	{
+		if (!store.connect())
+		{
+			return;
+		}
+		DataTable classTable = getClassTable();
+		
+		classTable.createHeader();
+		for (PersistedField field : internalFields)
+		{
+			field.populateHeader(classTable);
+		}
+		
+		store.validateTable(classTable);
+		
+		// Validate any list sub-tables
+		for (PersistedList list : externalFields)
+		{
+			DataTable listTable = getListTable(list);
+			list.populateHeader(listTable);
+			store.validateTable(listTable);
+		}		
+	}
+	
+	protected void loadCache()
+	{
+		loadCache(defaultStore);
+	}
+	
+	protected void loadCache(DataStore store)
+	{
+		if (!store.connect()) return;
+		
+		DataTable classTable = getClassTable();
+		store.load(classTable);
+		
+		// Begin deferred referencing, to prevent the problem of DAO's referencing unloaded DAOs.
+		// DAOs will be loaded recursively as needed,
+		// and then all deferred references will be resolved afterward.
+		PersistedReference.beginDefer();
+		
+		for (DataRow row : classTable.getRows())
+		{
+			Object newInstance = createInstance(row);
+			if (newInstance != null)
+			{
+				addToCache(newInstance);
+			}
+		}
+		
+		// Bind deferred references, to handle DAOs referencing other DAOs, even of the
+		// Same type. 
+		// DAOs will be loaded recursively as needed, and then references bound when everything has been
+		// resolved.
+		PersistedReference.endDefer();
+
+		// Defer load lists of entities
+		PersistedList.beginDefer();
+		
+		// Load list data
+		if (externalFields.size() > 0)
+		{
+			List<Object> instances = new ArrayList<Object>();
+			for (CachedObject cached : cache)
+			{
+				instances.add(cached.getObject());
+			}
+			for (PersistedList list : externalFields)
+			{
+				DataTable listTable = getListTable(list);
+				store.load(listTable);
+				list.load(listTable, instances);
+			}
+		}
+		
+		// Load any reference lists
+		PersistedList.endDefer();
+	}
+	
+	protected Object createInstance(DataRow row)
+	{
+		Object newObject = null;
+		
+		try
+		{
+			newObject = persistClass.newInstance();
+		
+	        for (PersistedField field : internalFields)
+	        {
+        		try
+        		{
+        			field.load(row, newObject);
+        		}
+				catch (Exception ex)
+				{
+					log.warning("Persistence error getting field " + field.getName() + " for " + getTableName() + ": " + ex.getMessage());	
+		        }
+	        }
+		}
+		catch (IllegalAccessException ex)
+		{
+			newObject = null;
+			log.warning("Persistence error creating instance of " + getTableName() + ": " + ex.getMessage());		
+		}
+		catch (InstantiationException ex)
+		{
+			newObject = null;
+			log.warning("Persistence error creating instance of " + getTableName() + ": " + ex.getMessage());		
+		}
+
+		return newObject;
 	}
 	
 	public Object getId(Object o)
@@ -303,13 +547,35 @@ public class PersistedClass
 	
 	protected CachedObject addToCache(Object o)
 	{
+		// Check to see if this object has already been removed
+		Object id = getId(o);
+		CachedObject removedObject = removedMap.get(id);
+		if (removedObject != null)
+		{
+			removedMap.remove(id);
+			removedFromCache.remove(removedObject);
+		}
+		
 		CachedObject cached = new CachedObject(o);
 		cache.add(cached);
-		Object id = getId(o);
 		cacheMap.put(id, cached);
+		
 		return cached;
 	}
 	
+	protected void removeFromCache(Object id)
+	{
+		CachedObject co = cacheMap.get(id);
+		if (co == null)
+		{
+			return;
+		}
+		
+		cache.remove(co);
+		cacheMap.remove(id);
+		removedFromCache.add(co);
+		removedMap.put(id, co);
+	}
 	
 	/*
 	 * Private data
@@ -337,10 +603,12 @@ public class PersistedClass
 	protected String schema;
 	protected String name;
 	
-	protected PersistenceStore store = null;
+	protected DataStore defaultStore = null;
 	
 	protected HashMap<Object, CachedObject> cacheMap = new HashMap<Object, CachedObject>();
 	protected List<CachedObject>			cache =  new ArrayList<CachedObject>();
+	protected HashMap<Object, CachedObject>	removedMap =  new HashMap<Object, CachedObject>();
+	protected List<CachedObject>			removedFromCache =  new ArrayList<CachedObject>();
 	
-	protected Logger log = PersistencePlugin.getLogger();
+	protected static Logger log = PersistencePlugin.getLogger();
 }

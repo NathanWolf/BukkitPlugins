@@ -1,7 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.classes.dao;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotations.Persist;
-import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 @PersistClass(name = "group", schema = "classes") 
 public class UserGroup

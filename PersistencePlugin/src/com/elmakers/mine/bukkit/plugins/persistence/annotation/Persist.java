@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.persistence.annotations;
+package com.elmakers.mine.bukkit.plugins.persistence.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * 
  * At least one field, getter or setter in each persisted class must be marked as an id.
  * 
- * @author nathan
+ * @author NathanWolf
  * @see PersistClass
  *
  */

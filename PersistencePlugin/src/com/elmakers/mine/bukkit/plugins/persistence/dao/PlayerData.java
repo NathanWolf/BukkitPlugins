@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.bukkit.entity.Player;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotations.Persist;
-import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 /**
  * Encapsulate a player in a persitable class.

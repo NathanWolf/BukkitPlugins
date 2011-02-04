@@ -366,7 +366,7 @@ public class PersistenceCommands
 		messageOutput.sendMessage("Entity " + schemaName + "." + entityName + ":");
 		for (PersistedField field : persisted.getPersistedFields())
 		{
-			String entityMessage = " " + field.getName() + " : " + field.getColumnType();
+			String entityMessage = " " + field.getName() + " : " + field.getDataType();
 			messageOutput.sendMessage(entityMessage);
 		}
 	}

@@ -2,8 +2,8 @@ package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
 import org.bukkit.command.CommandSender;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotations.Persist;
-import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 /**
  * A class to encapsulate and store in-game text.
@@ -13,7 +13,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
  * Each message can be parameterized, printf-style. The character '\r' will cause a newline,
  * allowing for multiline output.
  * 
- * @author nathan
+ * @author NathanWolf
  *
  */
 @PersistClass(schema="global", name="message")

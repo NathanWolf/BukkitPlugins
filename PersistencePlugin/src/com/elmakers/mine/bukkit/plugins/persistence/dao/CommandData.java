@@ -4,13 +4,13 @@ import org.bukkit.command.Command;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
-import com.elmakers.mine.bukkit.plugins.persistence.annotations.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 /**
  * A data class for encapsulating and storing a Command object.
  * 
- * @author nathan
+ * @author NathanWolf
  *
  */
 @PersistClass(name="command", schema="global")

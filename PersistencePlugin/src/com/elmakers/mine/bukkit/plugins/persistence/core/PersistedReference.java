@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataField;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataRow;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataTable;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataType;
 
 public class PersistedReference extends PersistedField
 {
@@ -26,66 +30,66 @@ public class PersistedReference extends PersistedField
 		referenceType = Persistence.getInstance().getPersistedClass(getType());
 	}
 	
-	
-	
 	@Override
-	public String getColumnName()
+	public String getDataName()
 	{
 		if (referenceType == null) return null;
 		
-		String idName = referenceType.getIdField().getColumnName();
+		String idName = referenceType.getIdField().getDataName();
 		idName = name + idName.substring(0, 1).toUpperCase() + idName.substring(1);
 		return idName;
 	}
 
 	@Override
-	public String[] getColumnNames()
-	{
-		if (referenceType == null) return null;
-		// TODO : support contained objects
-		
-		return new String[] { getColumnName() };
-	}
-	
-	@Override
-	public DataType getColumnType()
+	public DataType getDataType()
 	{	
 		if (referenceType == null) return null;
 		
 		return DataType.getTypeFromClass(referenceType.getIdField().getType());
 	}
-		
-	@Override
-	public DataType[] getColumnTypes()
+	
+	public void populateHeader(DataTable dataTable)
 	{
-		if (referenceType == null) return null;
-		// TOOD : support contained objects
+		DataRow headerRow = dataTable.getHeader();
+		DataField field = new DataField(getName(), getDataType());
+		if (headerRow != null)
+		{
+			headerRow.add(field);
+		}
 		
-		return new DataType[] { getColumnType() };
+		// TODO : contained references
 	}
 	
-	@Override
-	public Object getColumnValue(Object o)
+	public void save(DataRow row, Object o)
 	{
-		if (referenceType == null) return null;
-		if (o == null) return null;
+		Object referenceId = null;
+		if (referenceType != null && o != null)
+		{
+			Object reference = get(o);
+			if (reference != null)
+			{
+				referenceId = referenceType.getId(reference);
+			}
+		}
 		
-		// TODO : support contained objects
+		DataField field = new DataField(getName(), getDataType(), referenceId);
+		row.add(field);
 		
-		Object referenceObject = get(o);
-		if (referenceObject == null) return null;
-		
-		return referenceType.getId(referenceObject);
+		// TODO : contained references
 	}
 	
-	@Override
-	public void setColumnValue(Object o, Object data)
+	public void load(DataRow row, Object o)
 	{
 		if (referenceType == null) return;	
 		
-		deferredReferences.add(new DeferredReference(this, o, data));
+		DataField dataField = row.get(getName());
+		Object referenceId = dataField.getValue();
+		
+		deferredReferences.add(new DeferredReference(this, o, referenceId));
+		
+		// TODO : contained references
 	}
-	
+		
 	public static void beginDefer()
 	{
 		deferStackDepth++;

@@ -9,7 +9,7 @@ import java.util.List;
  * 
  * This can be used to retrieve all persisted classes in a schema.
  * 
- * @author nathan
+ * @author NathanWolf
  *
  */
 public class Schema

@@ -5,7 +5,7 @@ package com.elmakers.mine.bukkit.plugins.persistence.dao;
  * 
  * Each plugin can register any number of messages and commands.
  * 
- * @author nathan
+ * @author NathanWolf
  *
  */
 public class PluginData

@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.persistence.stores;
+package com.elmakers.mine.bukkit.plugins.persistence.data.sql;
 
 import java.sql.Connection;
 import java.sql.Driver;

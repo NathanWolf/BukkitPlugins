@@ -1,9 +1,9 @@
-package com.elmakers.mine.bukkit.plugins.persistence.core;
+package com.elmakers.mine.bukkit.plugins.persistence.data;
 
 import java.util.Date;
 import java.util.List;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotations.PersistClass;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 public enum DataType
 {
@@ -80,5 +80,43 @@ public enum DataType
 			}
 		}
 		return sqlType;
+	}
+	
+	public static Object convertFrom(Object field, DataType dataType)
+	{
+		if (field == null) return "null";
+		
+		if (dataType == DataType.DATE)
+		{
+			Date d = (Date)field;
+			Integer seconds = (int)(d.getTime() / 1000);
+			return seconds;
+		}
+		if (dataType == DataType.BOOLEAN)
+		{
+			Boolean flag = (Boolean)field;
+			Integer intValue = flag ? 1 : 0;
+			return intValue;
+		}
+		return field;
+	}
+	
+	public static Object convertTo(Object field, DataType dataType)
+	{
+		if (field == null) return null;
+		
+		if (dataType == DataType.DATE)
+		{
+			Integer i = (Integer)field;
+			Date d = new Date(i * 1000);
+			return d;
+		}
+		if (dataType == DataType.BOOLEAN)
+		{
+			Integer i = (Integer)field;
+			Boolean b = i != 0;
+			return b;
+		}
+		return field;
 	}
 }

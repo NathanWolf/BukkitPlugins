@@ -9,138 +9,183 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataField;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataRow;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataTable;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataType;
 
+/**
+ * A variant of PersistedField that handles persisting Lists
+ * 
+ * The class tries to abstract some of the complexity of persisting Lists of data,
+ * including creating and using sub-tables.
+ * 
+ * It also supports Lists of contained objects, storing object data directly
+ * in the list sub-table.
+ * 
+ * @author nathan
+ *
+ */
 public class PersistedList extends PersistedField
 {
-	public PersistedList(Field field)
+	public PersistedList(Field field, PersistedClass owningClass)
 	{
 		super(field);
+		owningType = owningClass;
 		findListType();
 	}
 	
-	public PersistedList(Method getter, Method setter)
+	public PersistedList(Method getter, Method setter, PersistedClass owningClass)
 	{
 		super(getter, setter);
+		owningType = owningClass;
 		findListType();
+	}
+	
+	public void load(DataTable subTable, List<Object> instances)
+	{
+		// TODO: support contained lists
+		
+		// Load data for all lists in all instances at once, mapping to
+		// correct instances based on the id column.
+		
+		HashMap<Object, Object> objectIdMap = new HashMap<Object, Object>();
+		HashMap<Object, List<Object> > objectLists = new HashMap<Object, List<Object> >();
+		for (Object instance : instances)
+		{
+			Object instanceId = owningType.getId(instance);
+			objectIdMap.put(instanceId, instance);
+			List<Object> listData = new ArrayList<Object>();
+			objectLists.put(instanceId, listData);
+		}
+		
+		PersistedField idField = owningType.getIdField();
+		String idName = idField.getDataName();
+		
+		for (DataRow row : subTable.getRows())
+		{
+			Object id = row.get(idName);
+			Object data = row.get(getDataName());
+			List<Object> list = objectLists.get(id);
+			if (list != null);
+			{
+				list.add(data);
+			}
+		}
+		
+		// Assign lists to instance fields, or defer until later
+		for (Object objectId : objectLists.keySet())
+		{
+			List<Object> listData = objectLists.get(objectId);
+			Object instance = objectIdMap.get(objectId);
+			
+			if (referenceType == null)
+			{
+				set(instance, listData);
+			}
+			else
+			{
+				DeferredReferenceList list = deferListMap.get(instance);
+				if (list == null)
+				{
+					list = new DeferredReferenceList(this);
+					deferListMap.put(instance, list);
+				}
+				list.idList = listData;
+			}
+		}
+	}
+	
+	protected void populate(DataRow dataRow, Object data)
+	{
+		PersistedField idField = owningType.getIdField();
+		
+		// Add id row first, this binds to the owning class
+		DataField idData = new DataField(idField.getDataName(), idField.getDataType());
+		idData.setIdField(true);
+		dataRow.add(idData);
+		
+		// TODO : support contained objects
+				
+		// Add data rows
+		if (referenceType == null)
+		{
+			DataField valueData = new DataField(getDataName(), listDataType);
+			valueData.setIdField(true);
+			if (data != null)
+			{
+				valueData.setValue(data);
+			}
+			dataRow.add(valueData);
+		}
+		else
+		{
+			PersistedField referenceIdField = referenceType.getIdField();
+			
+			// Construct a field name using the name of the reference id
+			String referenceFieldName = referenceIdField.getDataName();
+			referenceFieldName = referenceFieldName.substring(0, 1).toUpperCase() + referenceFieldName.substring(1);
+			referenceFieldName = getDataName() + referenceFieldName;
+			
+			DataField referenceIdData = new DataField(referenceFieldName, referenceIdField.getDataType());
+			if (data != null)
+			{
+				Object id = referenceIdField.get(data);
+				referenceIdData.setValue(id);
+			}
+			referenceIdData.setIdField(true);
+			dataRow.add(referenceIdData);
+		}	
+	}
+	
+	public void populateHeader(DataTable dataTable)
+	{
+		dataTable.createHeader();
+		DataRow headerRow = dataTable.getHeader();
+		populate(headerRow, null);
+	}
+	
+	public void save(DataTable table, Object instance)
+	{
+		if (instance == null) return;
+		
+		@SuppressWarnings("unchecked")
+		List<? extends Object> list = (List<? extends Object>)get(instance);
+		for (Object data : list)
+		{
+			DataRow row = new DataRow(table);
+			populate(row, data);
+			table.addRow(row);
+		}
+	}
+	
+	protected void findListType()
+	{
+        Type type = getGenericType();  
+        
+        if (type instanceof ParameterizedType) 
+        {  
+            ParameterizedType pt = (ParameterizedType)type;
+            if (pt.getActualTypeArguments().length > 0)
+            {
+            	listType = (Class<?>)pt.getActualTypeArguments()[0];
+            }
+        }
+        listDataType = DataType.getTypeFromClass(listType);
+        
+        // Construct sub-table name
+		tableName = name.substring(0, 1).toUpperCase() + name.substring(1);
+		tableName = owningType.getTableName() + tableName;
 	}
 	
 	public Class<?> getListType()
 	{
 		return listType;
 	}
-
-	@SuppressWarnings("unchecked")
-	public List<Object[]> getListValues(Object o)
-	{
-		// TODO : support contained lists.
-		
-		List<? extends Object> listItems = (List<? extends Object>)get(o);
-		List<Object[]> valueList = new ArrayList<Object[]>();
-		for (Object value : listItems)
-		{
-			if (referenceType == null)
-			{
-				valueList.add(new Object[] { value });
-			}
-			else
-			{
-				Object referenceId = referenceType.getId(value);
-				valueList.add(new Object[] { referenceId } );
-			}
-		}
-		
-		return valueList;
-	}
 	
-	@SuppressWarnings("unchecked")
-	public List<Object> getListValueIds(Object o)
+	public String getTableName()
 	{
-		// TODO : support contained lists.
-		
-		List<? extends Object> listItems = (List<? extends Object>)get(o);
-		List<Object> valueList = new ArrayList<Object>();
-		for (Object value : listItems)
-		{
-			if (referenceType == null)
-			{
-				valueList.add(value);
-			}
-			else
-			{
-				Object referenceId = referenceType.getId(value);
-				valueList.add(referenceId);
-			}
-		}
-		
-		return valueList;
-	}
-	
-	public String getTableName(PersistedClass persisted)
-	{
-		String tableName = name;
-		tableName = tableName.substring(0, 1).toUpperCase() + tableName.substring(1);
-		return persisted.getTableName() + tableName;
-	}
-	
-	public String getIdColumnName(PersistedClass persisted, PersistedField idField)
-	{
-		String tableName = persisted.getTableName();
-		String[] idFieldNames = idField.getColumnNames();
-		String idFieldName = tableName.substring(0, 1).toLowerCase() + tableName.substring(1) 
-			+ idFieldNames[0].substring(0, 1).toUpperCase() + idFieldNames[0].substring(1);
-		return idFieldName;
-	}
-	
-	public int getDataColumnCount()
-	{
-		// TODO : support contained lists
-		return 1;
-	}
-	
-	public String getDataColumnName()
-	{
-		if (referenceType == null)
-		{
-			return getColumnName();
-		}
-		
-		String referenceId = referenceType.getIdField().getColumnName();
-		referenceId = referenceId.substring(0, 1).toUpperCase() + referenceId.substring(1);
-		
-		return getColumnName() + referenceId;
-	}
-	
-	public DataType getListColumnType()
-	{
-		if (referenceType != null)
-		{
-			Class<?> referenceIdType = referenceType.getIdField().getType();
-			return DataType.getTypeFromClass(referenceIdType);
-		}
-		return listDataType;
-	}
-	
-	public DataType[] getListColumnTypes()
-	{
-		// TODO : support contained lists
-		return new DataType[] { getListColumnType() };
-	}
-	
-	public String[] getDataColumnNames()
-	{
-		// TODO : support contained lists
-		return new String[] { getDataColumnName() };
-	}
-		
-	@Override
-	public String[] getColumnNames()
-	{
-		String columnName = name;
-		if (columnName.charAt(columnName.length() - 1) == 's')
-		{
-			columnName = columnName.substring(0, columnName.length() - 1);
-		}
-		return new String[] { columnName };
+		return tableName;
 	}
 	
 	protected Type getGenericType()
@@ -157,21 +202,6 @@ public class PersistedList extends PersistedField
 		return genericType;
 	}
 	
-	protected void findListType()
-	{
-        Type type = getGenericType();  
-        
-        if (type instanceof ParameterizedType) 
-        {  
-            ParameterizedType pt = (ParameterizedType)type;
-            if (pt.getActualTypeArguments().length > 0)
-            {
-            	listType = (Class<?>)pt.getActualTypeArguments()[0];
-            }
-        }
-        listDataType = DataType.getTypeFromClass(listType);
-	}
-	
 	@Override
 	public void bind()
 	{
@@ -186,28 +216,12 @@ public class PersistedList extends PersistedField
 		deferStackDepth++;
 	}
 	
-	public void setList(Object instance, List<Object> items)
-	{
-		if (referenceType == null)
-		{
-			set(instance, items);
-			return;
-		}
-		
-		// Defer id lookup
-		DeferredReferenceList list = deferListMap.get(instance);
-		if (list == null)
-		{
-			list = new DeferredReferenceList(this);
-			deferListMap.put(instance, list);
-		}
-		list.idList = items;
-	}
-	
 	public static void endDefer()
 	{
 		deferStackDepth--;
 		if (deferStackDepth > 0) return;
+		
+		// TODO: Handle contained objects
 		
 		for (Object instance : deferListMap.keySet())
 		{
@@ -245,8 +259,11 @@ public class PersistedList extends PersistedField
 	private static int deferStackDepth = 0;
 	private final static HashMap<Object, DeferredReferenceList> deferListMap = new HashMap<Object, DeferredReferenceList>();
 
+	protected final PersistedClass owningType;
+	protected String tableName;
 	protected Class<?> listType;
 	protected DataType listDataType;
+
+	// Only valid for Lists of Objects
 	protected PersistedClass referenceType = null;
-	
 }

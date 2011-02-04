@@ -1,5 +1,12 @@
 # CHANGELOG
 
+# 0.20
+
+ - Massive, massive refactor. No real functionality change, but:
+ - All functionality related to creating and populatd classed moved to core.
+ - SqlStore only deals with raw database-type actions now.
+ - Very, very close to supporting contained references and lists.
+
 # 0.19
 
  - Fully support Bukkit command interface, you can now use persistence commands from the server console!
