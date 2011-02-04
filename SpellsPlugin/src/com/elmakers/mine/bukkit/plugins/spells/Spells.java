@@ -872,6 +872,7 @@ public class Spells
 		addSpell(new RecallSpell());
 		addSpell(new DisintegrateSpell());
 		addSpell(new ManifestSpell());
+		addSpell(new PeekSpell());
 		
 		// wip
 		// addSpell(new TowerSpell());

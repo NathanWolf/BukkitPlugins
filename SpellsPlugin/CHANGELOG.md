@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.79
+
+ - Add "peek" spell
+
 ## 0.78
 
  - Absorb and mine now handle variants properly (mine can mine LL now)- thanks to Firestar for sharing the code that clued me in!
