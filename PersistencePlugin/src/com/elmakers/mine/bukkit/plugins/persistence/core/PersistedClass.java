@@ -176,9 +176,8 @@ public class PersistedClass
 				{
 					field.setAutogenerate(persist.auto());
 				}
-				
-				internalFields.add(field);
 			}
+			internalFields.add(field);
 		}
 
 		fields.add(field);
