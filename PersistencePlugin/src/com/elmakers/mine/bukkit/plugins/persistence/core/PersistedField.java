@@ -133,7 +133,12 @@ public class PersistedField
 	
 	public void save(DataRow row, Object o)
 	{
-		DataField field = new DataField(getName(), getDataType(), get(o));
+		Object data = null;
+		if (o != null)
+		{
+			data = get(o);
+		}
+		DataField field = new DataField(getName(), getDataType(), data);
 		row.add(field);
 	}
 	

@@ -1,9 +1,14 @@
 package com.elmakers.mine.bukkit.plugins.persistence;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginDescriptionFile;
 
 import com.elmakers.mine.bukkit.plugins.persistence.dao.CommandData;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginData;
 
 /** 
  * An interface for displaying data-driven messages and processing data-driven commands.
@@ -24,7 +29,16 @@ public class Messaging
 	public Messaging(Plugin plugin, Persistence persistence)
 	{
 		this.persistence = persistence;
-		this.plugin = plugin;
+		
+		// Retreive or create the plugin data record for this plugin.
+		PluginDescriptionFile pdfFile = plugin.getDescription();
+		String pluginId = pdfFile.getName();
+		pluginData = persistence.get(pluginId, PluginData.class);
+		if (pluginData == null)
+		{
+			pluginData = new PluginData(plugin);
+			persistence.put(pluginData);
+		}
 	}
 	
 	/**
@@ -54,17 +68,37 @@ public class Messaging
 	 * @param id The command id to retrieve.
 	 * @return A command descriptor
 	 */
-	public CommandData getCommand(String id)
+	public CommandData getCommand(String commandName)
 	{
-		CommandData command = persistence.get(id, CommandData.class);
+		// First, look for a root command by this name
+		List<CommandData> allCommands = new ArrayList<CommandData>();
+		persistence.getAll(allCommands, CommandData.class);
+		
+		for (CommandData  command : allCommands)
+		{
+			if (command.getCommand().equalsIgnoreCase(commandName))
+			{
+				return command;
+			}
+		}
+		
+		CommandData command = persistence.get(commandName, CommandData.class);
 		if (command == null)
 		{
-			command = new CommandData(plugin, id, id);
+			command = new CommandData(pluginData, commandName);
 			persistence.put(command);
 		}
 		return command;
 	}
 	
+	public CommandData getSubCommand(CommandData parent, String id)
+	{
+		CommandData child = null;
+		
+		
+		return child;
+	}
+	
 	private Persistence persistence;
-	private Plugin plugin;
+	private PluginData pluginData;
 }

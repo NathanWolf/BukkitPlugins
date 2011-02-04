@@ -31,7 +31,7 @@ public class Message
 	 * 
 	 * The "\r" character will create new lines in the output.
 	 * 
-	 * @param player The player to send a message to
+	 * @param receiver The CommandSender to send the message to
 	 * @param parameters A list of optional parameters to parameterize the string with
 	 */
 	public void sendTo(CommandSender receiver, Object ... parameters)

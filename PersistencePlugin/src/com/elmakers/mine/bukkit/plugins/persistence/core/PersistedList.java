@@ -42,10 +42,22 @@ public class PersistedList extends PersistedField
 		findListType();
 	}
 	
+	@Override
+	public void bind()
+	{
+        if (listDataType == DataType.OBJECT)
+        {
+        	referenceType = Persistence.getInstance().getPersistedClass(listType);
+    		if (contained)
+    		{
+    			// Create a sub-class of the reference class
+    			referenceType = new PersistedClass(referenceType);
+    		}
+        }
+	}
+	
 	public void load(DataTable subTable, List<Object> instances)
 	{
-		// TODO: support contained lists
-		
 		// Load data for all lists in all instances at once, mapping to
 		// correct instances based on the id column.
 		
@@ -65,11 +77,19 @@ public class PersistedList extends PersistedField
 		for (DataRow row : subTable.getRows())
 		{
 			Object id = row.get(idName);
-			Object data = row.get(getDataName());
 			List<Object> list = objectLists.get(id);
-			if (list != null);
+			if (list != null)
 			{
-				list.add(data);
+				if (contained && referenceType != null)
+				{
+					Object newInstance = referenceType.createInstance(row);
+					list.add(newInstance);
+				}
+				else
+				{
+					Object data = row.get(getDataName());
+					list.add(data);
+				}
 			}
 		}
 		
@@ -79,7 +99,7 @@ public class PersistedList extends PersistedField
 			List<Object> listData = objectLists.get(objectId);
 			Object instance = objectIdMap.get(objectId);
 			
-			if (referenceType == null)
+			if (referenceType == null || contained)
 			{
 				set(instance, listData);
 			}
@@ -96,17 +116,20 @@ public class PersistedList extends PersistedField
 		}
 	}
 	
-	protected void populate(DataRow dataRow, Object data)
+	protected void populate(DataRow dataRow, Object instance, Object data)
 	{
 		PersistedField idField = owningType.getIdField();
 		
 		// Add id row first, this binds to the owning class
-		DataField idData = new DataField(idField.getDataName(), idField.getDataType());
+		Object id = null;
+		if (instance != null)
+		{
+			id = owningType.getId(instance);
+		}
+		DataField idData = new DataField(idField.getDataName(), idField.getDataType(), id);
 		idData.setIdField(true);
 		dataRow.add(idData);
 		
-		// TODO : support contained objects
-				
 		// Add data rows
 		if (referenceType == null)
 		{
@@ -118,8 +141,12 @@ public class PersistedList extends PersistedField
 			}
 			dataRow.add(valueData);
 		}
-		else
+		else if (contained)
 		{
+			referenceType.populate(dataRow, data);
+		}
+		else
+		{	
 			PersistedField referenceIdField = referenceType.getIdField();
 			
 			// Construct a field name using the name of the reference id
@@ -130,8 +157,8 @@ public class PersistedList extends PersistedField
 			DataField referenceIdData = new DataField(referenceFieldName, referenceIdField.getDataType());
 			if (data != null)
 			{
-				Object id = referenceIdField.get(data);
-				referenceIdData.setValue(id);
+				Object referenceId = referenceIdField.get(data);
+				referenceIdData.setValue(referenceId);
 			}
 			referenceIdData.setIdField(true);
 			dataRow.add(referenceIdData);
@@ -142,7 +169,7 @@ public class PersistedList extends PersistedField
 	{
 		dataTable.createHeader();
 		DataRow headerRow = dataTable.getHeader();
-		populate(headerRow, null);
+		populate(headerRow, null, null);
 	}
 	
 	public void save(DataTable table, Object instance)
@@ -151,10 +178,12 @@ public class PersistedList extends PersistedField
 		
 		@SuppressWarnings("unchecked")
 		List<? extends Object> list = (List<? extends Object>)get(instance);
+		if (list == null) return;
+		
 		for (Object data : list)
 		{
 			DataRow row = new DataRow(table);
-			populate(row, data);
+			populate(row, instance, data);
 			table.addRow(row);
 		}
 	}
@@ -202,15 +231,6 @@ public class PersistedList extends PersistedField
 		return genericType;
 	}
 	
-	@Override
-	public void bind()
-	{
-        if (listDataType == DataType.OBJECT)
-        {
-        	referenceType = Persistence.getInstance().getPersistedClass(listType);
-        }
-	}
-	
 	public static void beginDefer()
 	{
 		deferStackDepth++;
@@ -220,8 +240,6 @@ public class PersistedList extends PersistedField
 	{
 		deferStackDepth--;
 		if (deferStackDepth > 0) return;
-		
-		// TODO: Handle contained objects
 		
 		for (Object instance : deferListMap.keySet())
 		{

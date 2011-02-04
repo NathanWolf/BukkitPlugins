@@ -47,7 +47,7 @@ public abstract class DataStore
 	 * only if they are not specified in the passed-in table.
 	 * 
 	 * @param table The table to clear, containing the rows to keep
-	 * @param clearIds A list of primary ids of objects to clear
+	 * @param ids A list of primary ids of objects to clear
 	 * @return true if success
 	 */
 	public abstract boolean clearIds(DataTable table, List<Object> ids);
@@ -86,7 +86,7 @@ public abstract class DataStore
 	 * Assumes that the table already exists.
 	 * 
 	 * @param table the table
-	 * @return
+	 * @return true if success
 	 */
 	public abstract boolean save(DataTable table);
 	

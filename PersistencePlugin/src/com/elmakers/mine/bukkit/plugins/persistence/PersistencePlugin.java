@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -36,13 +35,7 @@ public class PersistencePlugin extends JavaPlugin
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args)
 	{
-		if (sender instanceof Player)
-		{
-			return handler.process((Player)sender, cmd, args);
-		}
-		
-		// TODO: Support server commands, etc.
-		return false;
+		return handler.process(sender, cmd, args);
 	}
 
 	/**

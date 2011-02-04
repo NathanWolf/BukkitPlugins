@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.21
+
+ - Finally support contained lists!
+ - Also, fix the server console interface.
+ - Extend the Command and Plugin DAOs
+
 # 0.20
 
  - Massive, massive refactor. No real functionality change, but:

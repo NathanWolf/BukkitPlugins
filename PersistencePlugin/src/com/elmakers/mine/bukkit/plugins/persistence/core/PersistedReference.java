@@ -28,6 +28,11 @@ public class PersistedReference extends PersistedField
 	public void bind()
 	{
 		referenceType = Persistence.getInstance().getPersistedClass(getType());
+		if (contained)
+		{
+			// Create a sub-class of the reference class
+			referenceType = new PersistedClass(referenceType);
+		}
 	}
 	
 	@Override
@@ -50,20 +55,32 @@ public class PersistedReference extends PersistedField
 	
 	public void populateHeader(DataTable dataTable)
 	{
+		if (contained)
+		{
+			referenceType.populateHeader(dataTable);
+			return;
+		}
+		
 		DataRow headerRow = dataTable.getHeader();
 		DataField field = new DataField(getName(), getDataType());
 		if (headerRow != null)
 		{
 			headerRow.add(field);
 		}
-		
-		// TODO : contained references
 	}
-	
+
 	public void save(DataRow row, Object o)
 	{
+		if (referenceType == null) return;	
+		
+		if (contained)
+		{
+			referenceType.populate(row, o);
+			return;
+		}
+		
 		Object referenceId = null;
-		if (referenceType != null && o != null)
+		if (o != null)
 		{
 			Object reference = get(o);
 			if (reference != null)
@@ -74,20 +91,22 @@ public class PersistedReference extends PersistedField
 		
 		DataField field = new DataField(getName(), getDataType(), referenceId);
 		row.add(field);
-		
-		// TODO : contained references
 	}
 	
 	public void load(DataRow row, Object o)
 	{
 		if (referenceType == null) return;	
 		
+		if (contained)
+		{
+			referenceType.load(row, o);
+			return;
+		}
+		
 		DataField dataField = row.get(getName());
 		Object referenceId = dataField.getValue();
 		
 		deferredReferences.add(new DeferredReference(this, o, referenceId));
-		
-		// TODO : contained references
 	}
 		
 	public static void beginDefer()

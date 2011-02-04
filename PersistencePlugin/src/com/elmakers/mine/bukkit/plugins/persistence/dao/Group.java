@@ -60,5 +60,5 @@ public class Group
 	private String 		id;
 	private String 		name;
 	private String 		description;
-	private Group 	parent;
+	private Group 		parent;
 }
