@@ -1,0 +1,11 @@
+name: NetherGate
+main: com.elmakers.mine.bukkit.plugins.nether.NetherGate
+version: 0.10
+website: http://mine.elmakers.com
+author: NathanWolf
+description : An attempt to reproduce Nether Gates in SMP
+commands:
+  nether:
+    description: Administer Nether areas
+    usage: |
+           /nether create : Create a new Nether area under your feet
