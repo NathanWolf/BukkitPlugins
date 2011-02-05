@@ -2,9 +2,6 @@ package com.elmakers.mine.bukkit.plugins.persistence.core;
 
 class PersistenceDefaults
 {
-	// TODO
-	public static final String helpHeader = "Persistence:";
-	
 	// Defaults
 	public final String[] persistCommand = {"persist", "Manage Persistence", "persist <sub-command> <parameters>"};
 	public final String[] saveSubCommand = {"save", "Save cached data", "save"};
@@ -19,5 +16,16 @@ class PersistenceDefaults
 	
 	public final String[] helpUsage = {"phelp <plugin>", "phelp <plugin>.<command>"};
 	
+	public final String dataSavedMessage = "Data saved.";
 	public final String resettingEntityMessage = "RESETTING entity: %s.%s";
+	public final String reloadingEntityMessage = "Reloading entity: %s.%s";
+	public final String entityNotFoundMessage = "Can't find entity: %s.%s with %s=%s";
+	public final String entityDisplayMessage = "Entity %s.%s:";
+	public final String entityListMessage = "%s, %s : %i entities:";
+	public final String schemaListMessage = "Schemas:";
+	public final String schemaDisplayMessage = "Schema %s:";
+	public final String unknownSchemaMessage = "Unknown schema: %s";
+	public final String unknownEntityMessage = "Unknown entity: %s";
+	public final String pluginListMessage = "Use: phelp commands for list of commands\r     phelp <plugin | command> for detailed help";
+	public final String pluginNotFoundMessage = "Plugin %s not found";
 }

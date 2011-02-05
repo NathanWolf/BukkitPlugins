@@ -7,27 +7,27 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 public class BoundingBox
 {
 	@Persist(contained=true)
-	public PositionData getMin()
+	public Position getMin()
 	{
 		return min;
 	}
 	
-	public void setMin(PositionData min)
+	public void setMin(Position min)
 	{
 		this.min = min;
 	}
 	
 	@Persist(contained=true)
-	public PositionData getMax()
+	public Position getMax()
 	{
 		return max;
 	}
 	
-	public void setMax(PositionData max)
+	public void setMax(Position max)
 	{
 		this.max = max;
 	}
 	
-	protected PositionData min;
-	protected PositionData max;
+	protected Position min;
+	protected Position max;
 }

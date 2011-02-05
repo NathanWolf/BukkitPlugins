@@ -1,11 +1,25 @@
 package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
+import org.bukkit.Location;
+
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 @PersistClass(schema="global", name="position", contained=true)
-public class PositionData
+public class Position
 {
+	public Position()
+	{
+		
+	}
+	
+	public Position(Location location)
+	{
+		x = location.getBlockX();
+		y = location.getBlockY();
+		z = location.getBlockZ();
+	}
+	
 	@Persist
 	public int getX()
 	{

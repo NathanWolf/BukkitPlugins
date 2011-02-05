@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.24
+
+ - Implement /phelp, a universal help system for Persistence plugins
+ - Some general bug fixes
+ - Add some data to the player class, save last location and orientation
+
 # 0.23
 
  - Vastly improve Plugin command interface:

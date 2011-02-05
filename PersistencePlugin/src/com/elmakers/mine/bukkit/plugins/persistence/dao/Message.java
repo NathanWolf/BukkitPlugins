@@ -74,7 +74,7 @@ public class Message
 	 */
 	public Message(String id, String message)
 	{
-		this.id = id;
+		this.messageId = id;
 		this.message = message;
 	}
 	
@@ -86,13 +86,13 @@ public class Message
 		return message;
 	}
 	
-	@Persist(id=true)
-	public String getId()
+	@Persist(id=true, auto=true)
+	public int getId()
 	{
 		return id;
 	}
 	
-	public void setId(String id)
+	public void setId(int id)
 	{
 		this.id = id;
 	}
@@ -119,18 +119,19 @@ public class Message
 		this.enabled = enabled;
 	}
 	
-	public void setPluginId(String pluginId)
+	@Persist
+	public void setMessageId(String messageId)
 	{
-		this.pluginId = pluginId;
+		this.messageId = messageId;
 	}
 
-	public String getPluginId()
+	public String getMessageId()
 	{
-		return pluginId;
+		return messageId;
 	}
 
-	private String id;
+	private int id;
+	private String messageId;
 	private String message;
-	private String pluginId;
 	private boolean enabled = true;
 }

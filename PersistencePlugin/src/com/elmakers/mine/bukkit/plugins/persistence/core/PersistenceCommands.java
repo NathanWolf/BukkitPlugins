@@ -1,6 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.persistence.core;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.bukkit.command.Command;
@@ -12,6 +13,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginData;
 
 public class PersistenceCommands
 {
@@ -22,6 +24,22 @@ public class PersistenceCommands
 		this.persistence = persistence;
 		messaging = persistence.getMessaging(plugin);	
 
+		// Initialize Messages
+		
+		resettingEntityMessage = messaging.getMessage("resettingEntity", d.resettingEntityMessage);
+		reloadingEntityMessage = messaging.getMessage("reloadingEntity", d.reloadingEntityMessage);
+		entityNotFoundMessage = messaging.getMessage("entityNotFound", d.entityNotFoundMessage);
+		entityDisplayMessage = messaging.getMessage("entityDisplay", d.entityDisplayMessage);
+		schemaDisplayMessage = messaging.getMessage("schemaDisplay", d.schemaDisplayMessage);
+		entityListMessage = messaging.getMessage("entityList", d.entityListMessage);
+		schemaListMessage = messaging.getMessage("schemaList", d.schemaListMessage);
+		unknownSchemaMessage = messaging.getMessage("unknownSchema", d.unknownSchemaMessage);
+		unknownEntityMessage = messaging.getMessage("unknownEntity", d.unknownEntityMessage);
+		dataSavedMessage = messaging.getMessage("dataSaved", d.dataSavedMessage);
+		pluginListMessage = messaging.getMessage("pluginList", d.pluginListMessage);
+		pluginNotFoundMessage = messaging.getMessage("pluginNotFound", d.pluginNotFoundMessage);
+
+		// Iniitialize Commands
 		persistCommand = messaging.getGeneralCommand(d.persistCommand[0], d.persistCommand[1], d.persistCommand[2]);
 		saveSubCommand = persistCommand.getSubCommand(d.saveSubCommand[0], d.saveSubCommand[1], d.saveSubCommand[2]);
 		describeSubCommand = persistCommand.getSubCommand(d.describeSubCommand[0], d.describeSubCommand[1], d.describeSubCommand[2]);
@@ -71,13 +89,74 @@ public class PersistenceCommands
 	public boolean onSave(CommandSender messageOutput, String[] parameters)
 	{
    		persistence.save();
-   		messageOutput.sendMessage("Data saved");
+   		dataSavedMessage.sendTo(messageOutput);
     	return true;    	
     }
 	
 	public boolean onHelp(CommandSender messageOutput, String[] parameters)
 	{
-		printHelp(messageOutput);
+		List<PluginData> plugins = new ArrayList<PluginData>();
+		persistence.getAll(plugins, PluginData.class);
+
+		if (parameters == null || parameters.length == 0)
+		{
+			pluginListMessage.sendTo(messageOutput);
+			for (PluginData plugin : plugins)
+			{
+				messageOutput.sendMessage(" " + plugin.getId() + " : " + plugin.getDescription());
+			}
+			return true;
+		}
+		
+		if (parameters[0].equalsIgnoreCase("commands"))
+		{
+			List<PluginCommand> allCommands = new ArrayList<PluginCommand>();
+			for (PluginData plugin : plugins)
+			{
+				allCommands.addAll(plugin.getCommands());
+			}
+			
+			Collections.sort(allCommands);
+			for (PluginCommand command : allCommands)
+			{
+				command.sendHelp(messageOutput, " ", false, false);
+			}
+			
+			return true;
+			
+		}
+		
+		String commandName = parameters[0];
+		for (PluginData plugin : plugins)
+		{
+			List<PluginCommand> commands = plugin.getCommands();
+			for (PluginCommand command : commands)
+			{
+				if (command.checkCommand(commandName))
+				{
+					command.sendHelp(messageOutput, " ", true, true);
+					return true;
+				}
+			}
+		}
+		
+		String pluginName = parameters[0];
+		for (PluginData plugin : plugins)
+		{
+			if (pluginName.equalsIgnoreCase(plugin.getId()))
+			{
+				messageOutput.sendMessage(plugin.getId() + " v" + plugin.getVersion() + ":");
+				List<PluginCommand> commands = plugin.getCommands();
+				for (PluginCommand command : commands)
+				{
+					command.sendHelp(messageOutput, " ", false, true);
+				}
+				return true;
+			}
+		}
+		
+		pluginNotFoundMessage.sendTo(messageOutput, pluginName);
+		
 		return true;
 	}
 	
@@ -85,13 +164,13 @@ public class PersistenceCommands
 	{
 		if (parameters.length < 1)
 		{
-			messageOutput.sendMessage("Use: \"/persist reload <schema>.<entity>");
+			reloadSubCommand.sendShortHelp(messageOutput);
 			return true;
 		}
 		String[] entityPath = parameters[1].split("\\.");
 		if (entityPath.length < 2)
 		{
-			messageOutput.sendMessage("Use: \"/persist reload <schema>.<entity>");
+			reloadSubCommand.sendShortHelp(messageOutput);
 			return true;
 		}
 		String schemaName = entityPath[0];
@@ -104,13 +183,13 @@ public class PersistenceCommands
 	{
 		if (parameters.length < 1)
 		{
-			messageOutput.sendMessage("Use: \"/perist RESET <schema>.<entity>");
+			resetSubCommand.sendShortHelp(messageOutput);
 			return true;
 		}
 		String[] entityPath = parameters[1].split("\\.");
 		if (entityPath.length < 1)
 		{
-			messageOutput.sendMessage("Use: \"/persist RESET <schema>.<entity>");
+			resetSubCommand.sendShortHelp(messageOutput);
 			return true;
 		}
 		String schemaName = entityPath[0];
@@ -143,14 +222,14 @@ public class PersistenceCommands
 	{
 		if (parameters.length < 1)
 		{
-			messageOutput.sendMessage("Use: \"/persist list <schema>.<entity>[.<id>]");
+			listSubCommand.sendShortHelp(messageOutput);
 			return true;
 		}
 		
 		String[] entityPath = parameters[1].split("\\.");
 		if (entityPath.length < 2)
 		{
-			messageOutput.sendMessage("Use: \"/persist list <schema>.<entity>[.<id>]");
+			listSubCommand.sendShortHelp(messageOutput);
 			return true;
 		}
 		
@@ -178,7 +257,7 @@ public class PersistenceCommands
 		
 		if (instance == null)
 		{
-			messageOutput.sendMessage("Can't find entity " + schemaName + "." + entityName + ", " + persisted.getIdField().getName() + "=" + id);
+			entityNotFoundMessage.sendTo(messageOutput, schemaName, entityName, persisted.getIdField().getName(), id);
 			return;
 		}
 		
@@ -200,7 +279,7 @@ public class PersistenceCommands
 			rows.add(row);
 		}
 		
-		messageOutput.sendMessage("Entity " + schemaName + "." + entityName + ":");
+		entityListMessage.sendTo(messageOutput, schemaName, entityName);
 		for (String row : rows)
 		{
 			messageOutput.sendMessage(row);
@@ -327,7 +406,7 @@ public class PersistenceCommands
 	protected void listSchemas(CommandSender messageOutput)
 	{
 		Persistence persistence = Persistence.getInstance();
-		messageOutput.sendMessage("Schemas:");
+		schemaListMessage.sendTo(messageOutput);
 		List<Schema> schemas = persistence.getSchemaList();
 		for (Schema schema : schemas)
 		{
@@ -342,13 +421,13 @@ public class PersistenceCommands
 		Schema schema = persistence.getSchema(schemaName);
 		if (schema == null)
 		{
-			messageOutput.sendMessage("Unknown schema: " + schemaName);
+			unknownSchemaMessage.sendTo(messageOutput, schemaName);
 			return null;
 		}
 		PersistedClass persisted = schema.getPersistedClass(entityName);
 		if (persisted == null)
 		{
-			messageOutput.sendMessage("Unknown entity: " + schemaName + "." + entityName);
+			unknownEntityMessage.sendTo(messageOutput, schemaName, entityName);
 			return null;
 		}
 		return persisted;
@@ -360,10 +439,10 @@ public class PersistenceCommands
 		Schema schema = persistence.getSchema(schemaName);
 		if (schema == null)
 		{
-			messageOutput.sendMessage("Unknown schema: " + schemaName);
+			unknownSchemaMessage.sendTo(messageOutput, schemaName);
 			return;
 		}		
-		messageOutput.sendMessage("Schema " + schemaName + ":");
+		schemaDisplayMessage.sendTo(messageOutput, schemaName);
 		for (PersistedClass persisted : schema.getPersistedClasses())
 		{
 			String schemaMessage = " " + persisted.getTableName();
@@ -376,7 +455,7 @@ public class PersistenceCommands
 		PersistedClass persisted = getEntity(messageOutput, schemaName, entityName);
 		if (persisted == null) return;
 		
-		messageOutput.sendMessage("Entity " + schemaName + "." + entityName + ":");
+		entityDisplayMessage.sendTo(messageOutput, schemaName, entityName);
 		for (PersistedField field : persisted.getPersistedFields())
 		{
 			String entityMessage = " " + field.getName() + " : " + field.getDataType();
@@ -389,7 +468,7 @@ public class PersistenceCommands
 		PersistedClass persisted = getEntity(messageOutput, schemaName, entityName);
 		if (persisted == null) return;
 		
-		messageOutput.sendMessage("Reloading entity: " + schemaName + "." + entityName);
+		reloadingEntityMessage.sendTo(messageOutput, schemaName, entityName);
 		persisted.clear();
 	}
 	
@@ -400,13 +479,6 @@ public class PersistenceCommands
 		
 		resettingEntityMessage.sendTo(messageOutput, schemaName, entityName);
 		persisted.reset();
-	}
-	
-	protected void printHelp(CommandSender messageOutput)
-	{
-		// TODO: Get this dynamically from the CommandData store
-		messageOutput.sendMessage(PersistenceDefaults.helpHeader);
-		persistCommand.sendHelp(messageOutput);		
 	}
 	
 	private int maxLineCount = 10;
@@ -423,6 +495,18 @@ public class PersistenceCommands
 	private PluginCommand helpCommand;
 
 	private Message resettingEntityMessage;
+	private Message reloadingEntityMessage;
+	private Message entityNotFoundMessage;
+	private Message entityDisplayMessage;
+	private Message entityListMessage;
+	private Message schemaDisplayMessage;
+	private Message schemaListMessage;
+	private Message unknownSchemaMessage;
+	private Message unknownEntityMessage;
+	private Message dataSavedMessage;
+	private Message pluginListMessage;
+	private Message pluginNotFoundMessage;
+	
 	private Messaging messaging;
 	private Persistence persistence;
 

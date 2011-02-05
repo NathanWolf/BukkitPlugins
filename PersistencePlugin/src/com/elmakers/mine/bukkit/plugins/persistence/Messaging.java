@@ -3,6 +3,7 @@ package com.elmakers.mine.bukkit.plugins.persistence;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -57,12 +58,21 @@ public class Messaging
 	 */
 	public Message getMessage(String id, String defaultString)
 	{
-		Message message = persistence.get(id, Message.class);
+		if (messages == null)
+		{
+			messages = new ArrayList<Message>();
+		}
+
+		// First, look for a root command by this name
+		Message message = messageMap.get(id);
 		if (message == null)
 		{
 			message = new Message(id, defaultString);
 			persistence.put(message);
+			messages.add(message);
+			messageMap.put(id, message);
 		}
+		
 		return message;
 	}
 	
@@ -187,12 +197,15 @@ public class Messaging
 				String childCommand = parameters[0];
 				
 				List<PluginCommand> subCommands = command.getChildren();
-				for (PluginCommand child : subCommands)
+				if (subCommands != null)
 				{
-					handledByChild = dispatch(listener, sender, child, childCommand, childParameters);
-					if (handledByChild)
+					for (PluginCommand child : subCommands)
 					{
-						return true;
+						handledByChild = dispatch(listener, sender, child, childCommand, childParameters);
+						if (handledByChild)
+						{
+							return true;
+						}
 					}
 				}
 			}
@@ -257,4 +270,6 @@ public class Messaging
 	private PluginData plugin;
 	private CommandSenderData playerSender;
 	private static final Logger log = Persistence.getLogger();
+	private List<Message> messages;
+	private HashMap<String, Message> messageMap = new HashMap<String, Message>();
 }

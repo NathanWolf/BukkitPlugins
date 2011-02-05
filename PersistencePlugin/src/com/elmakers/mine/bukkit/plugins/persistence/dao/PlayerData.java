@@ -50,6 +50,9 @@ public class PlayerData
 		// if disabled. This allows ops to play "mostly" as a normal user.
 		superUser = loggedIn.isOp();
 		
+		position = new Position(loggedIn.getLocation());
+		orientation = new Orientation(loggedIn.getLocation());
+		
 		update(loggedIn);
 	}
 	
@@ -194,6 +197,28 @@ public class PlayerData
 		return groups;
 	}
 
+	@Persist(contained=true)
+	public void setPosition(Position position)
+	{
+		this.position = position;
+	}
+
+	public Position getPosition()
+	{
+		return position;
+	}
+
+	@Persist(contained=true)
+	public void setOrientation(Orientation orientation)
+	{
+		this.orientation = orientation;
+	}
+
+	public Orientation getOrientation()
+	{
+		return orientation;
+	}
+
 	private String 		name;
 	private String 		id;
 	private boolean 	superUser;
@@ -202,5 +227,7 @@ public class PlayerData
 	private	Date		lastDisconnect;
 	private boolean		online;
 	private List<Group> groups;
+	private Position	position;
+	private Orientation orientation;
 
 }

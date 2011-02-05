@@ -18,7 +18,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
  *
  */
 @PersistClass(name="command", schema="global")
-public class PluginCommand
+public class PluginCommand implements Comparable<PluginCommand>
 {	
 	/**
 	 * The default constructor, used by Persistence to create instances.
@@ -175,30 +175,55 @@ public class PluginCommand
 	}
 	
 	/**
+	 * Use to send a short informational help message
+	 * 
+	 * This can be used when the player has mis-entered parameters or some other exceptional case.
+	 * 
+	 * @param sender The CommandSender to reply to
+	 */
+	public void sendShortHelp(CommandSender sender)
+	{
+		sendHelp(sender, "Use: ", false, false);
+	}
+	
+	/**
 	 * Use this to display a help message for this command to the given sender.
 	 * 
 	 * CommandSender may be a player, server console, etc.
 	 * 
 	 * @param sender The CommandSender (e.g. Player) to display help to
+	 * @param prefix A prefix, such as "Use: " to put in front of the first line
+	 * @param showUsage Whether or not to show detailed usage information
 	 */
-	public void sendHelp(CommandSender sender)
+	public void sendHelp(CommandSender sender, String prefix, boolean showUsage, boolean showSubCommands)
 	{
 		boolean useSlash = sender instanceof Player;
 		String slash = useSlash ? "/" : "";
 		String currentIndent = getIndent("");
 		String message = currentIndent + slash + " " + getPath() + " : "  + tooltip;
-		sender.sendMessage(message);
+		sender.sendMessage(prefix + message);
 		currentIndent += indent;
 		
-		for (String exampleUse : usage)
+		if (showUsage && usage != null)
 		{
-			sender.sendMessage(currentIndent + exampleUse);
+			for (String exampleUse : usage)
+			{
+				sender.sendMessage(currentIndent + exampleUse);
+			}
 		}
 		
-		for (PluginCommand child : children)
+		if (showSubCommands && children != null)
 		{
-			child.sendHelp(sender);
+			for (PluginCommand child : children)
+			{
+				child.sendHelp(sender, "", showUsage, showSubCommands);
+			}
 		}
+	}
+		
+	public int compareTo(PluginCommand compare)
+	{
+		return command.compareTo(compare.getCommand());
 	}
 
 	protected String getIndent(String begin)
