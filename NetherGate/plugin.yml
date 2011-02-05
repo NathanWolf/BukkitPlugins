@@ -1,5 +1,5 @@
 name: NetherGate
-main: com.elmakers.mine.bukkit.plugins.nether.NetherGate
+main: com.elmakers.mine.bukkit.plugins.nether.NetherGatePlugin
 version: 0.10
 website: http://mine.elmakers.com
 author: NathanWolf

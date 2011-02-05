@@ -86,17 +86,19 @@ public enum DataType
 	{
 		if (field == null) return "null";
 		
-		if (dataType == DataType.DATE)
-		{
-			Date d = (Date)field;
-			Integer seconds = (int)(d.getTime() / 1000);
-			return seconds;
-		}
-		if (dataType == DataType.BOOLEAN)
-		{
-			Boolean flag = (Boolean)field;
-			Integer intValue = flag ? 1 : 0;
-			return intValue;
+		switch(dataType)
+		{		
+			case STRING: return field.toString();
+			case DOUBLE: return Double.parseDouble(field.toString());
+			case INTEGER: return (Integer)field;
+			case DATE:
+				Date d = (Date)field;
+				Integer seconds = (int)(d.getTime() / 1000);
+				return seconds;
+			case BOOLEAN:
+				Boolean flag = (Boolean)field;
+				Integer intValue = flag ? 1 : 0;
+				return intValue;
 		}
 		return field;
 	}
@@ -104,18 +106,20 @@ public enum DataType
 	public static Object convertTo(Object field, DataType dataType)
 	{
 		if (field == null) return null;
-		
-		if (dataType == DataType.DATE)
-		{
-			Integer i = (Integer)field;
-			Date d = new Date(i * 1000);
-			return d;
-		}
-		if (dataType == DataType.BOOLEAN)
-		{
-			Integer i = (Integer)field;
-			Boolean b = i != 0;
-			return b;
+
+		switch(dataType)
+		{		
+			case STRING: return field.toString();
+			case DOUBLE: return Double.parseDouble(field.toString());
+			case INTEGER: return (Integer)field;
+			case DATE:
+				Integer intDate = (Integer)field;
+				Date d = new Date(intDate * 1000);
+				return d;
+			case BOOLEAN:
+				Integer intBoolean = (Integer)field;
+				Boolean b = intBoolean != 0;
+				return b;
 		}
 		return field;
 	}

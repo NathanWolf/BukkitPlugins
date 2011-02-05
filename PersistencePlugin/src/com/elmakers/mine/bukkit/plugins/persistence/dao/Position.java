@@ -13,6 +13,13 @@ public class Position
 		
 	}
 	
+	public Position(int x, int y, int z)
+	{
+		this.x = x;
+		this.y = y;
+		this.z = z;
+	}
+	
 	public Position(Location location)
 	{
 		x = location.getBlockX();

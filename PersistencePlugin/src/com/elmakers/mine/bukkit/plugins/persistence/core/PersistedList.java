@@ -60,7 +60,7 @@ public class PersistedList extends PersistedField
     		{
     			if (referenceType.contained)
     			{
-    				log.warning("Persistence: Field: " + getDataName() + ", Class " + referenceType.getTableName() + " must be contained");
+    				log.warning("Persistence: " + owningType.getTableName() + "." + getDataName() + ", entity " + referenceType.getTableName() + " must be contained");
     				referenceType = null;
     			}
     		}
