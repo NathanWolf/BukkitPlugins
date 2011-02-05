@@ -95,15 +95,19 @@ public class PersistencePlugin extends JavaPlugin
 	 */
 	public void onEnable()
 	{
+		try
+		{
+			initialize();
+			PluginDescriptionFile pdfFile = this.getDescription();
+	        log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled");
+		}
+		catch(Throwable e)
+		{
+			PluginDescriptionFile pdfFile = this.getDescription();
+	        log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " failed to initialize");
+	        e.printStackTrace();
+		}
 		initialize();
-		
-		PluginManager pm = getServer().getPluginManager();
-		
-		pm.registerEvent(Type.PLAYER_QUIT, listener, Priority.Normal, this);
-		pm.registerEvent(Type.PLAYER_JOIN, listener, Priority.Normal, this);
-
-		PluginDescriptionFile pdfFile = this.getDescription();
-        log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled");
 	}
 	
 	/*
@@ -139,6 +143,11 @@ public class PersistencePlugin extends JavaPlugin
 	{
 		handler.initialize(this, getPersistence());
 		listener.initialize(getPersistence());
+		
+		PluginManager pm = getServer().getPluginManager();
+		
+		pm.registerEvent(Type.PLAYER_QUIT, listener, Priority.Normal, this);
+		pm.registerEvent(Type.PLAYER_JOIN, listener, Priority.Normal, this);
 	}
 	
 	/*

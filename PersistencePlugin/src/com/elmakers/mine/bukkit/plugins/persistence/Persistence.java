@@ -6,10 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import com.elmakers.mine.bukkit.plugins.persistence.core.PersistedClass;
 import com.elmakers.mine.bukkit.plugins.persistence.core.Schema;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.CommandSenderData;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataStore;
 import com.elmakers.mine.bukkit.plugins.persistence.data.sql.SqlLiteStore;
 
@@ -326,7 +328,28 @@ public class Persistence
 		this.dataFolder = dataFolder;
 		dataFolder.mkdirs();
 
+		updateGlobalData();
+		
 		// TODO : load configuration, sql connection params, etc?
+	}
+	
+	protected void updateGlobalData()
+	{
+		// Update CommandSenders
+		updateCommandSender("player" , Player.class);
+		
+		// TODO: Materials
+	}
+
+	protected CommandSenderData updateCommandSender(String senderId, Class<?> senderClass)
+	{
+		CommandSenderData sender = get(senderId, CommandSenderData.class);
+		if (sender == null)
+		{
+			sender = new CommandSenderData(senderId, senderClass);
+			put(sender);
+		}		
+		return sender;
 	}
 	
 	protected void disconnect()

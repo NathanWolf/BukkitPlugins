@@ -87,6 +87,10 @@ public class PlayerData
 	 */ 
 	public void addToGroup(Group group)
 	{
+		if (groups == null)
+		{
+			groups = new ArrayList<Group>();
+		}
 		groups.add(group);
 	}
 	
@@ -97,6 +101,8 @@ public class PlayerData
 	 */
 	public void removeFromGroup(Group group)
 	{
+		if (groups == null) return;
+		
 		groups.remove(group);
 	}
 	
@@ -195,6 +201,6 @@ public class PlayerData
 	private Date		lastLogin;
 	private	Date		lastDisconnect;
 	private boolean		online;
-	private List<Group> groups = new ArrayList<Group>();
+	private List<Group> groups;
 
 }

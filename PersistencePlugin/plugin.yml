@@ -1,18 +1,13 @@
 name: Persistence
 main: com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin
-version: 0.22
+version: 0.23
 website: http://mine.elmakers.com
 author: NathanWolf
 description : A generalized object persistence engine for Bukkit.
 commands:
   persist:
     description: Access persistence commands
-    usage: |
-           /persist save : Save cached entities
-           /persist describe : List all schemas
-           /persist describe <schema> : List entities in a schema
-           /persist describe <schema>.<entity> : Describe an entity
-           /persist list <schema>.<entity> : List all entity instances
-           /persist list <schema>.<entity>.<id> : List an entity
-           /persist reload <schema>.<entity> : Reload entity instances
-           /persist RESET <schema>.<entity> : DROP entity table
+    usage: Use "/phelp persist" for help
+  phelp:
+    description: Provide detailed help for any Persistence-enabled plugins
+    usage: Use "/phelp" for help

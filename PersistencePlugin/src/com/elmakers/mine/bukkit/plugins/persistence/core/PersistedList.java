@@ -48,11 +48,21 @@ public class PersistedList extends PersistedField
         if (listDataType == DataType.OBJECT)
         {
         	referenceType = Persistence.getInstance().getPersistedClass(listType);
+        	if (referenceType == null) return;
+        	
     		if (contained)
     		{
     			// Create a sub-class of the reference class
     			referenceType = new PersistedClass(referenceType, this);
     			referenceType.bindReferences();
+    		}
+    		else
+    		{
+    			if (referenceType.contained)
+    			{
+    				log.warning("Persistence: Field: " + getDataName() + ", Class " + referenceType.getTableName() + " must be contained");
+    				referenceType = null;
+    			}
     		}
         }
 	}
@@ -223,6 +233,11 @@ public class PersistedList extends PersistedField
 	public Class<?> getListType()
 	{
 		return listType;
+	}
+	
+	public DataType getListDataType()
+	{
+		return listDataType;
 	}
 	
 	public String getTableName()

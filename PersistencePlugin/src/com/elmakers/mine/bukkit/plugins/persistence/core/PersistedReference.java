@@ -34,6 +34,14 @@ public class PersistedReference extends PersistedField
 			referenceType = new PersistedClass(referenceType, this);
 			referenceType.bindReferences();
 		}
+		else
+		{
+			if (referenceType.contained)
+			{
+				log.warning("Persistence: Field: " + getDataName() + ", Class " + referenceType.getTableName() + " must be contained");
+				referenceType = null;
+			}
+		}
 	}
 	
 	@Override

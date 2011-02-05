@@ -2,36 +2,22 @@ package com.elmakers.mine.bukkit.plugins.persistence.core;
 
 class PersistenceDefaults
 {
-	// Commands
-	public static final String persistCommand = "persist";
-	
-	// Text
+	// TODO
 	public static final String helpHeader = "Persistence:";
 	
-	public static final String subCommands[] = 
-	{
-		"save", 
-		"describe", 
-		"describe <schema>", 
-		"describe <schema>.<entity>",
-		"list <schema>.<entity>",
-		"list <schema>.<entity>.<id>",
-		"reload <schema>.<entity>",
-		"RESET <schema>.<entity>"
-	};
+	// Defaults
+	public final String[] persistCommand = {"persist", "Manage Persistence", "persist <sub-command> <parameters>"};
+	public final String[] saveSubCommand = {"save", "Save cached data", "save"};
+	public final String[] describeSubCommand = {"describe", "Describe entities and schema", "describe"};
+	public final String[] listSubCommand = {"list", "List entities or data", "list <schema>.<entity>"};
+	public final String[] reloadSubCommand = {"reload", "Reload an entity", "reload"};
+	public final String[] resetSubCommand = {"RESET", "DROP an entity table", "RESET <schema>.<entity>"};
+	public final String[] helpCommand = {"phelp", "Get help on Persistence plugins", "phelp"};
+
+	public final String[] describeUsage = {"describe <schema>", "describe <schema>.<entity>"};
+	public final String[] listUsage = {"list <schema>.<entity>.<id>"};
 	
-	public static final String subCommandHelp[] = 
-	{
-		"Save cached entities",
-		"List all schemas",
-		"List entities in a schema",
-		"Describe an entit",
-		"List all entity ids",
-		"List an entity",
-		"Reload entities",
-		"DROP entity table"
-	};
+	public final String[] helpUsage = {"phelp <plugin>", "phelp <plugin>.<command>"};
 	
-	public static final String shortHelpMessage = "Use \"%s help\" for help.";
-	public static final String resettingEntityMessage = "RESETTING entity: %s.%s";
+	public final String resettingEntityMessage = "RESETTING entity: %s.%s";
 }

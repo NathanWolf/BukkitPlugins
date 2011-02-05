@@ -14,6 +14,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataRow;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataTable;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataStore;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataType;
 
 /**
  * Represents and manages a single persisted class.
@@ -142,6 +143,11 @@ public class PersistedClass
 		if (field instanceof PersistedList)
 		{
 			PersistedList list = (PersistedList)field;
+			if (list.getListDataType() == DataType.LIST)
+			{
+				log.warning("Persistence: class " + persistClass.getName() + ": lists of lists not supported");
+				return false;
+			}
 			externalFields.add(list);
 			list.setContained(persist.contained());
 		}

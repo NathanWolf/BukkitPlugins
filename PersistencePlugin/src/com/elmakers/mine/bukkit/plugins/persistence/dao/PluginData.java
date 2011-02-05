@@ -36,8 +36,17 @@ public class PluginData
 		version = pdfFile.getVersion();
 		description = pdfFile.getDescription();
 		authors = new ArrayList<String>();
+		if (authors == null) 
+		{
+			authors = new ArrayList<String>();
+		}
 		authors.addAll(pdfFile.getAuthors());
 		website = pdfFile.getWebsite();
+	}
+	
+	public void addCommand(PluginCommand command)
+	{
+		commands.add(command);
 	}
 
 	@Persist
@@ -95,10 +104,33 @@ public class PluginData
 		this.id = id;
 	}
 	
-	protected String			id;
-	protected String			version		= null;
-	protected String			description	= null;
-	protected List<String>		authors		= new ArrayList<String>();
-	protected String			website		= null;
+	@Persist(contained=true)
+	public List<PluginCommand> getCommands()
+	{
+		return commands;
+	}
 
+	public void setCommands(List<PluginCommand> commands)
+	{
+		this.commands = commands;
+	}
+
+	@Persist(contained=true)
+	public List<Message> getMessages()
+	{
+		return messages;
+	}
+
+	public void setMessages(List<Message> messages)
+	{
+		this.messages = messages;
+	}
+
+	protected String			id;
+	protected String			version;
+	protected String			description;
+	protected List<String>		authors;
+	protected String			website;
+	protected List<PluginCommand>	commands;
+	protected List<Message>		messages;
 }

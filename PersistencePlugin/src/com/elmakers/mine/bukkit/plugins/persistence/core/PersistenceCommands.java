@@ -10,7 +10,7 @@ import org.bukkit.entity.Player;
 import com.elmakers.mine.bukkit.plugins.persistence.Messaging;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.CommandData;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
 
 public class PersistenceCommands
@@ -18,142 +18,155 @@ public class PersistenceCommands
 
 	public void initialize(PersistencePlugin plugin, Persistence persistence)
 	{
-		Messaging messaging = persistence.getMessaging(plugin);	
-		shortHelpMessage = messaging.getMessage("shortHelpMessage", PersistenceDefaults.shortHelpMessage);
-		persistCommand = messaging.getCommand(PersistenceDefaults.persistCommand);
-	}
+		PersistenceDefaults d = new PersistenceDefaults();
+		this.persistence = persistence;
+		messaging = persistence.getMessaging(plugin);	
 
+		persistCommand = messaging.getGeneralCommand(d.persistCommand[0], d.persistCommand[1], d.persistCommand[2]);
+		saveSubCommand = persistCommand.getSubCommand(d.saveSubCommand[0], d.saveSubCommand[1], d.saveSubCommand[2]);
+		describeSubCommand = persistCommand.getSubCommand(d.describeSubCommand[0], d.describeSubCommand[1], d.describeSubCommand[2]);
+		listSubCommand = persistCommand.getSubCommand(d.listSubCommand[0], d.listSubCommand[1], d.listSubCommand[2]);
+		reloadSubCommand = persistCommand.getSubCommand(d.reloadSubCommand[0], d.reloadSubCommand[1], d.reloadSubCommand[2]);
+		resetSubCommand = persistCommand.getSubCommand(d.resetSubCommand[0], d.resetSubCommand[1], d.resetSubCommand[2]);
+		
+		helpCommand = messaging.getGeneralCommand(d.helpCommand[0], d.helpCommand[1], d.helpCommand[2]);
+		
+		for (String usage : d.helpUsage)
+		{
+			helpCommand.addUsage(usage);
+		}
+		
+		for (String usage : d.describeUsage)
+		{
+			describeSubCommand.addUsage(usage);
+		}
+		
+		for (String usage : d.listUsage)
+		{
+			listSubCommand.addUsage(usage);
+		}
+		
+		saveSubCommand.bind("onSave");
+		describeSubCommand.bind("onDescribe");
+		listSubCommand.bind("onList");
+		reloadSubCommand.bind("onReload");
+		resetSubCommand.bind("onReset");
+		
+		helpCommand.bind("onHelp");
+	}
+	
 	public boolean process(CommandSender messageOutput, Command cmd, String[] parameters)
 	{
-		Persistence persistence = Persistence.getInstance();
-		
 		// Currently only ops can use Persistence commands.
-		if (messageOutput instanceof Player)
+		// Anyone can use phelp, though.!
+		if (messageOutput instanceof Player && !helpCommand.checkCommand(cmd.getName()))
 		{
 			Player player = (Player)messageOutput;
 			if (!player.isOp()) return false;
 		}
+	
+		return messaging.dispatch(this, messageOutput, cmd.getName(), parameters);
+	}
 		
-		if (!persistCommand.checkCommand(cmd)) return false;
+	public boolean onSave(CommandSender messageOutput, String[] parameters)
+	{
+   		persistence.save();
+   		messageOutput.sendMessage("Data saved");
+    	return true;    	
+    }
+	
+	public boolean onHelp(CommandSender messageOutput, String[] parameters)
+	{
+		printHelp(messageOutput);
+		return true;
+	}
+	
+	public boolean onReload(CommandSender messageOutput, String[] parameters)
+	{
+		if (parameters.length < 1)
+		{
+			messageOutput.sendMessage("Use: \"/persist reload <schema>.<entity>");
+			return true;
+		}
+		String[] entityPath = parameters[1].split("\\.");
+		if (entityPath.length < 2)
+		{
+			messageOutput.sendMessage("Use: \"/persist reload <schema>.<entity>");
+			return true;
+		}
+		String schemaName = entityPath[0];
+		String entityName = entityPath[1];	
+		reloadEntity(messageOutput, schemaName, entityName);
+		return true;
+	}
     	
-    	if (parameters.length == 0)
-    	{
-    		shortHelpMessage.sendTo(messageOutput, persistCommand.getCommandMatch());
-    		return true;
-    	}
-    	
-    	String command = parameters[0];
-    	
-    	if (command.equalsIgnoreCase("help"))
-    	{
-    		printHelp(messageOutput);
-    		return true;
-    	}
+	public boolean onReset(CommandSender messageOutput, String[] parameters)
+	{
+		if (parameters.length < 1)
+		{
+			messageOutput.sendMessage("Use: \"/perist RESET <schema>.<entity>");
+			return true;
+		}
+		String[] entityPath = parameters[1].split("\\.");
+		if (entityPath.length < 1)
+		{
+			messageOutput.sendMessage("Use: \"/persist RESET <schema>.<entity>");
+			return true;
+		}
+		String schemaName = entityPath[0];
+		String entityName = entityPath[1];	
+		resetEntity(messageOutput, schemaName, entityName);
+		return true;
+	}
+ 	
+	public boolean onDescribe(CommandSender messageOutput, String[] parameters)
+	{
+		if (parameters.length < 1)
+		{
+			listSchemas(messageOutput);
+			return true;
+		}
+		
+		String[] entityPath = parameters[1].split("\\.");
+		if (entityPath.length == 1)
+		{
+			describeSchema(messageOutput, entityPath[0]);
+		}
+		else
+		{
+			describeEntity(messageOutput, entityPath[0], entityPath[1]);
+		}
+		return true;
+	}
 
-    	if (command.equalsIgnoreCase("save"))
-    	{
-    		persistence.save();
-    		messageOutput.sendMessage("Data saved");
-    		return true;
-    	}
-    	
-    	if (command.equalsIgnoreCase("reload"))
-    	{
-    		if (parameters.length < 2)
-    		{
-    			messageOutput.sendMessage("Use: \"/persist reload <schema>.<entity>");
-    			return true;
-    		}
-    		String[] entityPath = parameters[1].split("\\.");
-    		if (entityPath.length < 2)
-    		{
-    			messageOutput.sendMessage("Use: \"/persist reload <schema>.<entity>");
-    			return true;
-    		}
-    		String schemaName = entityPath[0];
-    		String entityName = entityPath[1];	
-    		reloadEntity(messageOutput, schemaName, entityName);
-    		return true;
-    	}
-    	
-       	if (command.equals("RESET"))
-    	{
-    		if (parameters.length < 2)
-    		{
-    			messageOutput.sendMessage("Use: \"/perist RESET <schema>.<entity>");
-    			return true;
-    		}
-    		String[] entityPath = parameters[1].split("\\.");
-    		if (entityPath.length < 2)
-    		{
-    			messageOutput.sendMessage("Use: \"/persist RESET <schema>.<entity>");
-    			return true;
-    		}
-    		String schemaName = entityPath[0];
-    		String entityName = entityPath[1];	
-    		resetEntity(messageOutput, schemaName, entityName);
-    		return true;
-    	}
-       	
-       	if (command.equalsIgnoreCase("reset"))
-       	{
-       		messageOutput.sendMessage("Use: \"/persist RESET <schema>.<entity>");
-       		messageOutput.sendMessage("Be VERY sure!");
-       		return true;
-       	}
-    	
-    	if (command.equalsIgnoreCase("describe"))
-    	{
-    		if (parameters.length < 2)
-    		{
-    			listSchemas(messageOutput);
-    			return true;
-    		}
-    		
-    		String[] entityPath = parameters[1].split("\\.");
-    		if (entityPath.length == 1)
-    		{
-    			describeSchema(messageOutput, entityPath[0]);
-    		}
-    		else
-    		{
-    			describeEntity(messageOutput, entityPath[0], entityPath[1]);
-    		}
-    		return true;
-    	}
-    	
-    	if (command.equalsIgnoreCase("list"))
-    	{
-    		if (parameters.length < 2)
-    		{
-    			messageOutput.sendMessage("Use: \"/persist list <schema>.<entity>[.<id>]");
-    			return true;
-    		}
-    		
-    		String[] entityPath = parameters[1].split("\\.");
-    		if (entityPath.length < 2)
-    		{
-    			messageOutput.sendMessage("Use: \"/persist list <schema>.<entity>[.<id>]");
-    			return true;
-    		}
-    		
-    		String schemaName = entityPath[0];
-    		String entityName = entityPath[1];
-    		
-    		if (entityPath.length == 2)
-    		{
-    			listEntityIds(messageOutput, schemaName, entityName);
-    			return true;
-    		}
-    		
-    		String id = entityPath[2];
-    		listEntity(messageOutput, schemaName, entityName, id);
-    		
-    		return true;
-    	}
-    	
-    	messageOutput.sendMessage("Unknown /persist command. Type \"/persist help\" for help.");
-    	return true;
+	public boolean onList(CommandSender messageOutput, String[] parameters)
+	{
+		if (parameters.length < 1)
+		{
+			messageOutput.sendMessage("Use: \"/persist list <schema>.<entity>[.<id>]");
+			return true;
+		}
+		
+		String[] entityPath = parameters[1].split("\\.");
+		if (entityPath.length < 2)
+		{
+			messageOutput.sendMessage("Use: \"/persist list <schema>.<entity>[.<id>]");
+			return true;
+		}
+		
+		String schemaName = entityPath[0];
+		String entityName = entityPath[1];
+		
+		if (entityPath.length == 2)
+		{
+			listEntityIds(messageOutput, schemaName, entityName);
+			return true;
+		}
+		
+		String id = entityPath[2];
+		listEntity(messageOutput, schemaName, entityName, id);
+		
+		return true;
 	}
 	
 	protected void listEntity(CommandSender messageOutput, String schemaName, String entityName, String id)
@@ -393,13 +406,7 @@ public class PersistenceCommands
 	{
 		// TODO: Get this dynamically from the CommandData store
 		messageOutput.sendMessage(PersistenceDefaults.helpHeader);
-		for (int i = 0; i < PersistenceDefaults.subCommands.length; i++)
-		{
-			String helpLine = PersistenceDefaults.subCommands[i] + " : "
-				+ PersistenceDefaults.subCommandHelp[i];
-			
-			messageOutput.sendMessage(helpLine);
-		}
+		persistCommand.sendHelp(messageOutput);		
 	}
 	
 	private int maxLineCount = 10;
@@ -407,8 +414,16 @@ public class PersistenceCommands
 	private int maxLineLength = 50;
 	private int maxIdCount = 50;
 	
-	private CommandData persistCommand;	
-	private Message shortHelpMessage;
+	private PluginCommand persistCommand;	
+	private PluginCommand saveSubCommand;
+	private PluginCommand describeSubCommand;
+	private PluginCommand listSubCommand;
+	private PluginCommand reloadSubCommand;
+	private PluginCommand resetSubCommand;
+	private PluginCommand helpCommand;
+
 	private Message resettingEntityMessage;
+	private Messaging messaging;
+	private Persistence persistence;
 
 }

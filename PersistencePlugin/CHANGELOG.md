@@ -1,5 +1,13 @@
 # CHANGELOG
 
+# 0.23
+
+ - Vastly improve Plugin command interface:
+ - Support sub-commands
+ - Auto-dispatch to individual command handlers
+ - Auto-typing with flexible data-driven "sender" system
+ - Automatically generated, detailed, explorable help
+
 # 0.22
 
  - Change contained classes so sub-field names get prefixed.
