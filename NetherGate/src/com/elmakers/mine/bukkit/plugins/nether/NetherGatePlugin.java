@@ -18,7 +18,7 @@ import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.elmakers.mine.bukkit.plugins.nether.dao.Nether;
+import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
 import com.elmakers.mine.bukkit.plugins.persistence.Messaging;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
@@ -140,7 +140,7 @@ public class NetherGatePlugin extends JavaPlugin
 		if (!player.isOp()) return false;
 		
 		// Check for an existing Nether area
-		Nether nether = manager.getNether(new Position(player.getLocation()));
+		PortalArea nether = manager.getNether(new Position(player.getLocation()));
 		if (nether != null)
 		{
 			netherExistsMessage.sendTo(player);

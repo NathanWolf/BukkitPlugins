@@ -14,13 +14,14 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
 
-@PersistClass(schema="nether", name="nether")
-public class Nether
+@PersistClass(schema="nether", name="area")
+public class PortalArea
 {
-	public static int defaultFloor = 4;
-	public static int defaultSize = 128;
+	public static int defaultSize = 16;
 	public static int minHeight = 32;
 	public static int maxHeight = 64;
+
+	public static int defaultFloor = 4;
 	public static int floorPadding = 4;
 	public static int poolPadding = 4;
 	public static int ceilingPadding = 4;
@@ -53,7 +54,7 @@ public class Nether
 		return ceilingPadding + bedrockPadding + lightstoneHeight + aboveGroundPadding;
 	}
 	
-	public Nether()
+	public PortalArea()
 	{
 		if (destructable == null)
 		{
@@ -84,7 +85,7 @@ public class Nether
 		BlockFace[] box = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST, BlockFace.DOWN, BlockFace.UP};
 		for (BlockFace face : box)
 		{
-			BoundingBox faceArea = netherArea.getFace(face, bedrockPadding, 1);
+			BoundingBox faceArea = internalArea.getFace(face, bedrockPadding, 1);
 			faceArea.fill(world, Material.BEDROCK, destructable);
 		}
 
@@ -92,38 +93,45 @@ public class Nether
 		BlockFace[] walls = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST};
 		for (BlockFace face : walls)
 		{
-			BoundingBox faceArea = netherArea.getFace(face, lavaPadding, 1 - bedrockPadding);
+			BoundingBox faceArea = internalArea.getFace(face, lavaPadding, 1 - bedrockPadding);
 			faceArea.fill(world, Material.STATIONARY_LAVA, destructable);
 		}
 		
 		// Create netherrack ceiling
-		BoundingBox ceiling = netherArea.getFace(BlockFace.UP, ceilingPadding, 1 - bedrockPadding);
+		BoundingBox ceiling = internalArea.getFace(BlockFace.UP, ceilingPadding, 1 - bedrockPadding - ceilingPadding);
 		ceiling.fill(world, Material.NETHERRACK);
 		
 		// Create netherrack floor
-		BoundingBox floor = netherArea.getFace(BlockFace.DOWN, floorPadding, 1 - bedrockPadding);
+		BoundingBox floor = internalArea.getFace(BlockFace.DOWN, floorPadding, 1 - bedrockPadding - floorPadding);
 		floor.fill(world, Material.NETHERRACK);
 
 		// Create heightmaps
-		ceiling = netherArea.getFace(BlockFace.UP, ceilingMaxVariance, 1 - bedrockPadding - ceilingPadding);
+		ceiling = internalArea.getFace(BlockFace.UP, ceilingMaxVariance, 1 - bedrockPadding - ceilingPadding - ceilingMaxVariance);
+		floor = internalArea.getFace(BlockFace.DOWN, floorMaxVariance, 1 - bedrockPadding - floorPadding - floorMaxVariance);
+
 		// Leave room for lava
 		ceiling.getMax().setX(ceiling.getMax().getX() - 1);
 		ceiling.getMax().setZ(ceiling.getMax().getZ() - 1);
 		ceiling.getMin().setX(ceiling.getMin().getX() - 1);
 		ceiling.getMin().setZ(ceiling.getMin().getZ() - 1);
+	
+		floor.getMax().setX(ceiling.getMax().getX() - 1);
+		floor.getMax().setZ(ceiling.getMax().getZ() - 1);
+		floor.getMin().setX(ceiling.getMin().getX() - 1);
+		floor.getMin().setZ(ceiling.getMin().getZ() - 1);
+		
+		
 		byte[][] ceilingMap = generateHeightMap(ceiling, ceilingPercentChange);
+		byte[][] floorMap = generateHeightMap(floor, floorPercentChange);
 		
-		floor = netherArea.getFace(BlockFace.DOWN, floorMaxVariance, 1 - bedrockPadding - floorPadding);
-		byte[][] floorMap = generateHeightMap(ceiling, floorPercentChange);
-		
-		int yOffset = floor.getMin().getY();
 		int xOffset = floor.getMin().getX();
+		int yOffset = floor.getMin().getY();
 		int zOffset = floor.getMin().getZ();
 		
 		// Fill interior
 		int xSize = ceiling.getSizeX();
 		int zSize = ceiling.getSizeZ();
-		int ySize = netherArea.getSizeY();
+		int ySize = internalArea.getSizeY();
 		for (int mapX = 0; mapX < xSize; mapX++)
 		{
 			for (int mapZ = 0; mapZ < zSize; mapZ++)
@@ -180,9 +188,9 @@ public class Nether
 	
 	protected byte[][] generateHeightMap(BoundingBox area, int percentChange)
 	{
-		int zSize = area.getSizeZ();
 		int xSize = area.getSizeX();
 		int ySize = area.getSizeY();
+		int zSize = area.getSizeZ();
 		byte[][] heightMap = new byte[xSize][zSize];
 		
 		// Start out somewhere random:
@@ -233,11 +241,6 @@ public class Nether
 		return heightMap;
 	}
 	
-	protected void wall(World world, Material material, BlockFace side)
-	{
-		
-	}
-	
 	@Persist(id=true, auto=true)
 	public int getId()
 	{
@@ -250,36 +253,36 @@ public class Nether
 	}
 
 	@Persist(contained=true)
-	public BoundingBox getNetherArea()
+	public BoundingBox getInternalArea()
 	{
-		return netherArea;
+		return internalArea;
 	}
 
-	public void setNetherArea(BoundingBox netherArea)
+	public void setInternalArea(BoundingBox internalArea)
 	{
-		this.netherArea = netherArea;
+		this.internalArea = internalArea;
 	}
 
 	@Persist(contained=true)
-	public BoundingBox getWorldArea()
+	public BoundingBox getExternalArea()
 	{
-		return worldArea;
+		return externalArea;
 	}
 
-	public void setWorldArea(BoundingBox worldArea)
+	public void setExternalArea(BoundingBox worldArea)
 	{
-		this.worldArea = worldArea;
+		this.externalArea = worldArea;
 	}
 
 	@Persist
 	public int getRatio()
 	{
-		return ratio;
+		return scaleRatio;
 	}
 
 	public void setRatio(int ratio)
 	{
-		this.ratio = ratio;
+		this.scaleRatio = ratio;
 	}
 
 	@Persist
@@ -294,33 +297,44 @@ public class Nether
 	}
 
 	@Persist
-	public List<Portal> getNetherPortals()
+	public List<Portal> getInternalPortals()
 	{
-		return netherPortals;
+		return internalPortals;
 	}
 
-	public void setNetherPortals(List<Portal> portals)
+	public void setInternalPortals(List<Portal> portals)
 	{
-		this.netherPortals = portals;
+		this.internalPortals = portals;
 	}
 
 	@Persist
-	public List<Portal> geWorldtPortals()
+	public List<Portal> getExternalPortals()
 	{
-		return worldPortals;
+		return externalPortals;
 	}
 
-	public void setWorldPortals(List<Portal> portals)
+	public void setExternalPortals(List<Portal> portals)
 	{
-		this.worldPortals = portals;
+		this.externalPortals = portals;
+	}
+
+	@Persist
+	public String getName()
+	{
+		return name;
+	}
+
+	public void setName(String name)
+	{
+		this.name = name;
 	}
 
 	protected PlayerData	owner;
-	protected List<Portal>	netherPortals;
-	protected List<Portal>	worldPortals;
-	protected BoundingBox	netherArea;
-	protected BoundingBox	worldArea;
-
-	protected int id;
-	protected int ratio;
+	protected List<Portal>	internalPortals;
+	protected List<Portal>	externalPortals;
+	protected BoundingBox	internalArea;
+	protected BoundingBox	externalArea;
+	protected int			id;
+	protected String		name;
+	protected int 			scaleRatio;
 }

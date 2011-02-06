@@ -22,12 +22,12 @@ public class Portal
 	}
 	
 	@Persist
-	public Nether getNether()
+	public PortalArea getNether()
 	{
 		return nether;
 	}
 	
-	public void setNether(Nether nether)
+	public void setNether(PortalArea nether)
 	{
 		this.nether = nether;
 	}
@@ -98,11 +98,24 @@ public class Portal
 		this.lastUsed = lastUsed;
 	}
 	
+	@Persist
+	public String getName()
+	{
+		return name;
+	}
+
+	public void setName(String name)
+	{
+		this.name = name;
+	}
+
+	
 	protected int			id;
+	protected String		name;
 	protected boolean		active = false;
 	protected boolean		updatePending = false;
 	protected Date			lastUsed;
-	protected Nether		nether;
+	protected PortalArea		nether;
 	protected Portal		target;
 	protected BoundingBox	area;
 	protected PlayerData	owner;
