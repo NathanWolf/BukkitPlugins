@@ -1,13 +1,12 @@
 package com.elmakers.mine.bukkit.plugins.nether;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import org.bukkit.Chunk;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
 import com.elmakers.mine.bukkit.plugins.nether.dao.Nether;
@@ -15,6 +14,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.Messaging;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.Position;
 
 public class NetherManager
 {
@@ -23,53 +23,31 @@ public class NetherManager
 	{
 		this.messaging = messaging;
 		this.persistence = persistence;
-		load();
 	}
 	
 	public boolean create(Player player)
 	{
 		Location location = player.getLocation();
-		World world = player.getWorld();
 		Nether nether = new Nether();
 		
-		Block topBlock = world.getBlockAt(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-		
-		for (int i = 0; i < Nether.maxSearch; i++)
-		{
-			if (topBlock.getType() != Material.WATER && topBlock.getType() != Material.STATIONARY_WATER && topBlock.getType() != Material.AIR) break;
-			topBlock = topBlock.getFace(BlockFace.DOWN);
-		}
-		
-		for (int i = 0; i < Nether.ceilingPadding; i++)
-		{
-			topBlock = topBlock.getFace(BlockFace.DOWN);
-			if (topBlock.getType() == Material.BEDROCK) return false;
-		}
-		
-		Block bottomBlock = topBlock;
-		
-		for (int i = 0; i < Nether.minHeight; i++)
-		{
-			bottomBlock = bottomBlock.getFace(BlockFace.DOWN);
-			if (bottomBlock.getType() == Material.BEDROCK) return false;			
-		}
-		
-		for (int i = 0; i < Nether.maxHeight; i++)
-		{
-			bottomBlock = bottomBlock.getFace(BlockFace.DOWN);
-			if (bottomBlock.getType() == Material.BEDROCK)
-			{
-				bottomBlock = bottomBlock.getFace(BlockFace.UP);
-				break;
-			}
-		}
-		
-		int minY = topBlock.getY() - Nether.bedrockPadding - Nether.ceilingPadding - Nether.lightstonePadding;
-		int maxY = bottomBlock.getY() + Nether.bedrockPadding + Nether.floorPadding;
 		int minX = location.getBlockX() - Nether.defaultSize / 2;
 		int maxX = location.getBlockX() + Nether.defaultSize / 2;
 		int minZ = location.getBlockZ() - Nether.defaultSize / 2;
 		int maxZ = location.getBlockZ() + Nether.defaultSize / 2;
+		int minY = Nether.defaultFloor + Nether.getFloorPadding();
+		int maxY = minY + Nether.minHeight;
+		
+		int limitY = location.getBlockY() - Nether.getCeilingPadding();
+		
+		if (maxY > limitY)
+		{
+			return false;
+		}
+		
+		while (maxY < limitY && maxY - minY < Nether.maxHeight)
+		{
+			maxY++;
+		}
 		
 		BoundingBox area = new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
 		nether.setNetherArea(area);
@@ -83,25 +61,71 @@ public class NetherManager
 		minZ = location.getBlockZ() - Nether.defaultSize * ratio / 2;
 		maxZ = location.getBlockZ() + Nether.defaultSize * ratio / 2;
 		
+		area = new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
+		nether.setWorldArea(area);
+		
 		nether.setOwner(persistence.get(player.getName(), PlayerData.class));
 		nether.setRatio(ratio);
 		
 		nether.create(player.getWorld());
+		addToMap(nether);
 		
 		netherAreas.add(nether);
 		persistence.put(nether);
 		
-		player.teleportTo(new Location(world, location.getX(), minY + 1, location.getZ(), location.getYaw(), location.getPitch()));
-		
 		return true;
 	}
 	
-	public void load()
+	public void addToMap(Nether nether)
 	{
+		Chunk chunk = nether.getNetherArea().getCenter().getChunk(world);
+		NetherList list = netherMap.get(chunk);
+		if (list == null)
+		{
+			list = new NetherList();
+			netherMap.put(chunk, list);
+		}
+		list.add(nether);
+	}
+	
+	public void load(World w)
+	{
+		if (world != null)
+		{
+			return;
+		}
+		world = w;
+		if (world == null) return;
+		
 		persistence.getAll(netherAreas, Nether.class);
+		for (Nether nether : netherAreas)
+		{
+			addToMap(nether);
+		}
+	}
+	
+	public Nether getNether(Position position)
+	{
+		if (world == null || position == null) return null;
+		
+		Chunk chunk = position.getChunk(world);
+		NetherList list = netherMap.get(chunk);
+		if (list == null) return null;
+		
+		for (Nether nether : list)
+		{
+			if (nether.getWorldArea().contains(position))
+			{
+				return nether;
+			}
+		}
+		
+		return null;
 	}
 
+	protected HashMap<Chunk, NetherList> netherMap = new HashMap<Chunk, NetherList>();
 	protected List<Nether>	netherAreas	= new ArrayList<Nether>();
+	protected World			world;
 	protected Persistence	persistence;
 	protected Messaging		messaging;
 }

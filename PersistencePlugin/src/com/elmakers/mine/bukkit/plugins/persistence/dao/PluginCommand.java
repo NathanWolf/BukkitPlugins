@@ -34,9 +34,8 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 * This may change in the future.
 	 * 
 	 * @param plugin The plugin that is registering this command
-	 * @param id The command id
 	 * @param command The command string, or alias
-	 * @param tootip The tooltip for this command
+	 * @param tooltip The tooltip for this command
 	 * @param usage The usage instructions for this command, more can be added later
 	 * @param sender The sender that receives this command, more can be added later
 	 */
@@ -64,7 +63,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 * For General commands, a CommandSender should be used in place of Player.
 	 * 
 	 * @param methodName
-	 * @see com.elmakers.mine.bukkit.plugins.persistence.Messaging#dispatch(String, String[])
+	 * @see com.elmakers.mine.bukkit.plugins.persistence.Messaging#dispatch(Object, CommandSender, String, String[])
 	 */
 	public void bind(String methodName)
 	{
@@ -74,7 +73,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 	/**
 	 * Use this to add an additional usage (example) string to this command.
 	 * 
-	 * @param usage The usage string
+	 * @param use The usage string
 	 */
 	public void addUsage(String use)
 	{
@@ -115,7 +114,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 * @param subCommandName The sub-command name
 	 * @param defaultTooltip The default tooltip
 	 * @param defaultUsage The default usage string
-	 * @return
+	 * @return A new command object
 	 */
 	public PluginCommand getSubCommand(String subCommandName, String defaultTooltip, String defaultUsage)
 	{
@@ -165,7 +164,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 * Will eventually check permissions, look for sub-commands, and other 
 	 * things. 
 	 * 
-	 * @param cmd The command string to check
+	 * @param commandString The command string to check
 	 * @return Whether or not the command succeeded
 	 */
 	public boolean checkCommand(String commandString)

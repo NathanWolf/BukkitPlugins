@@ -1,6 +1,8 @@
 package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
+import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.World;
 
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
@@ -25,6 +27,11 @@ public class Position
 		x = location.getBlockX();
 		y = location.getBlockY();
 		z = location.getBlockZ();
+	}
+	
+	public Chunk getChunk(World world)
+	{
+		return world.getChunkAt(x, z);
 	}
 	
 	@Persist

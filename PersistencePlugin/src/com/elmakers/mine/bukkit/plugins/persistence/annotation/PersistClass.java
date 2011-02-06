@@ -53,7 +53,7 @@ public @interface PersistClass
 	 * 
 	 * This allows a PersistClass to be used without an id.
 	 * 
-	 * @return
+	 * @return true if this is a contained object
 	 */
 	boolean contained() default false;
 	
@@ -62,7 +62,7 @@ public @interface PersistClass
 	 * 
 	 * NOT YET SUPPORTED
 	 * 
-	 * @return true if this is a cached object.
+	 * @return true if this is a cached object
 	 */
 	boolean cache() default true;
 	

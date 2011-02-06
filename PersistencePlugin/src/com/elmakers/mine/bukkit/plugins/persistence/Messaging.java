@@ -84,8 +84,8 @@ public class Messaging
 	 * 
 	 * This method automatically creates a player-specific (in-game) command.
 	 * 
-	 * @param id The command id to retrieve
-	 * @param defaulToolTip The default tooltip to use if this is a new command
+	 * @param commandName The command id to retrieve or create
+	 * @param defaultTooltip The default tooltip to use if this is a new command
 	 * @param defaultUsage The default usage string, more can be added
 	 * @return A command descriptor
 	 */
@@ -103,8 +103,8 @@ public class Messaging
 	 * This method automatically creates a general command that will be passed
 	 * a CommandSender for use as a server or in-game command.
 	 * 
-	 * @param id The command id to retrieve
-	 * @param defaulToolTip The default tooltip to use if this is a new command
+	 * @param commandName The command id to retrieve or create
+	 * @param defaultTooltip The default tooltip to use if this is a new command
 	 * @param defaultUsage The default usage string, more can be added
 	 * @return A command descriptor
 	 */
@@ -119,8 +119,8 @@ public class Messaging
 	 * A command description can be used to easily process commands, including
 	 * commands with sub-commands.
 	 * 
-	 * @param id The command id to retrieve
-	 * @param defaulToolTip The default tooltip to use if this is a new command
+	 * @param commandName The command id to retrieve or create
+	 * @param defaultTooltip The default tooltip to use if this is a new command
 	 * @param defaultUsage The default usage string, more can be added
 	 * @param sender The sender that will issue this command
 	 * @return A command descriptor
@@ -239,27 +239,27 @@ public class Messaging
 				Method genericHandler;
 				genericHandler = listener.getClass().getMethod(callbackName, CommandSender.class, String[].class);
 				return (Boolean)genericHandler.invoke(listener, sender, parameters);
-			
 			}
-			catch (NoSuchMethodException e)
+			catch (NoSuchMethodException ex)
 			{
 				log.warning("Persistence: Can't find callback method " + callbackName + " of " + listener.getClass().getName());
 			}					
-			catch (SecurityException e)
+			catch (SecurityException ex)
 			{
 				log.warning("Persistence: Can't access callback method " + callbackName + " of " + listener.getClass().getName() + ", make sure it's public");
 			}
-			catch (IllegalArgumentException e)
+			catch (IllegalArgumentException ex)
 			{
 				log.warning("Persistence: Can't find callback method " + callbackName + " of " + listener.getClass().getName() + " with the correct signature, please consult the docs.");
 			}
-			catch (IllegalAccessException e)
+			catch (IllegalAccessException ex)
 			{
 				log.warning("Persistence: Can't access callback method " + callbackName + " of " + listener.getClass().getName());
 			}
-			catch (InvocationTargetException e)
+			catch (InvocationTargetException ex)
 			{
-				log.warning("Persistence: Can't invoke callback method " + callbackName + " of " + listener.getClass().getName());
+				log.severe("Persistence: Error invoking callback method " + callbackName + " of " + listener.getClass().getName());
+				ex.printStackTrace();
 			}
 		}
 		

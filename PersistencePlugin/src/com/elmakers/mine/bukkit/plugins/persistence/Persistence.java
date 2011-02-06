@@ -61,7 +61,7 @@ public class Persistence
 	 */
 	public <T> void getAll(List<T> objects, Class<T> objectType)
 	{	
-		synchronized(cacheLock)
+		synchronized(cacheReadLock)
 		{
 			PersistedClass persistedClass = getPersistedClass(objectType);
 			if (persistedClass == null)
@@ -96,15 +96,18 @@ public class Persistence
 	 */
 	public <T> void putAll(List<T> objects, Class<T> objectType)
 	{
-		synchronized(cacheLock)
+		synchronized(cacheReadLock)
 		{
-			PersistedClass persistedClass = getPersistedClass(objectType);
-			if (persistedClass == null)
+			synchronized(cacheWriteLock)
 			{
-				return;
+				PersistedClass persistedClass = getPersistedClass(objectType);
+				if (persistedClass == null)
+				{
+					return;
+				}
+				
+				persistedClass.putAll(objects);	
 			}
-			
-			persistedClass.putAll(objects);	
 		}
 	}
 	
@@ -124,7 +127,7 @@ public class Persistence
 	@SuppressWarnings("unchecked")
 	public <T> T get(Object id, Class<T> objectType)
 	{
-		synchronized(cacheLock)
+		synchronized(cacheReadLock)
 		{
 			PersistedClass persistedClass = getPersistedClass(objectType);
 			if (persistedClass == null)
@@ -151,15 +154,18 @@ public class Persistence
 	 */
 	public boolean put(Object persist)
 	{
-		synchronized(cacheLock)
+		synchronized(cacheReadLock)
 		{
-			PersistedClass persistedClass = getPersistedClass(persist.getClass());
-			if (persistedClass == null)
+			synchronized(cacheWriteLock)
 			{
-				return false;
+				PersistedClass persistedClass = getPersistedClass(persist.getClass());
+				if (persistedClass == null)
+				{
+					return false;
+				}
+				
+				persistedClass.put(persist);
 			}
-			
-			persistedClass.put(persist);
 		}
 		return true;		
 	}
@@ -382,7 +388,8 @@ public class Persistence
 	
 	private static final Object dataLock = new Object();
 	private static final Object instanceLock = new Object();
-	private static final Object cacheLock = new Object();
+	private static final Object cacheReadLock = new Object();
+	private static final Object cacheWriteLock = new Object();
 	
 	private static Persistence instance = null;
 }

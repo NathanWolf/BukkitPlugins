@@ -7,7 +7,6 @@ import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.inventory.CraftInventory;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
@@ -104,8 +103,7 @@ public class WandPlugin extends JavaPlugin
     		boolean gaveWand = false;
   
 			Inventory inventory = player.getInventory();
-			CraftInventory cInventory = (CraftInventory)inventory;
-			if (!cInventory.contains(wands.getWandTypeId()))
+			if (!inventory.contains(wands.getWandTypeId()))
 			{
 				ItemStack itemStack = new ItemStack(Material.getMaterial(wands.getWandTypeId()), 1);
 				player.getInventory().addItem(itemStack);

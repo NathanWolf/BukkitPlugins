@@ -1,5 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.nether.dao;
 
+import java.sql.Date;
+
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
@@ -63,7 +65,43 @@ public class Portal
 		this.owner = owner;
 	}
 
+	@Persist
+	public boolean isActive()
+	{
+		return active;
+	}
+
+	public void setActive(boolean active)
+	{
+		this.active = active;
+	}
+
+	@Persist
+	public boolean isUpdatePending()
+	{
+		return updatePending;
+	}
+
+	public void setUpdatePending(boolean updatePending)
+	{
+		this.updatePending = updatePending;
+	}
+
+	@Persist
+	public Date getLastUsed()
+	{
+		return lastUsed;
+	}
+
+	public void setLastUsed(Date lastUsed)
+	{
+		this.lastUsed = lastUsed;
+	}
+	
 	protected int			id;
+	protected boolean		active = false;
+	protected boolean		updatePending = false;
+	protected Date			lastUsed;
 	protected Nether		nether;
 	protected Portal		target;
 	protected BoundingBox	area;
