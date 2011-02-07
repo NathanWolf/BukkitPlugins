@@ -3,6 +3,7 @@ package com.elmakers.mine.bukkit.plugins.nether;
 import java.io.File;
 import java.util.logging.Logger;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.command.Command;
@@ -17,6 +18,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.util.BlockVector;
 
 import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
 import com.elmakers.mine.bukkit.plugins.persistence.Messaging;
@@ -24,7 +26,6 @@ import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.Position;
 
 public class NetherGatePlugin extends JavaPlugin
 {
@@ -140,7 +141,8 @@ public class NetherGatePlugin extends JavaPlugin
 		if (!player.isOp()) return false;
 		
 		// Check for an existing Nether area
-		PortalArea nether = manager.getNether(new Position(player.getLocation()));
+		Location location = player.getLocation();
+		PortalArea nether = manager.getNether(new BlockVector(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
 		if (nether != null)
 		{
 			netherExistsMessage.sendTo(player);

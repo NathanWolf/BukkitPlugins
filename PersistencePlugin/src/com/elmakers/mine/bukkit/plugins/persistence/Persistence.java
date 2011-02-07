@@ -8,7 +8,10 @@ import java.util.logging.Logger;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.util.BlockVector;
 
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.EntityInfo;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.FieldInfo;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.core.PersistedClass;
 import com.elmakers.mine.bukkit.plugins.persistence.core.Schema;
@@ -323,9 +326,9 @@ public class Persistence
 		/*
 		 * Look for Class annotations
 		 */
-		PersistClass entityInfo = persistClass.getAnnotation(PersistClass.class);
+		PersistClass entityAnnotation = persistClass.getAnnotation(PersistClass.class);
 		
-		if (entityInfo == null)
+		if (entityAnnotation == null)
 		{
 			log.warning("Persistence: class " + persistClass.getName() + " does not have the @PersistClass annotation.");
 			return null;
@@ -335,7 +338,7 @@ public class Persistence
 		PersistedClass persistedClass = persistedClassMap.get(persistClass);
 		if (persistedClass == null)
 		{
-			persistedClass = getPersistedClass(persistClass, entityInfo);
+			persistedClass = getPersistedClass(persistClass, new EntityInfo(entityAnnotation));
 		}
 
 		return persistedClass;
@@ -350,7 +353,7 @@ public class Persistence
 	 * @param entityInfo Information on how to persist this class 
 	 * @return The persisted class definition, or null if failure
 	 */
-	public PersistedClass getPersistedClass(Class<? extends Object> persistType, PersistClass entityInfo)
+	public PersistedClass getPersistedClass(Class<? extends Object> persistType, EntityInfo entityInfo)
 	{	
 		PersistedClass persistedClass = persistedClassMap.get(persistType);
 		if (persistedClass == null)
@@ -409,11 +412,32 @@ public class Persistence
 		
 		// Create BlockVector class
 		// TODO!
-		/*
-		PersistClass persistVector = new PersistClass();
-		persistVector.
-		getPersistedClass
-		*/
+		
+		EntityInfo vectorInfo = new EntityInfo("global", "vector");
+		FieldInfo vectorId = new FieldInfo("id");
+		FieldInfo fieldX = new FieldInfo("x");
+		FieldInfo fieldY = new FieldInfo("y");
+		FieldInfo fieldZ = new FieldInfo("z");
+		
+		// Make the hash code the id, make it readonly, and override its storage name
+		vectorId.setIdField(true);
+		vectorId.setReadOnly(true);
+	
+		// Bind each field- this is a little awkward right now, due to the
+		// assymmetry (lack of setBlockX type setters).
+		fieldX.setGetter("blockX");
+		fieldY.setGetter("blockY");
+		fieldZ.setGetter("blockZ");
+		
+		// Create the class definition
+		PersistedClass persistVector = getPersistedClass(BlockVector.class, vectorInfo);
+		persistVector.persistField("hashCode", vectorId);
+		
+		persistVector.persistField("x", fieldX);
+		persistVector.persistField("y", fieldY);
+		persistVector.persistField("z", fieldZ);
+		
+		persistVector.validate();
 		
 		// TODO: Materials
 	}

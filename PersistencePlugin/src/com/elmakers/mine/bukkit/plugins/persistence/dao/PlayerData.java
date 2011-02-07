@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.bukkit.entity.Player;
+import org.bukkit.util.BlockVector;
 
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
@@ -197,18 +198,18 @@ public class PlayerData
 		return groups;
 	}
 
-	/* Killed for a moment!
 	@PersistField(contained=true)
-	public void setPosition(Position position)
+	public void setPosition(BlockVector position)
 	{
 		this.position = position;
 	}
 
-	public Position getPosition()
+	public BlockVector getPosition()
 	{
 		return position;
 	}
 
+	/* Killed for a moment!
 	@PersistField(contained=true)
 	public void setOrientation(Orientation orientation)
 	{
@@ -229,7 +230,7 @@ public class PlayerData
 	private	Date		lastDisconnect;
 	private boolean		online;
 	private List<Group> groups;
-	//private Position	position;
+	private BlockVector	position;
 	//private Orientation orientation;
 
 }

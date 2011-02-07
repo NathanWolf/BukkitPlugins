@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.FieldInfo;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataField;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataRow;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataTable;
@@ -15,12 +15,12 @@ import com.elmakers.mine.bukkit.plugins.persistence.data.DataType;
 public class PersistedReference extends PersistedField
 {
 
-	public PersistedReference(PersistField fieldInfo, Field field)
+	public PersistedReference(FieldInfo fieldInfo, Field field)
 	{
 		super(fieldInfo, field);
 	}
 	
-	public PersistedReference(PersistField fieldInfo, Method getter, Method setter)
+	public PersistedReference(FieldInfo fieldInfo, Method getter, Method setter)
 	{
 		super(fieldInfo, getter, setter);
 	}

@@ -124,9 +124,9 @@ public class PortalArea
 		byte[][] ceilingMap = generateHeightMap(ceiling, ceilingPercentChange);
 		byte[][] floorMap = generateHeightMap(floor, floorPercentChange);
 		
-		int xOffset = floor.getMin().getX();
-		int yOffset = floor.getMin().getY();
-		int zOffset = floor.getMin().getZ();
+		int xOffset = floor.getMin().getBlockX();
+		int yOffset = floor.getMin().getBlockY();
+		int zOffset = floor.getMin().getBlockZ();
 		
 		// Fill interior
 		int xSize = ceiling.getSizeX();

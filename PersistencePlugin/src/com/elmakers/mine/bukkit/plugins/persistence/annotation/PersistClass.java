@@ -64,6 +64,6 @@ public @interface PersistClass
 	 * 
 	 * @return true if this is a cached object
 	 */
-	boolean cache() default true;
+	boolean cached() default true;
 	
 }

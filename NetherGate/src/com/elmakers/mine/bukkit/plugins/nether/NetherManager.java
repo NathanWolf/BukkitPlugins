@@ -8,13 +8,13 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.util.BlockVector;
 
 import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
 import com.elmakers.mine.bukkit.plugins.persistence.Messaging;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.Position;
 
 public class NetherManager
 {
@@ -78,7 +78,8 @@ public class NetherManager
 	
 	public void addToMap(PortalArea nether)
 	{
-		Chunk chunk = nether.getInternalArea().getCenter().getChunk(world);
+		BlockVector location = nether.getInternalArea().getCenter();
+		Chunk chunk = world.getChunkAt(location.getBlockX(), location.getBlockZ());
 		NetherList list = netherMap.get(chunk);
 		if (list == null)
 		{
@@ -104,11 +105,11 @@ public class NetherManager
 		}
 	}
 	
-	public PortalArea getNether(Position position)
+	public PortalArea getNether(BlockVector position)
 	{
 		if (world == null || position == null) return null;
 		
-		Chunk chunk = position.getChunk(world);
+		Chunk chunk = world.getChunkAt(position.getBlockX(), position.getBlockZ());
 		NetherList list = netherMap.get(chunk);
 		if (list == null) return null;
 		

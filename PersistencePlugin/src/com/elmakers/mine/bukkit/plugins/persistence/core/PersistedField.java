@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.FieldInfo;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataField;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataRow;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataTable;
@@ -14,16 +14,16 @@ import com.elmakers.mine.bukkit.plugins.persistence.data.DataType;
 
 public class PersistedField
 {
-	protected PersistedField(PersistField fieldInfo, Method getter, Method setter)
+	protected PersistedField(FieldInfo fieldInfo, Method getter, Method setter)
 	{
-		this.name = getNameFromMethod(getter);
+		this.name = getFieldFromMethod(getter);
 		this.getter = getter;
 		this.setter = setter;
 		this.field = null;
 		this.fieldInfo = fieldInfo;
 	}
 	
-	protected PersistedField(PersistField fieldInfo, Field field)
+	protected PersistedField(FieldInfo fieldInfo, Field field)
 	{
 		this.name = field.getName();
 		this.field = field;
@@ -57,7 +57,7 @@ public class PersistedField
 			return getContainedName(container.getDataName(), name);
 		}
 		
-		if (fieldInfo.name().length() > 0) return fieldInfo.name();
+		if (fieldInfo.getName().length() > 0) return fieldInfo.getName();
 			
 		return name;
 	}
@@ -204,7 +204,7 @@ public class PersistedField
 		return DataType.getTypeFromClass(fieldType);
 	}
 	
-	protected static PersistedField tryCreate(PersistField fieldInfo, Field field, PersistedClass owningClass)
+	protected static PersistedField tryCreate(FieldInfo fieldInfo, Field field, PersistedClass owningClass)
 	{
 		DataType dataType = DataType.getTypeFromClass(field.getType());
 		PersistedField pField = null;
@@ -225,11 +225,15 @@ public class PersistedField
 		return pField;
 	}
 	
-	protected static PersistedField tryCreate(PersistField fieldInfo, Method getterOrSetter, PersistedClass owningClass)
+	protected static PersistedField tryCreate(FieldInfo fieldInfo, Method getterOrSetter, PersistedClass owningClass)
 	{
 		Method setter = null;
 		Method getter = null;
-		String fieldName = getNameFromMethod(getterOrSetter);
+		String fieldName = fieldInfo.getName();
+		if (fieldName == null || fieldName.length() == 0)
+		{
+			fieldName = getFieldFromMethod(getterOrSetter);
+		}
 		Class<? extends Object> persistClass = owningClass.getType();
 		
 		if (fieldName.length() == 0)
@@ -253,7 +257,7 @@ public class PersistedField
 			return null;
 		}
 		
-		if (setter == null && !fieldInfo.readonly())
+		if (setter == null && !fieldInfo.isReadOnly())
 		{
 			return null;
 		}
@@ -293,20 +297,15 @@ public class PersistedField
 	
 	protected static boolean isGetter(Method method)
 	{
-		String methodName = method.getName();
-		boolean hasGet = methodName.substring(0, 3).equals("get");
-		boolean hasIs = methodName.substring(0, 2).equals("is");
-		
-		return hasIs || hasGet;
+		return method.getReturnType() != void.class && method.getParameterTypes().length == 0;
 	}
 	
 	protected static boolean isSetter(Method method)
 	{
-		String methodName = method.getName();
-		return methodName.substring(0, 3).equals("set");
+		return method.getReturnType() == void.class && method.getParameterTypes().length == 1;
 	}
 
-	protected static String getNameFromMethod(Method method)
+	protected static String getFieldFromMethod(Method method)
 	{
 		String methodName = method.getName();
 		String fieldName = "";
@@ -325,7 +324,7 @@ public class PersistedField
 			{
 				fieldEnd = fieldName.substring(1);
 			}
-			fieldName += fieldName.substring(0, 1).toLowerCase() + fieldEnd;
+			fieldName = fieldName.substring(0, 1).toLowerCase() + fieldEnd;
 		}
 		
 		return fieldName;
@@ -351,12 +350,12 @@ public class PersistedField
 		return field;
 	}
 	
-	protected static Method findGetter(String fieldName, Class<? extends Object> c)
+	protected static Method findGetter(String getterName, Class<? extends Object> c)
 	{
 		Method getter = null;
 		try
 		{
-			getter = c.getDeclaredMethod(getGetterName(fieldName));
+			getter = c.getDeclaredMethod(getterName);
 			if (getter != null) return getter;
 		}
 		catch (NoSuchMethodException e)
@@ -365,7 +364,7 @@ public class PersistedField
 		}
 		try
 		{
-			getter = c.getDeclaredMethod(getIsName(fieldName));
+			getter = c.getDeclaredMethod(getterName);
 			if (getter != null) return getter;
 		}
 		catch (NoSuchMethodException e)
@@ -375,12 +374,12 @@ public class PersistedField
 		return null;
 	}
 	
-	protected static Method findSetter(String fieldName, Class<? extends Object> c)
+	protected static Method findSetter(String setterName, Class<? extends Object> c)
 	{
 		Method setter = null;
 		try
 		{
-			setter = c.getDeclaredMethod(getGetterName(fieldName));
+			setter = c.getDeclaredMethod(setterName);
 			if (setter != null) return setter;
 		}
 		catch (NoSuchMethodException e)
@@ -414,7 +413,7 @@ public class PersistedField
 			{
 				fieldEnd = fieldName.substring(1);
 			}
-			fieldName += fieldName.substring(0, 1).toLowerCase() + fieldEnd;
+			fieldName = fieldName.substring(0, 1).toUpperCase() + fieldEnd;
 		}
 		return fieldName;
 	}
@@ -422,8 +421,7 @@ public class PersistedField
 	protected static Method findSetter(Method getter, Class<? extends Object> c)
 	{
 		Method setter = null;
-		String fieldName = getNameFromMethod(getter);
-		String methodName = "set" + fieldName;
+		String methodName = getSetterName(getFieldFromMethod(getter));
 		try
 		{
 			setter = c.getMethod(methodName, getter.getReturnType());
@@ -438,7 +436,8 @@ public class PersistedField
 	protected static Method findGetter(Method setter, Class<?> c)
 	{
 		Method getter = null;
-		String name = "g" + setter.getName().substring(1);
+		String field = getFieldFromMethod(setter);
+		String name = getGetterName(field);
 		try
 		{
 			getter = c.getMethod(name);
@@ -449,7 +448,7 @@ public class PersistedField
 		}
 		if (getter == null)
 		{
-			name = "is" + setter.getName().substring(3);
+			name = getIsName(field);
 			try
 			{
 				getter = c.getMethod(name);
@@ -474,22 +473,22 @@ public class PersistedField
 	
 	public boolean isContained()
 	{
-		return fieldInfo.contained();
+		return fieldInfo.isContained();
 	}
 	
 	public boolean isAutogenerated()
 	{
-		return fieldInfo.auto();
+		return fieldInfo.isAutogenerated();
 	}
 
 	public boolean isIdField()
 	{
-		return fieldInfo.id();
+		return fieldInfo.isIdField();
 	}
 
 	public boolean isReadOnly()
 	{
-		return fieldInfo.readonly();
+		return fieldInfo.isReadOnly();
 	}
 
 	protected PersistedField	container		= null;
@@ -497,7 +496,7 @@ public class PersistedField
 	protected Method			setter			= null;
 	protected Field				field			= null;
 	protected String			name			= null;
-	protected PersistField		fieldInfo		= null;
+	protected FieldInfo			fieldInfo		= null;
 	
 	protected static Logger	log				= PersistencePlugin.getLogger();
 }

@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.FieldInfo;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataField;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataRow;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataTable;
@@ -29,14 +29,14 @@ import com.elmakers.mine.bukkit.plugins.persistence.data.DataType;
  */
 public class PersistedList extends PersistedField
 {
-	public PersistedList(PersistField fieldInfo, Field field, PersistedClass owningClass)
+	public PersistedList(FieldInfo fieldInfo, Field field, PersistedClass owningClass)
 	{
 		super(fieldInfo, field);
 		owningType = owningClass;
 		findListType();
 	}
 	
-	public PersistedList(PersistField fieldInfo, Method getter, Method setter, PersistedClass owningClass)
+	public PersistedList(FieldInfo fieldInfo, Method getter, Method setter, PersistedClass owningClass)
 	{
 		super(fieldInfo, getter, setter);
 		owningType = owningClass;

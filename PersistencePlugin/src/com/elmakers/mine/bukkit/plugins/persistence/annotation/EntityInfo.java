@@ -3,9 +3,10 @@ package com.elmakers.mine.bukkit.plugins.persistence.annotation;
 
 public class EntityInfo
 {
-	public EntityInfo()
+	public EntityInfo(String schema, String name)
 	{
-		
+		this.schema = schema;
+		this.name = name;
 	}
 	
 	public EntityInfo(PersistClass defaults)
@@ -13,7 +14,7 @@ public class EntityInfo
 		schema = defaults.schema();
 		name = defaults.name();
 		contained = defaults.contained();
-		cache = defaults.cache();
+		cached = defaults.cached();
 	}
 	
 	public String getSchema()
@@ -36,7 +37,7 @@ public class EntityInfo
 		this.name = name;
 	}
 
-	public boolean getContained()
+	public boolean isContained()
 	{
 		return contained;
 	}
@@ -46,18 +47,18 @@ public class EntityInfo
 		this.contained = contained;
 	}
 
-	public boolean getCache()
+	public boolean isCached()
 	{
-		return cache;
+		return cached;
 	}
 
-	public void setCache(boolean cache)
+	public void setCached(boolean cached)
 	{
-		this.cache = cache;
+		this.cached = cached;
 	}
 
 	private String schema;
 	private String name;
-	private boolean contained;
-	private boolean cache;
+	private boolean contained = false;
+	private boolean cached = true;
 }
