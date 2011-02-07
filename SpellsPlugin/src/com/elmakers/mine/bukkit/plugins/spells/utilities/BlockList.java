@@ -80,12 +80,14 @@ public class BlockList
 		return searchBlock;
 	}
 	
-	public void undo()
+	public boolean undo()
 	{
 		for (UndoableBlock block : blocks)
 		{
-			block.undo();
+			if (!block.undo()) return false;
 		}
+		
+		return true;
 	}
 
 	public boolean contains(Block block)

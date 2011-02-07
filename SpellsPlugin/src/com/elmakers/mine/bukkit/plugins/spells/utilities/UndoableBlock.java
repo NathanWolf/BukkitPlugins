@@ -96,13 +96,17 @@ public class UndoableBlock
 		}
 	}
 
-	public void undo()
+	public boolean undo()
 	{
 		Block block = world.getBlockAt(x, y, z);
+		if (!world.isChunkLoaded(x, z)) return false;
+		
 		if (block.getType() != originalMaterial || block.getData() != originalData)
 		{
 			block.setType(originalMaterial);
 			block.setData(originalData);
 		}
+		
+		return true;
 	}
 }

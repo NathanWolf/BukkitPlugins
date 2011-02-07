@@ -24,7 +24,11 @@ public class UndoQueue
 		if (blockQueue.size() == 0) return false;
 		
 		BlockList blocks = blockQueue.removeLast();
-		blocks.undo();
+		if (!blocks.undo())
+		{
+			blockQueue.add(blocks);
+			return false;
+		}
 		return true;
 	}
 	

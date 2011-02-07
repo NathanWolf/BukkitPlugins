@@ -29,7 +29,6 @@ class SpellsPlayerListener extends PlayerListener
     	master.onPlayerCommand(event);
     }
     
-
     /**
      * Called when a player performs an animation, such as the arm swing
      * 

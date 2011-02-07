@@ -42,7 +42,7 @@ public class Permissions
 					PlayerPermissions player = new PlayerPermissions();
 					if (player.parse(pieces[1], this))
 					{
-						players.put(player.getPlayerName(), player);
+						players.put(player.getPlayerName().toLowerCase(), player);
 					}
 				}
 				
@@ -51,16 +51,26 @@ public class Permissions
 					Group group = new Group();
 					if (group.parse(pieces[1]))
 					{
-						groups.put(group.getName(), group);
+						Group existing = groups.get(group.getName());
+						if (existing == null)
+						{
+							existing = group;
+							groups.put(group.getName(), group);
+						}
+						else
+						{
+							existing.parse(pieces[1]);
+						}
 					}
 				}
-				
-				// Construct permissions afterward so user/group order is not important.
-				for (PlayerPermissions player : players.values())
-				{
-					player.constructPermissions();
-				}
 			}
+			
+			// Construct permissions afterward so user/group order is not important.
+			for (PlayerPermissions player : players.values())
+			{
+				player.constructPermissions();
+			}
+			
 			scanner.close();
 		} 
 		catch (Exception e) 
@@ -119,6 +129,7 @@ public class Permissions
 		{
 			group = new Group();
 			group.setName(groupName);
+			groups.put(groupName, group);
 		}
 		return group;
 	}

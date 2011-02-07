@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.80
+
+ - Check to see if a chunk is loaded before undoing a block, fail undo
+ - Temporarily remove player death - the auto-recall drop is not multi-world compliant.
+ - Fix a problem if you specify a player before its group
+
 ## 0.79
 
  - Add "peek" spell

@@ -666,12 +666,14 @@ public class Spells
 	public void onPlayerDeath(Player player, EntityDeathEvent event)
 	{
 		// Must allow listeners to remove themselves during the event!
+		/* Disabled for now- multi-world issues
 		List<Spell> active = new ArrayList<Spell>();
 		active.addAll(deathListeners);
 		for (Spell listener : active)
 		{
 			listener.onPlayerDeath(player, event);
 		}
+		*/
 	}
 	  
     public void onPlayerDamage(Player player, EntityEvent event)
