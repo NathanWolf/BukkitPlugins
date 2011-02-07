@@ -9,7 +9,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
@@ -241,7 +241,7 @@ public class PortalArea
 		return heightMap;
 	}
 	
-	@Persist(id=true, auto=true)
+	@PersistField(id=true, auto=true)
 	public int getId()
 	{
 		return id;
@@ -252,7 +252,7 @@ public class PortalArea
 		this.id = id;
 	}
 
-	@Persist(contained=true)
+	@PersistField(contained=true)
 	public BoundingBox getInternalArea()
 	{
 		return internalArea;
@@ -263,7 +263,7 @@ public class PortalArea
 		this.internalArea = internalArea;
 	}
 
-	@Persist(contained=true)
+	@PersistField(contained=true)
 	public BoundingBox getExternalArea()
 	{
 		return externalArea;
@@ -274,7 +274,7 @@ public class PortalArea
 		this.externalArea = worldArea;
 	}
 
-	@Persist
+	@PersistField
 	public int getRatio()
 	{
 		return scaleRatio;
@@ -285,7 +285,7 @@ public class PortalArea
 		this.scaleRatio = ratio;
 	}
 
-	@Persist
+	@PersistField
 	public PlayerData getOwner()
 	{
 		return owner;
@@ -296,7 +296,7 @@ public class PortalArea
 		this.owner = owner;
 	}
 
-	@Persist
+	@PersistField
 	public List<Portal> getInternalPortals()
 	{
 		return internalPortals;
@@ -307,7 +307,7 @@ public class PortalArea
 		this.internalPortals = portals;
 	}
 
-	@Persist
+	@PersistField
 	public List<Portal> getExternalPortals()
 	{
 		return externalPortals;
@@ -318,7 +318,7 @@ public class PortalArea
 		this.externalPortals = portals;
 	}
 
-	@Persist
+	@PersistField
 	public String getName()
 	{
 		return name;

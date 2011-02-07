@@ -6,7 +6,7 @@ import java.util.List;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 /**
  * A class to encapsulate data for a plugin.
@@ -49,7 +49,7 @@ public class PluginData
 		commands.add(command);
 	}
 
-	@Persist
+	@PersistField
 	public String getVersion()
 	{
 		return version;
@@ -60,7 +60,7 @@ public class PluginData
 		this.version = version;
 	}
 
-	@Persist
+	@PersistField
 	public String getDescription()
 	{
 		return description;
@@ -71,7 +71,7 @@ public class PluginData
 		this.description = description;
 	}
 
-	@Persist
+	@PersistField
 	public List<String> getAuthors()
 	{
 		return authors;
@@ -82,7 +82,7 @@ public class PluginData
 		this.authors = authors;
 	}
 
-	@Persist
+	@PersistField
 	public String getWebsite()
 	{
 		return website;
@@ -93,7 +93,7 @@ public class PluginData
 		this.website = website;
 	}
 
-	@Persist(id=true)
+	@PersistField(id=true)
 	public String getId()
 	{
 		return id;
@@ -104,7 +104,7 @@ public class PluginData
 		this.id = id;
 	}
 	
-	@Persist(contained=true)
+	@PersistField(contained=true)
 	public List<PluginCommand> getCommands()
 	{
 		return commands;
@@ -115,7 +115,7 @@ public class PluginData
 		this.commands = commands;
 	}
 
-	@Persist(contained=true)
+	@PersistField(contained=true)
 	public List<Message> getMessages()
 	{
 		return messages;

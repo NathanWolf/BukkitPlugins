@@ -2,7 +2,7 @@ package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
 import org.bukkit.command.CommandSender;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 /**
@@ -86,7 +86,7 @@ public class Message
 		return message;
 	}
 	
-	@Persist(id=true, auto=true)
+	@PersistField(id=true, auto=true)
 	public int getId()
 	{
 		return id;
@@ -97,7 +97,7 @@ public class Message
 		this.id = id;
 	}
 	
-	@Persist
+	@PersistField
 	public String getMessage()
 	{
 		return message;
@@ -108,7 +108,7 @@ public class Message
 		this.message = message;
 	}
 	
-	@Persist
+	@PersistField
 	public boolean isEnabled()
 	{
 		return enabled;
@@ -119,7 +119,7 @@ public class Message
 		this.enabled = enabled;
 	}
 	
-	@Persist
+	@PersistField
 	public void setMessageId(String messageId)
 	{
 		this.messageId = messageId;

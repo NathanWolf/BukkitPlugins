@@ -2,7 +2,7 @@ package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
 import org.bukkit.Location;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 @PersistClass(schema="global", name="orientation", contained=true)
@@ -19,7 +19,7 @@ public class Orientation
 		pitch = location.getPitch();
 	}
 	
-	@Persist
+	@PersistField
 	public float getPitch()
 	{
 		return pitch;
@@ -30,7 +30,7 @@ public class Orientation
 		this.pitch = pitch;
 	}
 	
-	@Persist
+	@PersistField
 	public float getYaw()
 	{
 		return yaw;

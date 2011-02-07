@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.bukkit.entity.Player;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 /**
@@ -50,8 +50,8 @@ public class PlayerData
 		// if disabled. This allows ops to play "mostly" as a normal user.
 		superUser = loggedIn.isOp();
 		
-		position = new Position(loggedIn.getLocation());
-		orientation = new Orientation(loggedIn.getLocation());
+		//position = new Position(loggedIn.getLocation());
+		//orientation = new Orientation(loggedIn.getLocation());
 		
 		update(loggedIn);
 	}
@@ -109,7 +109,7 @@ public class PlayerData
 		groups.remove(group);
 	}
 	
-	@Persist(id=true)
+	@PersistField(id=true)
 	public String getId()
 	{
 		return id;
@@ -120,7 +120,7 @@ public class PlayerData
 		this.id = id;
 	}
 	
-	@Persist
+	@PersistField
 	public String getName()
 	{
 		return name;
@@ -131,7 +131,7 @@ public class PlayerData
 		this.name = name;
 	}
 	
-	@Persist
+	@PersistField
 	public void setSuperUser(boolean su)
 	{
 		this.superUser = su;
@@ -142,7 +142,7 @@ public class PlayerData
 		return superUser;
 	}
 		
-	@Persist
+	@PersistField
 	public Date getFirstLogin()
 	{
 		return firstLogin;
@@ -153,7 +153,7 @@ public class PlayerData
 		this.firstLogin = firstLogin;
 	}
 
-	@Persist
+	@PersistField
 	public Date getLastLogin()
 	{
 		return lastLogin;
@@ -164,7 +164,7 @@ public class PlayerData
 		this.lastLogin = lastLogin;
 	}
 
-	@Persist
+	@PersistField
 	public Date getLastDisconnect()
 	{
 		return lastDisconnect;
@@ -175,7 +175,7 @@ public class PlayerData
 		this.lastDisconnect = lastDisconnect;
 	}
 
-	@Persist
+	@PersistField
 	public boolean isOnline()
 	{
 		return online;
@@ -186,7 +186,7 @@ public class PlayerData
 		this.online = online;
 	}
 	
-	@Persist
+	@PersistField
 	public void setGroups(List<Group> groups)
 	{
 		this.groups = groups;
@@ -197,7 +197,8 @@ public class PlayerData
 		return groups;
 	}
 
-	@Persist(contained=true)
+	/* Killed for a moment!
+	@PersistField(contained=true)
 	public void setPosition(Position position)
 	{
 		this.position = position;
@@ -208,7 +209,7 @@ public class PlayerData
 		return position;
 	}
 
-	@Persist(contained=true)
+	@PersistField(contained=true)
 	public void setOrientation(Orientation orientation)
 	{
 		this.orientation = orientation;
@@ -218,6 +219,7 @@ public class PlayerData
 	{
 		return orientation;
 	}
+	*/
 
 	private String 		name;
 	private String 		id;
@@ -227,7 +229,7 @@ public class PlayerData
 	private	Date		lastDisconnect;
 	private boolean		online;
 	private List<Group> groups;
-	private Position	position;
-	private Orientation orientation;
+	//private Position	position;
+	//private Orientation orientation;
 
 }

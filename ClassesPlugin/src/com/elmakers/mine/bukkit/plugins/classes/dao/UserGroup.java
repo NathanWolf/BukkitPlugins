@@ -1,6 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.classes.dao;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 @PersistClass(name = "group", schema = "classes") 
@@ -11,7 +11,7 @@ public class UserGroup
 	private String 		description;
 	private UserGroup 	parent;
 	
-	@Persist(id=true)
+	@PersistField(id=true)
 	public String getId()
 	{
 		return id;
@@ -20,7 +20,7 @@ public class UserGroup
 	{
 		this.id = id;
 	}
-	@Persist
+	@PersistField
 	public String getName()
 	{
 		return name;
@@ -29,7 +29,7 @@ public class UserGroup
 	{
 		this.name = name;
 	}
-	@Persist
+	@PersistField
 	public String getDescription()
 	{
 		return description;
@@ -38,7 +38,7 @@ public class UserGroup
 	{
 		this.description = description;
 	}
-	@Persist
+	@PersistField
 	public UserGroup getParent()
 	{
 		return parent;

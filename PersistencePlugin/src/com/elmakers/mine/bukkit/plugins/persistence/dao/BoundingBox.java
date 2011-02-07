@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
+/*
 import java.util.HashMap;
 
 import org.bukkit.Material;
@@ -7,12 +8,14 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
+*/
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 @PersistClass(schema="global", name="area", contained=true)
 public class BoundingBox
 {
+	/* - killed for a moment!
 	public BoundingBox()
 	{
 		
@@ -118,7 +121,7 @@ public class BoundingBox
 		}
 	}
 	
-	@Persist(contained=true)
+	@PersistField(contained=true)
 	public Position getMin()
 	{
 		return min;
@@ -129,7 +132,7 @@ public class BoundingBox
 		this.min = min;
 	}
 	
-	@Persist(contained=true)
+	@PersistField(contained=true)
 	public Position getMax()
 	{
 		return max;
@@ -142,4 +145,5 @@ public class BoundingBox
 	
 	protected Position min;
 	protected Position max;
+	*/
 }

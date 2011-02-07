@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataField;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataRow;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataTable;
@@ -28,16 +29,16 @@ import com.elmakers.mine.bukkit.plugins.persistence.data.DataType;
  */
 public class PersistedList extends PersistedField
 {
-	public PersistedList(Field field, PersistedClass owningClass)
+	public PersistedList(PersistField fieldInfo, Field field, PersistedClass owningClass)
 	{
-		super(field);
+		super(fieldInfo, field);
 		owningType = owningClass;
 		findListType();
 	}
 	
-	public PersistedList(Method getter, Method setter, PersistedClass owningClass)
+	public PersistedList(PersistField fieldInfo, Method getter, Method setter, PersistedClass owningClass)
 	{
-		super(getter, setter);
+		super(fieldInfo, getter, setter);
 		owningType = owningClass;
 		findListType();
 	}
@@ -50,7 +51,7 @@ public class PersistedList extends PersistedField
         	referenceType = Persistence.getInstance().getPersistedClass(listType);
         	if (referenceType == null) return;
         	
-    		if (contained)
+    		if (isContained())
     		{
     			// Create a sub-class of the reference class
     			referenceType = new PersistedClass(referenceType, this);
@@ -58,7 +59,7 @@ public class PersistedList extends PersistedField
     		}
     		else
     		{
-    			if (referenceType.contained)
+    			if (referenceType.isContained())
     			{
     				log.warning("Persistence: " + owningType.getTableName() + "." + getDataName() + ", entity " + referenceType.getTableName() + " must be contained");
     				referenceType = null;
@@ -95,7 +96,7 @@ public class PersistedList extends PersistedField
 			List<Object> list = objectLists.get(id);
 			if (list != null)
 			{
-				if (contained && referenceType != null)
+				if (isContained() && referenceType != null)
 				{
 					Object newInstance = referenceType.createInstance(row);
 					list.add(newInstance);
@@ -114,7 +115,7 @@ public class PersistedList extends PersistedField
 			List<Object> listData = objectLists.get(objectId);
 			Object instance = objectIdMap.get(objectId);
 			
-			if (referenceType == null || contained)
+			if (referenceType == null || isContained())
 			{
 				set(instance, listData);
 			}
@@ -170,7 +171,7 @@ public class PersistedList extends PersistedField
 			}
 			dataRow.add(valueData);
 		}
-		else if (contained)
+		else if (isContained())
 		{
 			referenceType.populate(dataRow, data);
 		}

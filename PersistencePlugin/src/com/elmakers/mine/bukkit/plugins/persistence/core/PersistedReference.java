@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataField;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataRow;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataTable;
@@ -14,21 +15,21 @@ import com.elmakers.mine.bukkit.plugins.persistence.data.DataType;
 public class PersistedReference extends PersistedField
 {
 
-	public PersistedReference(Field field)
+	public PersistedReference(PersistField fieldInfo, Field field)
 	{
-		super(field);
+		super(fieldInfo, field);
 	}
 	
-	public PersistedReference(Method getter, Method setter)
+	public PersistedReference(PersistField fieldInfo, Method getter, Method setter)
 	{
-		super(getter, setter);
+		super(fieldInfo, getter, setter);
 	}
 	
 	@Override
 	public void bind()
 	{
 		referenceType = Persistence.getInstance().getPersistedClass(getType());
-		if (contained)
+		if (isContained())
 		{
 			// Create a sub-class of the reference class
 			referenceType = new PersistedClass(referenceType, this);
@@ -36,7 +37,7 @@ public class PersistedReference extends PersistedField
 		}
 		else
 		{
-			if (referenceType.contained)
+			if (referenceType.isContained())
 			{
 				log.warning("Persistence: Field: " + getDataName() + ", Class " + referenceType.getTableName() + " must be contained");
 				referenceType = null;
@@ -79,7 +80,7 @@ public class PersistedReference extends PersistedField
 	
 	public void populateHeader(DataTable dataTable)
 	{
-		if (contained && referenceType != null)
+		if (isContained() && referenceType != null)
 		{
 			referenceType.populateHeader(dataTable);
 			return;
@@ -97,7 +98,7 @@ public class PersistedReference extends PersistedField
 	{
 		if (referenceType == null) return;	
 		
-		if (contained)
+		if (isContained())
 		{
 			Object containedData = get(o);
 			referenceType.populate(row, containedData);
@@ -122,7 +123,7 @@ public class PersistedReference extends PersistedField
 	{
 		if (referenceType == null) return;	
 		
-		if (contained)
+		if (isContained())
 		{
 			Object newInstance = referenceType.createInstance(row);
 			set(o, newInstance);

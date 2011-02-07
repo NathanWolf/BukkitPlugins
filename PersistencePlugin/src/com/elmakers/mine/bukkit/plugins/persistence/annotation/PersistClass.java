@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * Other fields can be marked up with Persist to store data for this class.
  * 
  * @author NathanWolf
- * @see Persist
+ * @see PersistField
  *
  */
 @Retention(RetentionPolicy.RUNTIME)

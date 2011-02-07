@@ -8,7 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 /**
@@ -244,7 +244,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 		return path;
 	}
 	
-	@Persist(id=true, auto=true)
+	@PersistField(id=true, auto=true)
 	public int getId()
 	{
 		return id;
@@ -255,7 +255,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 		this.id = id;
 	}
 	
-	@Persist
+	@PersistField
 	public String getCommand()
 	{
 		return command;
@@ -266,7 +266,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 		this.command = command;
 	}
 
-	@Persist
+	@PersistField
 	public void setPlugin(PluginData plugin)
 	{
 		this.plugin = plugin;
@@ -277,7 +277,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 		return plugin;
 	}
 
-	@Persist
+	@PersistField
 	public void setParent(PluginCommand parent)
 	{
 		this.parent = parent;
@@ -288,7 +288,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 		return parent;
 	}
 	
-	@Persist
+	@PersistField
 	public void setChildren(List<PluginCommand> children)
 	{
 		this.children = children;
@@ -309,7 +309,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 		return children;
 	}
 
-	@Persist
+	@PersistField
 	public void setEnabled(boolean enabled)
 	{
 		this.enabled = enabled;
@@ -320,7 +320,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 		return enabled;
 	}
 
-	@Persist
+	@PersistField
 	public void setUsage(List<String> usage)
 	{
 		this.usage = usage;
@@ -331,7 +331,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 		return usage;
 	}
 
-	@Persist
+	@PersistField
 	public void setTooltip(String tooltip)
 	{
 		this.tooltip = tooltip;
@@ -342,7 +342,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 		return tooltip;
 	}
 
-	@Persist
+	@PersistField
 	public void setSenders(List<CommandSenderData> senders)
 	{
 		this.senders = senders;

@@ -2,7 +2,7 @@ package com.elmakers.mine.bukkit.plugins.nether.dao;
 
 import java.sql.Date;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
@@ -10,7 +10,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
 @PersistClass(schema="nether", name="portal")
 public class Portal
 {
-	@Persist(id=true, auto=true)
+	@PersistField(id=true, auto=true)
 	public int getId()
 	{
 		return id;
@@ -21,7 +21,7 @@ public class Portal
 		this.id = id;
 	}
 	
-	@Persist
+	@PersistField
 	public PortalArea getNether()
 	{
 		return nether;
@@ -32,7 +32,7 @@ public class Portal
 		this.nether = nether;
 	}
 	
-	@Persist
+	@PersistField
 	public Portal getTarget()
 	{
 		return target;
@@ -43,7 +43,7 @@ public class Portal
 		this.target = target;
 	}
 	
-	@Persist(contained=true)
+	@PersistField(contained=true)
 	public BoundingBox getArea()
 	{
 		return area;
@@ -54,7 +54,7 @@ public class Portal
 		this.area = area;
 	}
 
-	@Persist
+	@PersistField
 	public PlayerData getOwner()
 	{
 		return owner;
@@ -65,7 +65,7 @@ public class Portal
 		this.owner = owner;
 	}
 
-	@Persist
+	@PersistField
 	public boolean isActive()
 	{
 		return active;
@@ -76,7 +76,7 @@ public class Portal
 		this.active = active;
 	}
 
-	@Persist
+	@PersistField
 	public boolean isUpdatePending()
 	{
 		return updatePending;
@@ -87,7 +87,7 @@ public class Portal
 		this.updatePending = updatePending;
 	}
 
-	@Persist
+	@PersistField
 	public Date getLastUsed()
 	{
 		return lastUsed;
@@ -98,7 +98,7 @@ public class Portal
 		this.lastUsed = lastUsed;
 	}
 	
-	@Persist
+	@PersistField
 	public String getName()
 	{
 		return name;

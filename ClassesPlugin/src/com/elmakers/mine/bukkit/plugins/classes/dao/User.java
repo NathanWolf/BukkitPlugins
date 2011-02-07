@@ -6,7 +6,7 @@ import java.util.List;
 
 import org.bukkit.entity.Player;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 @PersistClass(name = "player", schema = "classes") 
@@ -55,7 +55,7 @@ public class User
 		groups.remove(group);
 	}
 	
-	@Persist(id=true)
+	@PersistField(id=true)
 	public String getId()
 	{
 		return id;
@@ -66,7 +66,7 @@ public class User
 		this.id = id;
 	}
 	
-	@Persist
+	@PersistField
 	public String getName()
 	{
 		return name;
@@ -77,7 +77,7 @@ public class User
 		this.name = name;
 	}
 	
-	@Persist
+	@PersistField
 	public void setSuperUser(boolean su)
 	{
 		this.superUser = su;
@@ -88,7 +88,7 @@ public class User
 		return superUser;
 	}
 		
-	@Persist
+	@PersistField
 	public Date getFirstLogin()
 	{
 		return firstLogin;
@@ -99,7 +99,7 @@ public class User
 		this.firstLogin = firstLogin;
 	}
 
-	@Persist
+	@PersistField
 	public Date getLastLogin()
 	{
 		return lastLogin;
@@ -110,7 +110,7 @@ public class User
 		this.lastLogin = lastLogin;
 	}
 
-	@Persist
+	@PersistField
 	public Date getLastDisconnect()
 	{
 		return lastDisconnect;
@@ -121,7 +121,7 @@ public class User
 		this.lastDisconnect = lastDisconnect;
 	}
 
-	@Persist
+	@PersistField
 	public boolean isOnline()
 	{
 		return online;
@@ -132,7 +132,7 @@ public class User
 		this.online = online;
 	}
 	
-	@Persist
+	@PersistField
 	public void setGroups(List<UserGroup> groups)
 	{
 		this.groups = groups;

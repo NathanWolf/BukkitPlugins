@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.FIELD})
-public @interface Persist
+public @interface PersistField
 {
 	/**
 	 * Specify that this field is an index field.
@@ -49,4 +49,27 @@ public @interface Persist
 	 * @return true if this field is contained.
 	 */
 	boolean contained() default false;
+	
+	
+	/**
+	 * Specify that this field is read-only. 
+	 * 
+	 * This can be used to bind to a field that only has a getter.
+	 * 
+	 * It's also very useful for using a hash function as id, though you 
+	 * should be VERY careful about uniqueness in that case- id's MUST be
+	 * unique.
+	 * 
+	 * @return true if this is a read-only field.
+	 */
+	boolean readonly() default false;
+	
+	/**
+	 * Specify the column name to use for this field.
+	 * 
+	 * This can be omitted to auto-generate based on the Class definiteion.
+	 * 
+	 * @return The field name to use
+	 */
+	String name() default "";
 }

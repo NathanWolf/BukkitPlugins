@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.core.PersistedClass;
 import com.elmakers.mine.bukkit.plugins.persistence.core.Schema;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.CommandSenderData;
@@ -25,6 +26,17 @@ import com.elmakers.mine.bukkit.plugins.persistence.data.sql.SqlLiteStore;
  */
 public class Persistence
 {	
+	/**
+	 *  Persistence is a singleton, so we hide the constructor.
+	 *  
+	 *  Use PersistencePlugin.getInstance to retrieve a reference to Persistence safely.
+	 *  
+	 *  @see PersistencePlugin#getPersistence()
+	 *  @see Persistence#getInstance()
+	 */
+	protected Persistence()
+	{
+	}
 	
 	/**
 	 * Retrieves a Messaging interface for the specified plugin. 
@@ -39,6 +51,13 @@ public class Persistence
 		return new Messaging(plugin, this);
 	}
 	
+	/**
+	 * Retrieve the Logger that Persistence uses for debug messages and errors.
+	 * 
+	 * Currently, this is hard-coded to the Minecraft server logger.
+	 * 
+	 * @return A Logger that can be used for errors or debugging.
+	 */
 	public static Logger getLogger()
 	{
 		return log;
@@ -70,6 +89,20 @@ public class Persistence
 			}
 			
 			persistedClass.getAll(objects);	
+		}
+	}
+	
+	public void remove(Object o)
+	{
+		synchronized(cacheWriteLock)
+		{
+			PersistedClass persistedClass = getPersistedClass(o.getClass());
+			if (persistedClass == null)
+			{
+				return;
+			}
+			
+			persistedClass.remove(o);
 		}
 	}
 	
@@ -170,7 +203,6 @@ public class Persistence
 		return true;		
 	}
 	
-	
 	/**
 	 * Force a save of all cached data.
 	 * 
@@ -206,9 +238,11 @@ public class Persistence
 	 * Return the singleton instance for Persistence.
 	 * 
 	 * Will create the instance if it does not exist, but most likely the PersistencePlugin has done this already.
-	 * It is more adviseable to use PersistencePlugin.getPersistence().
+	 * 
+	 * It is more adviseable to use PersistencePlugin.getPersistence() so that Persistence gets initialized properly
 	 * 
 	 * @return the Persistence singleton instance
+	 * @see PersistencePlugin#getPersistence()
 	 */
 	public static Persistence getInstance()
 	{
@@ -279,22 +313,51 @@ public class Persistence
 	}
 	
 	/**
-	 * Retrieve or create a persisted class definition for a given class type.
+	 * Retrieve or create a persisted class, using the annotations built into the class.
 	 * 
-	 * This is an internal function that doesn't necessarily need to be called.
-	 * 
-	 * @param persistType
+	 * @param persistClass The annotated Class to persist
 	 * @return The persisted class definition, or null if failure
 	 */
-	public PersistedClass getPersistedClass(Class<? extends Object> persistType)
+	public PersistedClass getPersistedClass(Class<? extends Object> persistClass)
+	{		
+		/*
+		 * Look for Class annotations
+		 */
+		PersistClass entityInfo = persistClass.getAnnotation(PersistClass.class);
+		
+		if (entityInfo == null)
+		{
+			log.warning("Persistence: class " + persistClass.getName() + " does not have the @PersistClass annotation.");
+			return null;
+		}
+		
+		// TODO: Lookup from cache/name map ...
+		PersistedClass persistedClass = persistedClassMap.get(persistClass);
+		if (persistedClass == null)
+		{
+			persistedClass = getPersistedClass(persistClass, entityInfo);
+		}
+
+		return persistedClass;
+	}
+	
+	/**
+	 * Retrieve or create a persisted class definition for a given class type.
+	 * 
+	 * This can be used to create a persisted class based on a existing class.
+	 * 
+	 * @param persistType The Class to persist
+	 * @param entityInfo Information on how to persist this class 
+	 * @return The persisted class definition, or null if failure
+	 */
+	public PersistedClass getPersistedClass(Class<? extends Object> persistType, PersistClass entityInfo)
 	{	
 		PersistedClass persistedClass = persistedClassMap.get(persistType);
 		if (persistedClass == null)
 		{
-			persistedClass = new PersistedClass();
+			persistedClass = new PersistedClass(entityInfo);
 			if (!persistedClass.bind(persistType))
 			{
-				log.warning("No fields in class '" + persistType.getName() + "', Did you use @Persist?");
 				return null;
 			}
 			String schemaName = persistedClass.getSchema();
@@ -343,6 +406,14 @@ public class Persistence
 	{
 		// Update CommandSenders
 		updateCommandSender("player" , Player.class);
+		
+		// Create BlockVector class
+		// TODO!
+		/*
+		PersistClass persistVector = new PersistClass();
+		persistVector.
+		getPersistedClass
+		*/
 		
 		// TODO: Materials
 	}

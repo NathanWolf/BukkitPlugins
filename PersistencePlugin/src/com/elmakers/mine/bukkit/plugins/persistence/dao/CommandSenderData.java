@@ -1,7 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.Persist;
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 /**
@@ -48,7 +48,7 @@ public class CommandSenderData
 		return senderType;
 	}
 	
-	@Persist(id=true)
+	@PersistField(id=true)
 	public String getId()
 	{
 		return id;
@@ -59,7 +59,7 @@ public class CommandSenderData
 		this.id = id;
 	}
 	
-	@Persist
+	@PersistField
 	public String getClassName()
 	{
 		return className;
