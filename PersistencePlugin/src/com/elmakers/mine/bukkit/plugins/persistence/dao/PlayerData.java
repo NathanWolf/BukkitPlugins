@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BlockVector;
 
@@ -51,10 +52,16 @@ public class PlayerData
 		// if disabled. This allows ops to play "mostly" as a normal user.
 		superUser = loggedIn.isOp();
 		
-		//position = new Position(loggedIn.getLocation());
-		//orientation = new Orientation(loggedIn.getLocation());
+		Location location = loggedIn.getLocation();
+		update(location);
 		
 		update(loggedIn);
+	}
+	
+	public void update(Location location)
+	{
+		position = new BlockVector(location.getBlockX(), location.getBlockY(), location.getBlockX());
+		orientation = new Orientation(location);
 	}
 	
 	/**

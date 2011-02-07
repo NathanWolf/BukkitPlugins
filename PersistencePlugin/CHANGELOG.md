@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.26
+ 
+  - Prefix contained value names
+  - Persist Player location and position
+  - Really fix persisting longs and floats
+
 # 0.25
 
  - LOTS of refactoring. I honestly wouldn't consider this highly stable at the moment,

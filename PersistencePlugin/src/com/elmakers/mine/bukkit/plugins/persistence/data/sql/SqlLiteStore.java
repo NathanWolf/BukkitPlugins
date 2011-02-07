@@ -29,11 +29,15 @@ public class SqlLiteStore extends SqlStore
 		{
 			case INTEGER:
 				return "INTEGER";
+			case LONG:
+				return "INTEGER";
 			case BOOLEAN:
 				return "INTEGER";
 			case DATE:
 				return "INTEGER";
 			case DOUBLE:
+				return "REAL";
+			case FLOAT:
 				return "REAL";
 			case STRING:
 				return "TEXT";

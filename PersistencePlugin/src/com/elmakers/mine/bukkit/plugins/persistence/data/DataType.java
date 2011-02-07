@@ -3,6 +3,7 @@ package com.elmakers.mine.bukkit.plugins.persistence.data;
 import java.util.Date;
 import java.util.List;
 
+//TODO: Break off store-specific data conversion somehow
 public enum DataType
 {
 	INTEGER,
@@ -84,8 +85,14 @@ public enum DataType
 		if (field == null) return "null";
 		
 		switch(dataType)
-		{		
-			case STRING: return field.toString();
+		{
+			case FLOAT:
+				if (field.getClass().isAssignableFrom(float.class) || field.getClass().isAssignableFrom(Float.class))
+				{
+					return new Double((Float)field);
+				}
+			case STRING: 
+				return field.toString();
 			case DATE:
 				Date d = (Date)field;
 				Integer seconds = (int)(d.getTime() / 1000);

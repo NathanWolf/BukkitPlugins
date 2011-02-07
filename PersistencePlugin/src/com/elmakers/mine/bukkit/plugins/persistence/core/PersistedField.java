@@ -256,12 +256,13 @@ public class PersistedField
 			if (getterName == null || getterName.length() == 0)
 			{
 				getterName = getGetterName(fieldName);
+			}
+			getter = findGetter(getterName, persistClass);
+			
+			if (getter == null)
+			{
+				getterName = getIsName(fieldName);
 				getter = findGetter(getterName, persistClass);
-				if (getterName == null)
-				{
-					getterName = getIsName(fieldName);
-					getter = findGetter(getterName, persistClass);
-				}
 			}
 		}
 		else if (isGetter(getterOrSetter))
