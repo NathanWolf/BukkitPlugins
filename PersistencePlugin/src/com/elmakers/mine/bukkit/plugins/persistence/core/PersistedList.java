@@ -27,7 +27,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.data.DataType;
  * @author nathan
  *
  */
-public class PersistedList extends PersistedField
+public class PersistedList extends PersistedField implements PersistedReference
 {
 	public PersistedList(FieldInfo fieldInfo, Field field, PersistedClass owningClass)
 	{
@@ -138,6 +138,17 @@ public class PersistedList extends PersistedField
 		
 		// Construct a field name using the name of the reference id
 		return referenceType.getContainedIdName(this);
+	}
+	
+	// PersistedReference interface
+	public boolean isObject()
+	{
+		return listDataType == DataType.OBJECT;
+	}
+	
+	public PersistedClass getReferenceType()
+	{
+		return referenceType;
 	}
 
 	protected void populate(DataRow dataRow, Object instance, Object data)

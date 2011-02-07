@@ -209,7 +209,6 @@ public class PlayerData
 		return position;
 	}
 
-	/* Killed for a moment!
 	@PersistField(contained=true)
 	public void setOrientation(Orientation orientation)
 	{
@@ -220,7 +219,6 @@ public class PlayerData
 	{
 		return orientation;
 	}
-	*/
 
 	private String 		name;
 	private String 		id;
@@ -231,6 +229,6 @@ public class PlayerData
 	private boolean		online;
 	private List<Group> groups;
 	private BlockVector	position;
-	//private Orientation orientation;
+	private Orientation orientation;
 
 }

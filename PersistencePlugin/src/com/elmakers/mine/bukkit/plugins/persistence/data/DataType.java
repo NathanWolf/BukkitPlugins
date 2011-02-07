@@ -3,12 +3,12 @@ package com.elmakers.mine.bukkit.plugins.persistence.data;
 import java.util.Date;
 import java.util.List;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
-
 public enum DataType
 {
 	INTEGER,
+	LONG,
 	BOOLEAN,
+	FLOAT,
 	DOUBLE,
 	STRING,
 	DATE,
@@ -47,7 +47,7 @@ public enum DataType
 		}
 		else if (fieldType.isAssignableFrom(Float.class))
 		{
-			sqlType = DataType.DOUBLE;
+			sqlType = DataType.FLOAT;
 		}
 		else if (fieldType.isAssignableFrom(String.class))
 		{
@@ -67,17 +67,14 @@ public enum DataType
 		}
 		else if (fieldType.isAssignableFrom(float.class))
 		{
-			sqlType = DataType.DOUBLE;
+			sqlType = DataType.FLOAT;
 		}
 		else
 		{
 			// Don't get the PersistedClass here, or you might cause recursion issues with circular dependencies.
-			// Instead, manually look for the annotation.
-			PersistClass classSettings = fieldType.getAnnotation(PersistClass.class);
-			if (classSettings != null)
-			{
-				sqlType = DataType.OBJECT;
-			}
+			// Also, don't look for an annotation, since it might not be used. 
+			// We'll just have to make sure the object referece is valid in validate9).
+			sqlType = DataType.OBJECT;
 		}
 		return sqlType;
 	}
@@ -89,8 +86,6 @@ public enum DataType
 		switch(dataType)
 		{		
 			case STRING: return field.toString();
-			case DOUBLE: return Double.parseDouble(field.toString());
-			case INTEGER: return (Integer)field;
 			case DATE:
 				Date d = (Date)field;
 				Integer seconds = (int)(d.getTime() / 1000);
@@ -110,8 +105,6 @@ public enum DataType
 		switch(dataType)
 		{		
 			case STRING: return field.toString();
-			case DOUBLE: return Double.parseDouble(field.toString());
-			case INTEGER: return (Integer)field;
 			case DATE:
 				Integer intDate = (Integer)field;
 				Date d = new Date(intDate * 1000);

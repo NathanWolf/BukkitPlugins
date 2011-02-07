@@ -38,10 +38,23 @@ public class PersistedClass
 	
 	public PersistedClass(PersistedClass copy, PersistedField container)
 	{
+		this.contained = true;
 		this.defaultStore = copy.defaultStore;
 		this.container = container;
 		this.entityInfo = copy.entityInfo;
-		bind(copy.persistClass);
+		
+		// TODO: Make sure it's ok to share fields!
+		for (PersistedField field : copy.fields)
+		{
+			// If a field is an id field, we don't care about it in the container, unless the container is also the id field
+			// TODO: Consider this logic for validity
+			// TODO: Make sure it's ok to share PersistedField references like this- do they have any
+			// store or schema-related data?
+			if (!field.isIdField() || container.isIdField())
+			{
+				addField(field, field.getFieldInfo());
+			}
+		}
 	}
 	
 	public boolean bind(Class<? extends Object> persistClass)
@@ -94,7 +107,12 @@ public class PersistedClass
 				PersistedField field = PersistedField.tryCreate(new FieldInfo(persist), method, this);
 				if (field == null)
 				{
-					log.warning("Persistence: Field " + persistClass.getName() + "." + method.getName() + " is not persistable, type=" + method.getReturnType().getName());
+					Class<?> type = method.getReturnType();
+					if (type == void.class && method.getParameterTypes().length > 0)
+					{
+						type = method.getParameterTypes()[0];
+					}
+					log.warning("Persistence: Field " + persistClass.getName() + "." + method.getName() + " is not persistable, type=" +type.getName());
 				}
 				else
 				{
@@ -174,11 +192,19 @@ public class PersistedClass
 				return false;
 			}
 			externalFields.add(list);
+			if (list.isObject())
+			{
+				referenceFields.add(list);
+			}
 		}
-		else if (field instanceof PersistedReference)
+		else if (field instanceof PersistedObject)
 		{
-			PersistedReference reference = (PersistedReference)field;
+			PersistedObject reference = (PersistedObject)field;
 			internalFields.add(reference);
+			if (reference.isObject())
+			{
+				referenceFields.add(reference);
+			}
 		}
 		else
 		{
@@ -228,6 +254,15 @@ public class PersistedClass
 		{
 			log.warning("Persistence: class " + persistClass.getName() + ": has no persisted fields.");
 			return false;			
+		}
+		
+		for (PersistedReference reference : referenceFields)
+		{
+			if (reference.getReferenceType() == null)
+			{
+				log.warning("Persistence: class " + persistClass.getName() + ", field " + reference.getName() + " references a non-persistable class: " + reference.getType().getName());
+				return false;	
+			}
 		}
 	
 		return true;
@@ -359,16 +394,6 @@ public class PersistedClass
 	public PersistedField getIdField()
 	{
 		return idField;
-	}
-	
-	public List<PersistedField> getInternalFields()
-	{
-		return internalFields;
-	}
-	
-	public List<PersistedList> getExternalFields()
-	{
-		return externalFields;
 	}
 	
 	public List<PersistedField> getPersistedFields()
@@ -580,7 +605,7 @@ public class PersistedClass
 		// Begin deferred referencing, to prevent the problem of DAO's referencing unloaded DAOs.
 		// DAOs will be loaded recursively as needed,
 		// and then all deferred references will be resolved afterward.
-		PersistedReference.beginDefer();
+		PersistedObject.beginDefer();
 		
 		for (DataRow row : classTable.getRows())
 		{
@@ -600,7 +625,7 @@ public class PersistedClass
 		// Same type. 
 		// DAOs will be loaded recursively as needed, and then references bound when everything has been
 		// resolved.
-		PersistedReference.endDefer();
+		PersistedObject.endDefer();
 
 		// Defer load lists of entities
 		PersistedList.beginDefer();
@@ -744,9 +769,11 @@ public class PersistedClass
 	protected List<PersistedField>			fields				= new ArrayList<PersistedField>();
 	protected List<PersistedField>			internalFields		= new ArrayList<PersistedField>();
 	protected List<PersistedList>			externalFields		= new ArrayList<PersistedList>();
+	protected List<PersistedReference>		referenceFields		= new ArrayList<PersistedReference>();
 
 	protected PersistedField 				idField 			= null;
 	protected PersistedField				container 			= null;
+	protected boolean						contained			= false;
 
 	protected EntityInfo					entityInfo			= null;
 

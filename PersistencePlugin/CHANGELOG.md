@@ -1,5 +1,13 @@
 # CHANGELOG
 
+# 0.25
+
+ - LOTS of refactoring. I honestly wouldn't consider this highly stable at the moment,
+   though I have done a good bit of testing.
+   - API for programmatically creating persisted classes
+   - Built-in support for persistence of a BlockVector
+   - Lots of other thing my brain is too melty too remember right now.
+
 # 0.24
 
  - Implement /phelp, a universal help system for Persistence plugins

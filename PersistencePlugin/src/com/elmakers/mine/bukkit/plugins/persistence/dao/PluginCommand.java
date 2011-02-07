@@ -63,7 +63,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 * For General commands, a CommandSender should be used in place of Player.
 	 * 
 	 * @param methodName
-	 * @see com.elmakers.mine.bukkit.plugins.persistence.Messaging#dispatch(Object, CommandSender, String, String[])
+	 * @see com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities#dispatch(Object, CommandSender, String, String[])
 	 */
 	public void bind(String methodName)
 	{

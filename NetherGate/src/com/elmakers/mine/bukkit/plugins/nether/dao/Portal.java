@@ -1,6 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.nether.dao;
 
-import java.sql.Date;
+import java.util.Date;
 
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;

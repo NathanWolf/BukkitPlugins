@@ -21,7 +21,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BlockVector;
 
 import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
-import com.elmakers.mine.bukkit.plugins.persistence.Messaging;
+import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
@@ -81,10 +81,10 @@ public class NetherGatePlugin extends JavaPlugin
 	    	return;
 	    }
 	    
-	    messaging = persistence.getMessaging(this);
-	    manager.initialize(persistence, messaging);
+	    utilities = persistence.getUtilities(this);
+	    manager.initialize(persistence, utilities);
 	    
-		netherCommand = messaging.getPlayerCommand("nether", "Manage Nether areas", "nether <command>");
+		netherCommand = utilities.getPlayerCommand("nether", "Manage Nether areas", "nether <command>");
 		createCommand = netherCommand.getSubCommand("create", "Create a new Nether underground", "create");
 		kitCommand = netherCommand.getSubCommand("kit", "Give yourself a portal kit", "kit");
 		
@@ -92,10 +92,10 @@ public class NetherGatePlugin extends JavaPlugin
 		netherCommand.bind("onNether");
 		kitCommand.bind("onKit");
 		
-		creationFailedMessage = messaging.getMessage("creationFailed", "Nether creation failed- is there enough room below you?");
-		creationSuccessMessage = messaging.getMessage("creationSuccess", "Created new Nether area");
-		netherExistsMessage = messaging.getMessage("netherExist", "A Nether area already exists here");
-		giveKitMessage = messaging.getMessage("giveKit", "Happy portaling!");
+		creationFailedMessage = utilities.getMessage("creationFailed", "Nether creation failed- is there enough room below you?");
+		creationSuccessMessage = utilities.getMessage("creationSuccess", "Created new Nether area");
+		netherExistsMessage = utilities.getMessage("netherExist", "A Nether area already exists here");
+		giveKitMessage = utilities.getMessage("giveKit", "Happy portaling!");
 	}
 	
 	public boolean onNether(Player player, String[] parameters)
@@ -164,7 +164,7 @@ public class NetherGatePlugin extends JavaPlugin
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args)
 	{
-		return messaging.dispatch(this, sender, cmd.getName(), args);
+		return utilities.dispatch(this, sender, cmd.getName(), args);
 	}
 
 	protected PluginCommand netherCommand;
@@ -181,7 +181,7 @@ public class NetherGatePlugin extends JavaPlugin
 	protected NetherWorldListener worldListener = new NetherWorldListener(manager);
 	
 	protected Persistence persistence = null;
-	protected Messaging messaging = null;
+	protected PluginUtilities utilities = null;
 
 	protected static final Logger log = Logger.getLogger("Minecraft");
 }

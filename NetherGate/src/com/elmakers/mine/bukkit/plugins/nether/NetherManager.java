@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.BlockVector;
 
 import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
-import com.elmakers.mine.bukkit.plugins.persistence.Messaging;
+import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
@@ -19,7 +19,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
 public class NetherManager
 {
 	
-	public void initialize(Persistence persistence, Messaging messaging)
+	public void initialize(Persistence persistence, PluginUtilities messaging)
 	{
 		this.messaging = messaging;
 		this.persistence = persistence;
@@ -128,5 +128,5 @@ public class NetherManager
 	protected List<PortalArea>	netherAreas	= new ArrayList<PortalArea>();
 	protected World			world;
 	protected Persistence	persistence;
-	protected Messaging		messaging;
+	protected PluginUtilities		messaging;
 }

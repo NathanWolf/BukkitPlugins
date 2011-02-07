@@ -16,7 +16,11 @@ public class PersistedField
 {
 	protected PersistedField(FieldInfo fieldInfo, Method getter, Method setter)
 	{
-		this.name = getFieldFromMethod(getter);
+		this.name = fieldInfo.getName();
+		if (name == null || name.length() == 0)
+		{
+			name = getFieldFromMethod(getter);
+		}
 		this.getter = getter;
 		this.setter = setter;
 		this.field = null;
@@ -25,7 +29,11 @@ public class PersistedField
 	
 	protected PersistedField(FieldInfo fieldInfo, Field field)
 	{
-		this.name = field.getName();
+		this.name = fieldInfo.getName();
+		if (name == null || name.length() == 0)
+		{
+			name = getFieldFromMethod(getter);
+		}
 		this.field = field;
 		this.getter = null;
 		this.setter = null;
@@ -211,7 +219,7 @@ public class PersistedField
 
 		if (dataType == DataType.OBJECT)
 		{
-			pField = new PersistedReference(fieldInfo, field);
+			pField = new PersistedObject(fieldInfo, field);
 		}
 		else if (dataType != DataType.NULL)
 		{
@@ -244,12 +252,27 @@ public class PersistedField
 		if (isSetter(getterOrSetter))
 		{
 			setter = getterOrSetter;
-			getter = findGetter(setter, persistClass);
+			String getterName = fieldInfo.getGetter();
+			if (getterName == null || getterName.length() == 0)
+			{
+				getterName = getGetterName(fieldName);
+				getter = findGetter(getterName, persistClass);
+				if (getterName == null)
+				{
+					getterName = getIsName(fieldName);
+					getter = findGetter(getterName, persistClass);
+				}
+			}
 		}
 		else if (isGetter(getterOrSetter))
 		{
 			getter = getterOrSetter;
-			setter = findSetter(getter, persistClass);
+			String setterName = fieldInfo.getSetter();
+			if (setterName == null || setterName.length() == 0)
+			{
+				setterName = getSetterName(getFieldFromMethod(getter));
+			}
+			setter = findSetter(setterName, getter.getReturnType(), persistClass);
 		}
 		
 		if (getter == null)
@@ -267,7 +290,7 @@ public class PersistedField
 		
 		if (dataType == DataType.OBJECT)
 		{
-			pField = new PersistedReference(fieldInfo, getter, setter);
+			pField = new PersistedObject(fieldInfo, getter, setter);
 		}
 		else if (dataType == DataType.LIST)
 		{
@@ -350,43 +373,34 @@ public class PersistedField
 		return field;
 	}
 	
-	protected static Method findGetter(String getterName, Class<? extends Object> c)
-	{
-		Method getter = null;
-		try
-		{
-			getter = c.getDeclaredMethod(getterName);
-			if (getter != null) return getter;
-		}
-		catch (NoSuchMethodException e)
-		{
-			// log.warning("Persistence: Can't find method " + fieldName + " of class " + c.getName());
-		}
-		try
-		{
-			getter = c.getDeclaredMethod(getterName);
-			if (getter != null) return getter;
-		}
-		catch (NoSuchMethodException e)
-		{
-			// log.warning("Persistence: Can't find method " + fieldName + " of class " + c.getName());
-		}
-		return null;
-	}
-	
-	protected static Method findSetter(String setterName, Class<? extends Object> c)
+
+	protected static Method findSetter(String setterName, Class<?> returnType, Class<? extends Object> c)
 	{
 		Method setter = null;
 		try
 		{
-			setter = c.getDeclaredMethod(setterName);
-			if (setter != null) return setter;
+			setter = c.getMethod(setterName, returnType);
 		}
 		catch (NoSuchMethodException e)
 		{
-			// log.warning("Persistence: Can't find method " + fieldName + " of class " + c.getName());
+			setter = null;
 		}
-		return null;
+		return setter;
+	}
+	
+	protected static Method findGetter(String getterName, Class<?> c)
+	{
+		Method getter = null;
+		try
+		{
+			getter = c.getMethod(getterName);
+		}
+		catch (NoSuchMethodException e)
+		{
+			getter = null;
+		}
+		
+		return getter;
 	}
 	
 	protected static String getSetterName(String fieldName)
@@ -418,52 +432,15 @@ public class PersistedField
 		return fieldName;
 	}
 	
-	protected static Method findSetter(Method getter, Class<? extends Object> c)
-	{
-		Method setter = null;
-		String methodName = getSetterName(getFieldFromMethod(getter));
-		try
-		{
-			setter = c.getMethod(methodName, getter.getReturnType());
-		}
-		catch (NoSuchMethodException e)
-		{
-			setter = null;
-		}
-		return setter;
-	}
-	
-	protected static Method findGetter(Method setter, Class<?> c)
-	{
-		Method getter = null;
-		String field = getFieldFromMethod(setter);
-		String name = getGetterName(field);
-		try
-		{
-			getter = c.getMethod(name);
-		}
-		catch (NoSuchMethodException e)
-		{
-			getter = null;
-		}
-		if (getter == null)
-		{
-			name = getIsName(field);
-			try
-			{
-				getter = c.getMethod(name);
-			}
-			catch (NoSuchMethodException e)
-			{
-				getter = null;
-			}
-		}
-		return getter;
-	}
 	
 	public void bind()
 	{
 		
+	}
+	
+	public FieldInfo getFieldInfo()
+	{
+		return fieldInfo;
 	}
 	
 	public void setContainer(PersistedField container)

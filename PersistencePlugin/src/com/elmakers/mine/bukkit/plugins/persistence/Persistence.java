@@ -42,16 +42,17 @@ public class Persistence
 	}
 	
 	/**
-	 * Retrieves a Messaging interface for the specified plugin. 
+	 * Retrieves a PluginUtilities interface for the specified plugin. 
 	 * 
-	 * Pass in your own plugin instance for access to data-driven in-game message strings and commands.
+	 * Pass in your own plugin instance for access to data-driven in-game message strings and commands,
+	 * and other useful utilities.
 	 * 
 	 * @param plugin The plugin for which to retrieve messages and commands
-	 * @return A Messaging instance for sending messages and processing commands
+	 * @return A PluginUtilities instance for sending messages and processing commands
 	 */
-	public Messaging getMessaging(Plugin plugin)
+	public PluginUtilities getUtilities(Plugin plugin)
 	{
-		return new Messaging(plugin, this);
+		return new PluginUtilities(plugin, this);
 	}
 	
 	/**
@@ -326,18 +327,20 @@ public class Persistence
 		/*
 		 * Look for Class annotations
 		 */
-		PersistClass entityAnnotation = persistClass.getAnnotation(PersistClass.class);
 		
-		if (entityAnnotation == null)
-		{
-			log.warning("Persistence: class " + persistClass.getName() + " does not have the @PersistClass annotation.");
-			return null;
-		}
-		
-		// TODO: Lookup from cache/name map ...
+		// TODO: Lookup from schema/name map ... hm... uh, how to do this without the annotation?
+		// I guess pass in one, and then other persisted classes can request data from their own schema...
 		PersistedClass persistedClass = persistedClassMap.get(persistClass);
 		if (persistedClass == null)
 		{
+			PersistClass entityAnnotation = persistClass.getAnnotation(PersistClass.class);
+			
+			if (entityAnnotation == null)
+			{
+				log.warning("Persistence: class " + persistClass.getName() + " does not have the @PersistClass annotation.");
+				return null;
+			}
+		
 			persistedClass = getPersistedClass(persistClass, new EntityInfo(entityAnnotation));
 		}
 
@@ -425,9 +428,12 @@ public class Persistence
 	
 		// Bind each field- this is a little awkward right now, due to the
 		// assymmetry (lack of setBlockX type setters).
-		fieldX.setGetter("blockX");
-		fieldY.setGetter("blockY");
-		fieldZ.setGetter("blockZ");
+		fieldX.setGetter("getBlockX");
+		fieldY.setGetter("getBlockY");
+		fieldZ.setGetter("getBlockZ");
+		fieldX.setSetter("setX");
+		fieldY.setSetter("setY");
+		fieldZ.setSetter("setZ");
 		
 		// Create the class definition
 		PersistedClass persistVector = getPersistedClass(BlockVector.class, vectorInfo);

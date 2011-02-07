@@ -8,7 +8,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.elmakers.mine.bukkit.plugins.persistence.Messaging;
+import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
@@ -22,32 +22,32 @@ public class PersistenceCommands
 	{
 		PersistenceDefaults d = new PersistenceDefaults();
 		this.persistence = persistence;
-		messaging = persistence.getMessaging(plugin);	
+		utilities = persistence.getUtilities(plugin);	
 
 		// Initialize Messages
 		
-		resettingEntityMessage = messaging.getMessage("resettingEntity", d.resettingEntityMessage);
-		reloadingEntityMessage = messaging.getMessage("reloadingEntity", d.reloadingEntityMessage);
-		entityNotFoundMessage = messaging.getMessage("entityNotFound", d.entityNotFoundMessage);
-		entityDisplayMessage = messaging.getMessage("entityDisplay", d.entityDisplayMessage);
-		schemaDisplayMessage = messaging.getMessage("schemaDisplay", d.schemaDisplayMessage);
-		entityListMessage = messaging.getMessage("entityList", d.entityListMessage);
-		schemaListMessage = messaging.getMessage("schemaList", d.schemaListMessage);
-		unknownSchemaMessage = messaging.getMessage("unknownSchema", d.unknownSchemaMessage);
-		unknownEntityMessage = messaging.getMessage("unknownEntity", d.unknownEntityMessage);
-		dataSavedMessage = messaging.getMessage("dataSaved", d.dataSavedMessage);
-		pluginListMessage = messaging.getMessage("pluginList", d.pluginListMessage);
-		pluginNotFoundMessage = messaging.getMessage("pluginNotFound", d.pluginNotFoundMessage);
+		resettingEntityMessage = utilities.getMessage("resettingEntity", d.resettingEntityMessage);
+		reloadingEntityMessage = utilities.getMessage("reloadingEntity", d.reloadingEntityMessage);
+		entityNotFoundMessage = utilities.getMessage("entityNotFound", d.entityNotFoundMessage);
+		entityDisplayMessage = utilities.getMessage("entityDisplay", d.entityDisplayMessage);
+		schemaDisplayMessage = utilities.getMessage("schemaDisplay", d.schemaDisplayMessage);
+		entityListMessage = utilities.getMessage("entityList", d.entityListMessage);
+		schemaListMessage = utilities.getMessage("schemaList", d.schemaListMessage);
+		unknownSchemaMessage = utilities.getMessage("unknownSchema", d.unknownSchemaMessage);
+		unknownEntityMessage = utilities.getMessage("unknownEntity", d.unknownEntityMessage);
+		dataSavedMessage = utilities.getMessage("dataSaved", d.dataSavedMessage);
+		pluginListMessage = utilities.getMessage("pluginList", d.pluginListMessage);
+		pluginNotFoundMessage = utilities.getMessage("pluginNotFound", d.pluginNotFoundMessage);
 
 		// Iniitialize Commands
-		persistCommand = messaging.getGeneralCommand(d.persistCommand[0], d.persistCommand[1], d.persistCommand[2]);
+		persistCommand = utilities.getGeneralCommand(d.persistCommand[0], d.persistCommand[1], d.persistCommand[2]);
 		saveSubCommand = persistCommand.getSubCommand(d.saveSubCommand[0], d.saveSubCommand[1], d.saveSubCommand[2]);
 		describeSubCommand = persistCommand.getSubCommand(d.describeSubCommand[0], d.describeSubCommand[1], d.describeSubCommand[2]);
 		listSubCommand = persistCommand.getSubCommand(d.listSubCommand[0], d.listSubCommand[1], d.listSubCommand[2]);
 		reloadSubCommand = persistCommand.getSubCommand(d.reloadSubCommand[0], d.reloadSubCommand[1], d.reloadSubCommand[2]);
 		resetSubCommand = persistCommand.getSubCommand(d.resetSubCommand[0], d.resetSubCommand[1], d.resetSubCommand[2]);
 		
-		helpCommand = messaging.getGeneralCommand(d.helpCommand[0], d.helpCommand[1], d.helpCommand[2]);
+		helpCommand = utilities.getGeneralCommand(d.helpCommand[0], d.helpCommand[1], d.helpCommand[2]);
 		
 		for (String usage : d.helpUsage)
 		{
@@ -83,7 +83,7 @@ public class PersistenceCommands
 			if (!player.isOp()) return false;
 		}
 	
-		return messaging.dispatch(this, messageOutput, cmd.getName(), parameters);
+		return utilities.dispatch(this, messageOutput, cmd.getName(), parameters);
 	}
 		
 	public boolean onSave(CommandSender messageOutput, String[] parameters)
@@ -507,7 +507,7 @@ public class PersistenceCommands
 	private Message pluginListMessage;
 	private Message pluginNotFoundMessage;
 	
-	private Messaging messaging;
+	private PluginUtilities utilities;
 	private Persistence persistence;
 
 }

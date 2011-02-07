@@ -22,7 +22,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginData;
  * @author NathanWolf
  *
  */
-public class Messaging
+public class PluginUtilities
 {
 	/**
 	 * Messaging constructor. Use to create an instance of Messaging for your plugin.
@@ -32,7 +32,7 @@ public class Messaging
 	 * @param requestingPlugin The plugin requesting the messaging interface
 	 * @param persistence The Persistence reference to use for retrieving data
 	 */
-	public Messaging(Plugin requestingPlugin, Persistence persistence)
+	public PluginUtilities(Plugin requestingPlugin, Persistence persistence)
 	{
 		this.persistence = persistence;
 		
