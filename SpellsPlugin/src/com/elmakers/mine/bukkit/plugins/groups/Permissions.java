@@ -65,9 +65,16 @@ public class Permissions
 				}
 			}
 			
+			// Assign users to default group, if it exists
+			Group defaultGroup = groups.get("default");
+			
 			// Construct permissions afterward so user/group order is not important.
 			for (PlayerPermissions player : players.values())
 			{
+				if (defaultGroup != null)
+				{
+					player.addToGroup(defaultGroup);
+				}
 				player.constructPermissions();
 			}
 			
@@ -140,6 +147,10 @@ public class Permissions
 		if (permissions == null)
 		{
 			permissions = new PlayerPermissions();
+			// Assign users to default group, if it exists
+			Group defaultGroup = groups.get("default");
+			permissions.addToGroup(defaultGroup);
+			permissions.constructPermissions();
 			players.put(playerName, permissions);
 		}
 		return permissions;

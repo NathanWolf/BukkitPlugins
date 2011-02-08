@@ -30,13 +30,20 @@ public class PlayerPermissions
 		{
 			String groupName = groupString[i];
 			Group group = permissions.getGroup(groupName);
-			if (group != null)
-			{
-				groups.add(group);
-			}
+			addToGroup(group);
 		}
 		
 		return true;
+	}
+	
+	public void addToGroup(Group group)
+	{
+		if (group == null) return;
+		
+		if (!groups.contains(group))
+		{
+			groups.add(group);
+		}
 	}
 	
 	public void constructPermissions()

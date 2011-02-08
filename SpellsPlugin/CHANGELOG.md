@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.82
+
+ - Add "default" permission group.
+
 ## 0.81
 
  - Fix undo system - I was checking for chunk load in a bad way!
