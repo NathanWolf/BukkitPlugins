@@ -3,10 +3,12 @@ package com.elmakers.mine.bukkit.plugins.persistence;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.bukkit.Server;
+import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
@@ -15,6 +17,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.dao.CommandSenderData;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginData;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
 
 /** 
  * An interface for displaying data-driven messages and processing data-driven commands.
@@ -35,6 +38,7 @@ public class PluginUtilities
 	public PluginUtilities(Plugin requestingPlugin, Persistence persistence)
 	{
 		this.persistence = persistence;
+		this.owner = requestingPlugin;
 		
 		// Retreive or create the plugin data record for this plugin.
 		PluginDescriptionFile pdfFile = requestingPlugin.getDescription();
@@ -49,6 +53,61 @@ public class PluginUtilities
 		playerSender = persistence.get("player", CommandSenderData.class);
 	}
 	
+	public Plugin getOwningPlugin()
+	{
+		return owner;
+	}
+	
+	public WorldData getWorld(Server server, String name, Environment defaultType)
+	{
+		WorldData data = persistence.get(name, WorldData.class);
+		if (data == null)
+		{
+			data = new WorldData(name, defaultType);
+			addNewWorld(server, data);
+		}
+		
+		return data;
+	}
+	
+	protected void addNewWorld(Server server, WorldData newWorld)
+	{		
+		// Link up target worlds
+		List<WorldData> worlds = new ArrayList<WorldData>();
+		persistence.getAll(worlds, WorldData.class);
+		if (worlds.size() > 0)
+		{
+			WorldData target = worlds.get(worlds.size() - 1);
+			WorldData nextWorld = target.getTargetWorld();
+			if (nextWorld == null)
+			{
+				nextWorld = target;
+			}
+			target.setTargetWorld(newWorld);
+			newWorld.setTargetWorld(nextWorld);
+		}
+	
+		//TODO : Ok, really need to find some way to automatically persist references....
+		persistence.put(newWorld);
+		persistence.put(newWorld.getSpawn());
+		
+		// Go-ahead and pre-load the world.
+		newWorld.getWorld(server);
+	}
+	
+	public WorldData getWorld(Server server, World world)
+	{
+		WorldData data = persistence.get(world.getName(), WorldData.class);
+		if (data == null)
+		{
+			
+			data = new WorldData(world);
+			addNewWorld(server, data);
+		}
+		
+		return data;
+	}
+	
 	/**
 	 * Get a message based on id, or create one using a default.
 	 * 
@@ -58,22 +117,7 @@ public class PluginUtilities
 	 */
 	public Message getMessage(String id, String defaultString)
 	{
-		if (messages == null)
-		{
-			messages = new ArrayList<Message>();
-		}
-
-		// First, look for a root command by this name
-		Message message = messageMap.get(id);
-		if (message == null)
-		{
-			message = new Message(id, defaultString);
-			persistence.put(message);
-			messages.add(message);
-			messageMap.put(id, message);
-		}
-		
-		return message;
+		return plugin.getMessage(id, defaultString);
 	}
 	
 	/**
@@ -127,27 +171,7 @@ public class PluginUtilities
 	 */
 	public PluginCommand getCommand(String commandName, String defaultTooltip, String defaultUsage, CommandSenderData sender)
 	{
-		// First, look for a root command by this name
-		List<PluginCommand> commands = plugin.getCommands();
-		if (commands == null)
-		{
-			commands = new ArrayList<PluginCommand>();
-			plugin.setCommands(commands);
-		}
-		for (PluginCommand  command : commands)
-		{
-			if (command.getCommand().equalsIgnoreCase(commandName))
-			{
-				return command;
-			}
-		}
-		
-		// Create a new un-parented command
-		PluginCommand command = new PluginCommand(plugin, commandName, defaultTooltip, defaultUsage, sender);
-		command.setPersistence(persistence);
-		persistence.put(command);
-		plugin.addCommand(command);
-		return command;
+		return plugin.getCommand(commandName, defaultTooltip, defaultUsage, sender);
 	}
 
 	/**
@@ -174,7 +198,10 @@ public class PluginUtilities
 		List<PluginCommand> baseCommands = plugin.getCommands();
 		if (baseCommands == null) return false;
 		
-		for (PluginCommand command : baseCommands)
+		List<PluginCommand> commandsCopy = new ArrayList<PluginCommand>();
+		commandsCopy.addAll(baseCommands);
+		
+		for (PluginCommand command : commandsCopy)
 		{
 			boolean success = dispatch(listener, sender, command, baseCommand, baseParameters);
 			if (success) return true;
@@ -199,7 +226,10 @@ public class PluginUtilities
 				List<PluginCommand> subCommands = command.getChildren();
 				if (subCommands != null)
 				{
-					for (PluginCommand child : subCommands)
+					List<PluginCommand> commandsCopy = new ArrayList<PluginCommand>();
+					commandsCopy.addAll(subCommands);
+					
+					for (PluginCommand child : commandsCopy)
 					{
 						handledByChild = dispatch(listener, sender, child, childCommand, childParameters);
 						if (handledByChild)
@@ -212,7 +242,12 @@ public class PluginUtilities
 			
 			// Not handled by a sub-child, so handle it ourselves.
 			String callbackName = command.getCallbackMethod();
-			if (callbackName == null || callbackName.length() <= 0) return false;
+			if (callbackName == null || callbackName.length() <= 0) 
+			{
+				// auto help for commands that only have sub-commands
+				command.sendUse(sender);
+				return true;
+			}
 			
 			try
 			{
@@ -228,7 +263,16 @@ public class PluginUtilities
 						{
 							Method customHandler;
 							customHandler = listener.getClass().getMethod(callbackName, senderType, String[].class);
-							return (Boolean)customHandler.invoke(listener, senderType.cast(sender), parameters);
+							try
+							{
+								return (Boolean)customHandler.invoke(listener, senderType.cast(sender), parameters);
+							}
+							catch(InvocationTargetException clientEx)
+							{
+								log.severe("Error invoking callback '" + callbackName);
+								clientEx.getTargetException().printStackTrace();
+								return false;
+							}
 						}
 						catch (NoSuchMethodException e)
 						{
@@ -267,9 +311,8 @@ public class PluginUtilities
 	}
 
 	private Persistence persistence;
+	private Plugin owner;
 	private PluginData plugin;
 	private CommandSenderData playerSender;
 	private static final Logger log = Persistence.getLogger();
-	private List<Message> messages;
-	private HashMap<String, Message> messageMap = new HashMap<String, Message>();
 }

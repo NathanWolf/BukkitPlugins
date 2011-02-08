@@ -4,7 +4,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-import com.elmakers.mine.bukkit.plugins.persistence.data.DataField;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataRow;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataTable;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataType;
@@ -30,9 +29,8 @@ public class SqlDataRow extends DataRow
 			{
 				int sqlType = rowInfo.getColumnType(i);
 				String columnName = rowInfo.getColumnName(i);
-				Object data = row.getObject(i);
 				DataType dataType = getTypeFromSqlType(sqlType);
-				DataField field = new DataField(columnName, dataType, data);
+				SqlDataField field = new SqlDataField(row, i, columnName, dataType);
 				add(field);
 			}
 		}
@@ -122,4 +120,18 @@ public class SqlDataRow extends DataRow
 		return dataType;
 	}
 	
+	public static int getSqlType(DataType dataType)
+	{
+		switch(dataType)
+		{
+			case BOOLEAN: return java.sql.Types.BOOLEAN;
+			case DATE: return java.sql.Types.DATE;
+			case DOUBLE: return java.sql.Types.DOUBLE;
+			case FLOAT: return java.sql.Types.FLOAT;
+			case INTEGER: return java.sql.Types.INTEGER;
+			case STRING: return java.sql.Types.VARCHAR;
+		}
+		
+		return java.sql.Types.NULL;
+	}
 }

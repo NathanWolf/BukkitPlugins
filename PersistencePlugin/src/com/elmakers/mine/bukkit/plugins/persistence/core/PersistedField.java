@@ -14,6 +14,15 @@ import com.elmakers.mine.bukkit.plugins.persistence.data.DataType;
 
 public class PersistedField
 {
+	public PersistedField(PersistedField copy)
+	{
+		this.setter = copy.setter;
+		this.getter = copy.getter;
+		this.field = copy.field;
+		this.name = copy.name;
+		this.fieldInfo = copy.fieldInfo;
+	}
+	
 	protected PersistedField(FieldInfo fieldInfo, Method getter, Method setter)
 	{
 		this.name = fieldInfo.getName();
@@ -70,16 +79,17 @@ public class PersistedField
 		return name;
 	}
 	
-	public boolean set(Object o, Object value)
+	public <T> boolean set(Object o, T value)
 	{
 		if (setter == null)
 		{
 			if (isReadOnly())
 			{
-				log.warning("Persistence: attempt to set() on read-only field " + getName());
+				log.warning("Persistence: attempt to set() on a field " + getName());
 			}
 			return false;
 		}
+		
 		if (setter != null)
 		{
 			try
@@ -196,14 +206,7 @@ public class PersistedField
 	public void load(DataRow row, Object o)
 	{
 		DataField dataField = row.get(getDataName());
-		Object value = dataField.getValue();
-		DataType dataType = getDataType();
-		DataType valueType = dataField.getType();
-		if (dataType != valueType)
-		{
-			value = DataType.convertTo(value, dataType);
-		}
-		set(o, value);
+		set(o, dataField.getValue(getType()));
 	}
 	
 	public DataType getDataType()
@@ -221,13 +224,13 @@ public class PersistedField
 		{
 			pField = new PersistedObject(fieldInfo, field);
 		}
-		else if (dataType != DataType.NULL)
-		{
-			pField = new PersistedField(fieldInfo, field);
-		}
 		else if (dataType == DataType.LIST)
 		{
 			pField = new PersistedList(fieldInfo, field, owningClass);
+		}
+		else if (dataType != DataType.NULL)
+		{
+			pField = new PersistedField(fieldInfo, field);
 		}
 		
 		return pField;
@@ -467,6 +470,12 @@ public class PersistedField
 	public boolean isReadOnly()
 	{
 		return fieldInfo.isReadOnly();
+	}
+	
+	public PersistedField clone()
+	{
+		PersistedField field = new PersistedField(this);
+		return field;
 	}
 
 	protected PersistedField	container		= null;

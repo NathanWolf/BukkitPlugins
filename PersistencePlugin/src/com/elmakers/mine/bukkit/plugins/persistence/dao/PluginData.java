@@ -6,6 +6,7 @@ import java.util.List;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
+import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 /**
@@ -44,11 +45,61 @@ public class PluginData
 		website = pdfFile.getWebsite();
 	}
 	
-	public void addCommand(PluginCommand command)
+	public Message getMessage(String messageId, String defaultValue)
 	{
-		commands.add(command);
-	}
+		if (messages == null)
+		{
+			messages = new ArrayList<Message>();
+		}
 
+		for (Message  message : messages)
+		{
+			if (message.getMessageId().equalsIgnoreCase(messageId))
+			{
+				return message;
+			}
+		}
+		
+		// Create a new message
+		Message message = new Message(messageId, defaultValue);
+		
+		// Add to command and mark dirty
+		messages.add(message);
+		
+		Persistence persistence = Persistence.getInstance();
+		persistence.put(message);
+		persistence.put(this);
+		
+		return message;
+	}
+	
+	public PluginCommand getCommand(String commandName, String defaultTooltip, String defaultUsage, CommandSenderData sender)
+	{
+		// First, look for a root command by this name
+		if (commands == null)
+		{
+			commands = new ArrayList<PluginCommand>();
+		}
+		
+		for (PluginCommand command : commands)
+		{
+			if (command.getCommand().equalsIgnoreCase(commandName))
+			{
+				return command;
+			}
+		}
+		
+		// Create a new un-parented command
+		Persistence persistence = Persistence.getInstance();
+		PluginCommand command = new PluginCommand(this, commandName, defaultTooltip, defaultUsage, sender);
+		commands.add(command);
+
+		persistence.put(command);
+		persistence.put(this);
+		
+		return command;
+	}
+	
 	@PersistField
 	public String getVersion()
 	{
@@ -131,6 +182,8 @@ public class PluginData
 	protected String			description;
 	protected List<String>		authors;
 	protected String			website;
+	
+	// TODO: cache these in a hashmap
 	protected List<PluginCommand>	commands;
 	protected List<Message>		messages;
 }

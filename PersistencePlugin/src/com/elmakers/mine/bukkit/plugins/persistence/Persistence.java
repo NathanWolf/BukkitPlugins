@@ -191,6 +191,8 @@ public class Persistence
 	 */
 	public boolean put(Object persist)
 	{
+		if (persist == null) return false;
+		
 		synchronized(cacheReadLock)
 		{
 			synchronized(cacheWriteLock)

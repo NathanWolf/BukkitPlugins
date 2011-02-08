@@ -122,8 +122,11 @@ public class PluginCommand implements Comparable<PluginCommand>
 		if (child == null)
 		{
 			child = new PluginCommand(plugin, subCommandName, defaultTooltip, defaultUsage, null);
-			persistence.put(child);
 			addSubCommand(child);
+			
+			Persistence persistence = Persistence.getInstance();
+			persistence.put(child);
+			persistence.put(this);
 		}
 		
 		return child;
@@ -183,6 +186,11 @@ public class PluginCommand implements Comparable<PluginCommand>
 	public void sendShortHelp(CommandSender sender)
 	{
 		sendHelp(sender, "Use: ", false, false);
+	}
+	
+	public void sendUse(CommandSender sender)
+	{
+		sendHelp(sender, "Use: ", true, true);
 	}
 	
 	/**
@@ -357,13 +365,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 	{
 		return callbackMethod;
 	}
-	
-	public void setPersistence(Persistence persistence)
-	{
-		this.persistence = persistence;
-	}
 
-	private Persistence			persistence;
 	private String				callbackMethod;
 	private int					id;
 	private boolean				enabled = true;

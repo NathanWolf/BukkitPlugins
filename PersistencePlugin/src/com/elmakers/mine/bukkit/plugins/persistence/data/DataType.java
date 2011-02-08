@@ -3,7 +3,6 @@ package com.elmakers.mine.bukkit.plugins.persistence.data;
 import java.util.Date;
 import java.util.List;
 
-//TODO: Break off store-specific data conversion somehow
 public enum DataType
 {
 	INTEGER,
@@ -13,6 +12,7 @@ public enum DataType
 	DOUBLE,
 	STRING,
 	DATE,
+	ENUMERATION,
 	OBJECT,
 	LIST,
 	NULL;
@@ -26,47 +26,63 @@ public enum DataType
 	{
 		DataType sqlType = NULL;
 		
-		if (fieldType.isAssignableFrom(List.class))
+		if (fieldType.isEnum())
+		{
+			sqlType = DataType.ENUMERATION;
+		}
+		else if (List.class.isAssignableFrom(fieldType))
 		{
 			sqlType = DataType.LIST;
 		}
-		else if (fieldType.isAssignableFrom(Date.class))
+		else if (Enum.class.isAssignableFrom(fieldType))
+		{
+			sqlType = DataType.ENUMERATION;
+		} 
+		else if (Date.class.isAssignableFrom(fieldType))
 		{
 			sqlType = DataType.DATE;
 		}
-		else if (fieldType.isAssignableFrom(Boolean.class))
+		else if (Boolean.class.isAssignableFrom(fieldType))
 		{
 			sqlType = DataType.BOOLEAN;
 		}
-		else if (fieldType.isAssignableFrom(Integer.class))
+		else if (Integer.class.isAssignableFrom(fieldType))
 		{
 			sqlType = DataType.INTEGER;
 		}
-		else if (fieldType.isAssignableFrom(Double.class))
+		else if (Double.class.isAssignableFrom(fieldType))
 		{
 			sqlType = DataType.DOUBLE;
 		}
-		else if (fieldType.isAssignableFrom(Float.class))
+		else if (Float.class.isAssignableFrom(fieldType))
 		{
 			sqlType = DataType.FLOAT;
 		}
-		else if (fieldType.isAssignableFrom(String.class))
+		else if (Long.class.isAssignableFrom(fieldType))
+		{
+			sqlType = DataType.LONG;
+		}
+		else if (String.class.isAssignableFrom(fieldType))
 		{
 			sqlType = DataType.STRING;
 		}
-		else if (fieldType.isAssignableFrom(boolean.class))
+		else if (boolean.class.isAssignableFrom(fieldType))
 		{
 			sqlType = DataType.BOOLEAN;
 		}
-		else if (fieldType.isAssignableFrom(int.class))
+		else if (int.class.isAssignableFrom(fieldType))
 		{
 			sqlType = DataType.INTEGER;
 		}
-		else if (fieldType.isAssignableFrom(double.class))
+		else if (long.class.isAssignableFrom(fieldType))
+		{
+			sqlType = DataType.LONG;
+		}
+		else if (double.class.isAssignableFrom(fieldType))
 		{
 			sqlType = DataType.DOUBLE;
 		}
-		else if (fieldType.isAssignableFrom(float.class))
+		else if (float.class.isAssignableFrom(fieldType))
 		{
 			sqlType = DataType.FLOAT;
 		}
@@ -74,53 +90,10 @@ public enum DataType
 		{
 			// Don't get the PersistedClass here, or you might cause recursion issues with circular dependencies.
 			// Also, don't look for an annotation, since it might not be used. 
-			// We'll just have to make sure the object referece is valid in validate9).
+			// We make sure the object reference is valid in validate().
 			sqlType = DataType.OBJECT;
 		}
 		return sqlType;
 	}
 	
-	public static Object convertFrom(Object field, DataType dataType)
-	{
-		if (field == null) return "null";
-		
-		switch(dataType)
-		{
-			case FLOAT:
-				if (field.getClass().isAssignableFrom(float.class) || field.getClass().isAssignableFrom(Float.class))
-				{
-					return new Double((Float)field);
-				}
-			case STRING: 
-				return field.toString();
-			case DATE:
-				Date d = (Date)field;
-				Integer seconds = (int)(d.getTime() / 1000);
-				return seconds;
-			case BOOLEAN:
-				Boolean flag = (Boolean)field;
-				Integer intValue = flag ? 1 : 0;
-				return intValue;
-		}
-		return field;
-	}
-	
-	public static Object convertTo(Object field, DataType dataType)
-	{
-		if (field == null) return null;
-
-		switch(dataType)
-		{		
-			case STRING: return field.toString();
-			case DATE:
-				Integer intDate = (Integer)field;
-				Date d = new Date(intDate * 1000);
-				return d;
-			case BOOLEAN:
-				Integer intBoolean = (Integer)field;
-				Boolean b = intBoolean != 0;
-				return b;
-		}
-		return field;
-	}
 }

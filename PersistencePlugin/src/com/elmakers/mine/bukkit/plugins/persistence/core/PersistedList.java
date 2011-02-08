@@ -29,6 +29,21 @@ import com.elmakers.mine.bukkit.plugins.persistence.data.DataType;
  */
 public class PersistedList extends PersistedField implements PersistedReference
 {
+	public PersistedList(PersistedList copy)
+	{
+		super(copy);
+		
+		owningType = copy.owningType;
+		referenceType = copy.referenceType;
+		findListType();
+	}
+	
+	public PersistedList clone()
+	{
+		PersistedList field = new PersistedList(this);
+		return field;
+	}
+	
 	public PersistedList(FieldInfo fieldInfo, Field field, PersistedClass owningClass)
 	{
 		super(fieldInfo, field);

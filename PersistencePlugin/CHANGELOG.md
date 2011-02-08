@@ -5,7 +5,16 @@
   - Prefix contained value names
   - Persist Player location and position
   - Really fix persisting longs and floats
-
+  - Add built-in WorldData type. Little bit o' portal-specific stuff in here, I will admit.
+  - Add ability to create and track server Worlds
+  - Need to clone fields when cloning a class, or ownership trees get screwed up (BlockVector, again!!)
+  - Correctly bind messages to their owning plugins
+  - Fix concurrency issues when trying to access commands (e.g. auto help) from within a command handler
+  - Allowed contained enums
+  - Support using a class an an id
+  - Fixed containing an object with a read-only id
+  - BlockVector!
+ 
 # 0.25
 
  - LOTS of refactoring. I honestly wouldn't consider this highly stable at the moment,

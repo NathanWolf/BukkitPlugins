@@ -282,6 +282,36 @@ public abstract class SqlStore extends DataStore
 		
 		return true;
 	}
+
+	@Override
+	public boolean load(DataTable table)
+	{
+		String tableName = table.getName();
+		
+		// Select all columns instead of building a column list
+		// This lets me sort out missing columns instead of throwing SQL errors.
+		String selectQuery = "SELECT * FROM \"" + tableName + "\"";
+		
+		try
+		{
+			PreparedStatement ps = connection.prepareStatement(selectQuery);
+			ResultSet rs = ps.executeQuery();
+		
+			while (rs.next())
+			{
+				SqlDataRow row = new SqlDataRow(table, rs);
+				table.addRow(row);
+			}
+			rs.close();
+		}
+		catch (SQLException ex)
+		{
+			log.warning("Persistence: Error selecting from table " + tableName + ": " + ex.getMessage());
+			return false;
+		}
+		
+		return true;
+	}
 	
 	@Override
 	public boolean save(DataTable table)
@@ -323,17 +353,10 @@ public abstract class SqlStore extends DataStore
 				PreparedStatement updateStatement = connection.prepareStatement(updateSql);
 			
 				int index = 1;
-				for (DataField field : row.getFields())
-				{	
-					Object value = field.getValue();
-					if (value != null)
-					{
-						updateStatement.setObject(index, DataType.convertFrom(value, field.getType()));
-					}
-					else
-					{
-						updateStatement.setNull(index, java.sql.Types.NULL);
-					}
+				List<DataField> fields = row.getFields();
+				for (DataField field : fields)
+				{
+					SqlDataField.setValue(updateStatement, index, field.getValue(), field.getType());	
 					index++;
 				}
            
@@ -349,6 +372,7 @@ public abstract class SqlStore extends DataStore
         }
 		return true;
 	}
+	
 		
 	@Override
 	public boolean clearIds(DataTable table, List<Object> ids)
@@ -393,36 +417,6 @@ public abstract class SqlStore extends DataStore
 		if (table.getRows().size() > 0)
 		{
 			save(table);
-		}
-		
-		return true;
-	}
-	
-	@Override
-	public boolean load(DataTable table)
-	{
-		String tableName = table.getName();
-		
-		// Select all columns instead of building a column list
-		// This lets me sort out missing columns instead of throwing SQL errors.
-		String selectQuery = "SELECT * FROM \"" + tableName + "\"";
-		
-		try
-		{
-			PreparedStatement ps = connection.prepareStatement(selectQuery);
-			ResultSet rs = ps.executeQuery();
-		
-			while (rs.next())
-			{
-				SqlDataRow row = new SqlDataRow(table, rs);
-				table.addRow(row);
-			}
-			rs.close();
-		}
-		catch (SQLException ex)
-		{
-			log.warning("Persistence: Error selecting from table " + tableName + ": " + ex.getMessage());
-			return false;
 		}
 		
 		return true;

@@ -31,24 +31,42 @@ public class BoundingBox
 		this.max = max;
 	}
 	
+	public BoundingBox centered(BlockVector newCenter)
+	{
+		// TODO
+		//BlockVector currentCenter = getCenter();
+		return this;
+	}
+	
+	public BoundingBox offset(BlockVector direction)
+	{
+		// TODO
+		return this;
+	}
+	
+	public BoundingBox scale(double scale)
+	{
+		/*
+		minY = 0;
+		maxY = 128;
+		minX = location.getBlockX() - PortalArea.defaultSize * ratio / 2;
+		maxX = location.getBlockX() + PortalArea.defaultSize * ratio / 2;
+		minZ = location.getBlockZ() - PortalArea.defaultSize * ratio / 2;
+		maxZ = location.getBlockZ() + PortalArea.defaultSize * ratio / 2;
+		*.
+		*/
+		
+		return new BoundingBox(min, max);
+	}
+	
 	public boolean contains(BlockVector p)
 	{
-		return
-		(
-			(p.getBlockX() >= min.getBlockX() && p.getBlockX() <= max.getBlockX())
-		&&	(p.getBlockY() >= min.getBlockY() && p.getBlockY() <= max.getBlockY())
-		&&	(p.getBlockZ() >= min.getBlockZ() && p.getBlockZ() <= max.getBlockZ())
-		);
+		return p.isInAABB(min, max);
 	}
 	
 	public BlockVector getCenter()
 	{
-		return new BlockVector
-		(
-			(int)Math.floor((min.getBlockX() + max.getBlockX()) / 2),
-			(int)Math.floor((min.getBlockY() + max.getBlockY()) / 2),
-			(int)Math.floor((min.getBlockZ() + max.getBlockZ()) / 2)
-		);
+		return new BlockVector(min.getMidpoint(max));
 	}
 	
 	public int getSizeX()

@@ -14,6 +14,18 @@ import com.elmakers.mine.bukkit.plugins.persistence.data.DataType;
 
 public class PersistedObject extends PersistedField implements PersistedReference
 {
+	public PersistedObject(PersistedObject copy)
+	{
+		super(copy);
+		
+		referenceType = copy.referenceType;
+	}
+
+	public PersistedObject clone()
+	{
+		PersistedObject field = new PersistedObject(this);
+		return field;
+	}
 
 	public PersistedObject(FieldInfo fieldInfo, Field field)
 	{
@@ -29,6 +41,13 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 	public void bind()
 	{
 		referenceType = Persistence.getInstance().getPersistedClass(getType());
+		
+		if (referenceType == null)
+		{			
+			log.severe("Persistence: Reference field: " + getDataName() + " has no valid reference type");
+			return;
+		}
+		
 		if (isContained())
 		{
 			// Create a sub-class of the reference class
@@ -88,6 +107,7 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 		
 		DataRow headerRow = dataTable.getHeader();
 		DataField field = new DataField(getDataName(), getDataType());
+		field.setIdField(isIdField());
 		if (headerRow != null)
 		{
 			headerRow.add(field);
@@ -146,12 +166,16 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 		deferStackDepth--;
 		if (deferStackDepth > 0) return;
 		
-		for (DeferredReference ref : deferredReferences)
+		List<DeferredReference> undefer = new ArrayList<DeferredReference>();
+		undefer.addAll(deferredReferences);
+		deferredReferences.clear();
+		
+		for (DeferredReference ref : undefer)
 		{
 			Object reference = ref.referenceField.referenceType.get(ref.referenceId);
 			ref.referenceField.set(ref.object, reference);
 		}
-		deferredReferences.clear();
+		
 	}
 	
 	class DeferredReference

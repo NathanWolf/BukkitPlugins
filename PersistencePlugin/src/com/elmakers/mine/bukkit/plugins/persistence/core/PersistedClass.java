@@ -41,18 +41,19 @@ public class PersistedClass
 		this.contained = true;
 		this.defaultStore = copy.defaultStore;
 		this.container = container;
+		this.name = copy.name;
+		this.schema = copy.schema;
 		this.entityInfo = copy.entityInfo;
+		this.persistClass = copy.persistClass;
 		
 		// TODO: Make sure it's ok to share fields!
 		for (PersistedField field : copy.fields)
 		{
 			// If a field is an id field, we don't care about it in the container, unless the container is also the id field
 			// TODO: Consider this logic for validity
-			// TODO: Make sure it's ok to share PersistedField references like this- do they have any
-			// store or schema-related data?
 			if (!field.isIdField() || container.isIdField())
 			{
-				addField(field, field.getFieldInfo());
+				addField(field.clone(), field.getFieldInfo());
 			}
 		}
 	}
@@ -654,13 +655,16 @@ public class PersistedClass
 	{
         for (PersistedField field : internalFields)
         {
+        	if (field.isReadOnly()) continue;
+        	
     		try
     		{
     			field.load(row, o);
     		}
 			catch (Exception ex)
 			{
-				log.warning("Persistence error getting field " + field.getName() + " for " + getTableName() + ": " + ex.getMessage());	
+				log.warning("Persistence error getting field " + field.getName() + " for " + getTableName());
+				ex.printStackTrace();
 	        }
         }
 	}
