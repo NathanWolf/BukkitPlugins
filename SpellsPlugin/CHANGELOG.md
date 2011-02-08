@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.81
+
+ - Fix undo system - I was checking for chunk load in a bad way!
+ - Add "portal" and "phase" spell, NetherGateintegration.
+
 ## 0.80
 
  - Check to see if a chunk is loaded before undoing a block, fail undo

@@ -24,6 +24,7 @@ import org.bukkit.material.MaterialData;
 
 import com.elmakers.mine.bukkit.plugins.groups.Permissions;
 import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
+import com.elmakers.mine.bukkit.plugins.nether.NetherManager;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.*;
 import com.elmakers.mine.bukkit.plugins.spells.dynmap.MapSpell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
@@ -828,7 +829,7 @@ public class Spells
 	
 	private int undoQueueDepth = 256;
 	private boolean silent = false;
-	private boolean quiet = false;
+	private boolean quiet = true;
 	private boolean allowCommands = true;
 	private boolean	autoExpandUndo = true;
 	private boolean autoPreventCaveIn = false;
@@ -848,6 +849,12 @@ public class Spells
 	
 	private SpellsPlugin plugin = null;
 	private DynmapPlugin dynmap = null;
+	private NetherManager nether = null;
+	
+	public void setNether(NetherManager nether)
+	{
+		this.nether = nether;
+	}
 	
 	protected void addBuiltinSpells()
 	{
@@ -886,6 +893,13 @@ public class Spells
 		if (isDynmapBound())
 		{
 			addSpell(new MapSpell());
+		}
+		
+		// NetherGate spells
+		if (nether != null)
+		{
+			addSpell(new PortalSpell());
+			addSpell(new PhaseSpell(nether));
 		}
 	}
 	

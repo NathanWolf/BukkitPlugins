@@ -38,6 +38,11 @@ public class NetherGatePlugin extends JavaPlugin
 	{
 		super(pluginLoader, instance, desc, folder, plugin, cLoader);
 	}
+	
+	public NetherManager getManager()
+	{
+		return manager;
+	}
 
 	@Override
 	public void onDisable()
@@ -112,40 +117,17 @@ public class NetherGatePlugin extends JavaPlugin
 	
 	public boolean onGo(Player player, String[] parameters)
 	{
-		WorldData targetWorld = null;
-		if (parameters.length > 0)
-		{
-			targetWorld = utilities.getWorld(getServer(), parameters[0], Environment.NETHER);
-		}
-		else
-		{
-			WorldData thisWorld = utilities.getWorld(getServer(), player.getWorld());
-			targetWorld = thisWorld.getTargetWorld();
+		WorldData targetWorld = manager.go(player, parameters);
 			
-			// Auto-create a default nether world if this is the only one
-			if (targetWorld == null || targetWorld == thisWorld)
-			{
-				targetWorld = utilities.getWorld(getServer(), "nether", Environment.NETHER);
-			}
-		}
-		
 		if (targetWorld == null)
 		{
 			goFailedMessage.sendTo(player);
 		}
 		else
 		{	
-			Location location = player.getLocation();
-			if (manager.teleportPlayer(player, targetWorld, location))
-			{
-				goSuccessMessage.sendTo(player, targetWorld.getName());
-			}
-			else
-			{
-				goFailedMessage.sendTo(player);
-			}
+			goSuccessMessage.sendTo(player, targetWorld.getName());
 		}
-		
+			
 		return true;
 	}
 	

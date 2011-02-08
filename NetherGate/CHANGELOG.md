@@ -1,5 +1,13 @@
 # CHANGELOG
 
+# 0.13
+
+ - Spells integration!
+
+# 0.12
+
+- Automatically generate a place to stand when placing the player on lava or water.
+
 # 0.11
 
 - Improvements to the data structure.

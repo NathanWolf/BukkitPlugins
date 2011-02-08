@@ -138,7 +138,7 @@ public class PeekSpell extends Spell
 	@Override
 	public String getCategory()
 	{
-		return "exploring";
+		return "exploration";
 	}
 
 	@Override

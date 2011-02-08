@@ -31,7 +31,7 @@ class SpellsPlayerListener extends PlayerListener
     
     /**
      * Called when a player performs an animation, such as the arm swing
-     * 
+     * w
      * @param event Relevant event details
      */
     

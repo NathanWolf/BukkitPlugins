@@ -1,5 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.spells.utilities;
 
+import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -98,8 +99,10 @@ public class UndoableBlock
 
 	public boolean undo()
 	{
+		Chunk chunk = world.getChunkAt(x, z);
+		if (!world.isChunkLoaded(chunk)) return false;
+
 		Block block = world.getBlockAt(x, y, z);
-		if (!world.isChunkLoaded(x, z)) return false;
 		
 		if (block.getType() != originalMaterial || block.getData() != originalData)
 		{

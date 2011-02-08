@@ -236,6 +236,37 @@ public class NetherManager
 		startTeleport(player);
 	}
 	
+	public WorldData go(Player player, String[] parameters)
+	{
+		WorldData targetWorld = null;
+		if (parameters.length > 0)
+		{
+			targetWorld = utilities.getWorld(server, parameters[0], Environment.NETHER);
+		}
+		else
+		{
+			WorldData thisWorld = utilities.getWorld(server, player.getWorld());
+			targetWorld = thisWorld.getTargetWorld();
+			
+			// Auto-create a default nether world if this is the only one
+			if (targetWorld == null || targetWorld == thisWorld)
+			{
+				targetWorld = utilities.getWorld(server, "nether", Environment.NETHER);
+			}
+		}
+		
+		if (targetWorld != null)
+		{
+			Location location = player.getLocation();
+			if (!teleportPlayer(player, targetWorld, location))
+			{
+				targetWorld = null;
+			}
+		}
+		
+		return targetWorld;
+	}
+	
 	public void onChunkLoaded(Chunk chunk)
 	{
 		PlayerList players = teleporting.get(chunk);
@@ -270,6 +301,21 @@ public class NetherManager
 		{
 			targetLocation = location;
 		}
+		
+		// See if we need a place to stand!
+		Block standingBlock = location.getWorld().getBlockAt(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
+		standingBlock = standingBlock.getFace(BlockFace.DOWN);
+		Material mat = standingBlock.getType();
+		
+		if (mat == Material.WATER || mat == Material.STATIONARY_WATER)
+		{
+			standingBlock.setType(Material.ICE);
+		}
+		else if(mat == Material.LAVA || mat == Material.STATIONARY_LAVA)
+		{
+			standingBlock.setType(Material.OBSIDIAN);
+		}
+		
 		player.teleportTo(targetLocation);
 	}
 	
@@ -305,8 +351,7 @@ public class NetherManager
 			)
 			{
 				// spot found - return location
-				return new Location(world, (double) x + 0.5, (double) y + 1, (double) z + 0.5, startLocation.getYaw(),
-						startLocation.getPitch());
+				return new Location(world, x, y + 1, z, startLocation.getYaw(), startLocation.getPitch());
 			}
 			y += step;
 		}
@@ -317,12 +362,13 @@ public class NetherManager
 	
 	public boolean isOkToStandIn(Material mat)
 	{
-		return (mat == Material.AIR || mat == Material.WATER || mat == Material.STATIONARY_WATER);
+		return (mat == Material.AIR);
 	}
 
 	public boolean isOkToStandOn(Material mat)
 	{
-		return (mat != Material.AIR && mat != Material.LAVA && mat != Material.STATIONARY_LAVA);
+		return (mat != Material.AIR || mat == Material.WATER || mat == Material.STATIONARY_WATER
+				|| mat == Material.LAVA || mat == Material.STATIONARY_LAVA);
 	}
 
 	protected HashMap<Chunk, PlayerList>	teleporting	= new HashMap<Chunk, PlayerList>();

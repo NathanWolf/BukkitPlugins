@@ -13,6 +13,8 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.dynmap.DynmapPlugin;
 
+import com.elmakers.mine.bukkit.plugins.nether.NetherGatePlugin;
+
 public class SpellsPlugin extends JavaPlugin
 {
 	/*
@@ -38,6 +40,7 @@ public class SpellsPlugin extends JavaPlugin
 	public void onEnable() 
 	{
 		bindDynmapPlugin();
+		bindNetherGatePlugin();
 		
 		spells.initialize(this);
 		
@@ -90,6 +93,18 @@ public class SpellsPlugin extends JavaPlugin
 	    	{
 	    		log.info("Spells: Found dynmap, but need a newer version");
 	    	}
+	    }
+	}
+	
+	protected void bindNetherGatePlugin() 
+	{
+		Plugin checkForNether = this.getServer().getPluginManager().getPlugin("NetherGate");
+
+	    if (checkForNether != null) 
+	    {
+	    	log.info("Spells: found NetherGate! Thanks for using my plugins :)");
+	    	NetherGatePlugin plugin = (NetherGatePlugin)checkForNether;
+	    	spells.setNether(plugin.getManager());
 	    }
 	}
 

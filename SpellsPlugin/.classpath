@@ -5,5 +5,7 @@
 	<classpathentry kind="con" path="org.maven.ide.eclipse.MAVEN2_CLASSPATH_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/dynmap"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/mc-dev"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/NetherGate"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/PersistencePlugin"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
