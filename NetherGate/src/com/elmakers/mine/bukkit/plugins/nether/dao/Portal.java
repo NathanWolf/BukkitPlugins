@@ -6,6 +6,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
 
 @PersistClass(schema="nether", name="portal")
 public class Portal
@@ -22,14 +23,14 @@ public class Portal
 	}
 	
 	@PersistField
-	public PortalArea getNether()
+	public PortalArea getContainer()
 	{
-		return nether;
+		return container;
 	}
 	
-	public void setNether(PortalArea nether)
+	public void setContainer(PortalArea container)
 	{
-		this.nether = nether;
+		this.container = container;
 	}
 	
 	@PersistField
@@ -109,13 +110,24 @@ public class Portal
 		this.name = name;
 	}
 
+	@PersistField
+	public WorldData getWorld()
+	{
+		return world;
+	}
+
+	public void setWorld(WorldData world)
+	{
+		this.world = world;
+	}
 	
 	protected int			id;
+	protected WorldData		world;
+	protected PortalArea	container;
 	protected String		name;
 	protected boolean		active = false;
 	protected boolean		updatePending = false;
 	protected Date			lastUsed;
-	protected PortalArea		nether;
 	protected Portal		target;
 	protected BoundingBox	area;
 	protected PlayerData	owner;

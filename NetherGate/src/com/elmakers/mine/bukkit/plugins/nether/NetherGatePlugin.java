@@ -6,6 +6,8 @@ import java.util.logging.Logger;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Server;
+import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -26,6 +28,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
 
 public class NetherGatePlugin extends JavaPlugin
 {
@@ -82,29 +85,102 @@ public class NetherGatePlugin extends JavaPlugin
 	    }
 	    
 	    utilities = persistence.getUtilities(this);
-	    manager.initialize(persistence, utilities);
+	    manager.initialize(getServer(), persistence, utilities);
 	    
-		netherCommand = utilities.getPlayerCommand("nether", "Manage Nether areas", "nether <command>");
-		createCommand = netherCommand.getSubCommand("create", "Create a new Nether underground", "create");
+		netherCommand = utilities.getPlayerCommand("nether", "Manage portal areas and worlds", "nether <command>");
+		createCommand = netherCommand.getSubCommand("create", "Create a portal area or world", "create <world | area> <name>");
+		worldCommand = createCommand.getSubCommand("world", "Create a new world", "world <name>");
+		areaCommand = createCommand.getSubCommand("area", "Create a new PortalArea underground", "area <name>");
 		kitCommand = netherCommand.getSubCommand("kit", "Give yourself a portal kit", "kit");
+		goCommand = netherCommand.getSubCommand("go", "TP to an area or world", "go [area | world]");
 		
-		createCommand.bind("onCreate");
-		netherCommand.bind("onNether");
+		areaCommand.bind("onCreateArea");
+		worldCommand.bind("onCreateWorld");
+		goCommand.bind("onGo");
 		kitCommand.bind("onKit");
+		
 		
 		creationFailedMessage = utilities.getMessage("creationFailed", "Nether creation failed- is there enough room below you?");
 		creationSuccessMessage = utilities.getMessage("creationSuccess", "Created new Nether area");
 		netherExistsMessage = utilities.getMessage("netherExist", "A Nether area already exists here");
 		giveKitMessage = utilities.getMessage("giveKit", "Happy portaling!");
+		worldCreateMessage = utilities.getMessage("worldCreated", "World %s created");
+		worldCreateFailedMessage = utilities.getMessage("worldCreateFailed", "World creation failed");
+		goFailedMessage = utilities.getMessage("goFailed", "Failed teleport");
+		goSuccessMessage = utilities.getMessage("goSuccess", "Going to world %s");
 	}
 	
-	public boolean onNether(Player player, String[] parameters)
+	public boolean onGo(Player player, String[] parameters)
 	{
-		// Currently only ops can use nether
-		// TODO: Implement permissions
-		if (!player.isOp()) return false;
+		WorldData targetWorld = null;
+		if (parameters.length > 0)
+		{
+			targetWorld = utilities.getWorld(getServer(), parameters[0], Environment.NETHER);
+		}
+		else
+		{
+			WorldData thisWorld = utilities.getWorld(getServer(), player.getWorld());
+			targetWorld = thisWorld.getTargetWorld();
+			
+			// Auto-create a default nether world if this is the only one
+			if (targetWorld == null || targetWorld == thisWorld)
+			{
+				targetWorld = utilities.getWorld(getServer(), "nether", Environment.NETHER);
+			}
+		}
 		
-		netherCommand.sendHelp(player, "Use : ", true, true);
+		if (targetWorld == null)
+		{
+			goFailedMessage.sendTo(player);
+		}
+		else
+		{	
+			Location location = player.getLocation();
+			if (manager.teleportPlayer(player, targetWorld, location))
+			{
+				goSuccessMessage.sendTo(player, targetWorld.getName());
+			}
+			else
+			{
+				goFailedMessage.sendTo(player);
+			}
+		}
+		
+		return true;
+	}
+	
+	public boolean onCreateWorld(Player player, String[] parameters)
+	{
+		// First, make sure this world is registered!
+		World currentWorld = player.getWorld();
+		utilities.getWorld(getServer(), currentWorld);
+		
+		if (parameters.length < 0)
+		{
+			worldCommand.sendHelp(player, "Use: ", true, true);
+			return true;
+		}
+		
+		String worldName = parameters[0];
+		Environment worldType = Environment.NETHER;
+			
+		for (int i = 1; i < parameters.length; i++)
+		{
+			if (parameters[i].equalsIgnoreCase("normal"))
+			{
+				worldType = Environment.NORMAL;
+			}
+		}
+
+		WorldData world = utilities.getWorld(getServer(), worldName, worldType);
+		if (world == null)
+		{
+			worldCreateFailedMessage.sendTo(player);
+		}
+		else
+		{
+			worldCreateMessage.sendTo(player, world.getName());
+		}
 		
 		return true;
 	}
@@ -134,12 +210,8 @@ public class NetherGatePlugin extends JavaPlugin
 		return true;
 	}
 	
-	public boolean onCreate(Player player, String[] parameters)
+	public boolean onCreateArea(Player player, String[] parameters)
 	{
-		// Currently only ops can use nether
-		// TODO: Implement permissions
-		if (!player.isOp()) return false;
-		
 		// Check for an existing Nether area
 		Location location = player.getLocation();
 		PortalArea nether = manager.getNether(new BlockVector(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
@@ -164,17 +236,32 @@ public class NetherGatePlugin extends JavaPlugin
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args)
 	{
+		// Currently only ops can use nether
+		// TODO: Implement permissions
+		if (sender instanceof Player)
+		{
+			Player player = (Player)sender;
+			if (!player.isOp()) return true;
+		}
+		
 		return utilities.dispatch(this, sender, cmd.getName(), args);
 	}
 
 	protected PluginCommand netherCommand;
 	protected PluginCommand createCommand;
+	protected PluginCommand worldCommand;
+	protected PluginCommand areaCommand;
+	protected PluginCommand goCommand;
 	protected PluginCommand kitCommand;
 	
 	protected Message creationFailedMessage;
 	protected Message creationSuccessMessage;
 	protected Message netherExistsMessage;
 	protected Message giveKitMessage;
+	protected Message worldCreateMessage;
+	protected Message worldCreateFailedMessage;
+	protected Message goFailedMessage;
+	protected Message goSuccessMessage;
 	
 	protected NetherManager manager = new NetherManager();
 	protected NetherPlayerListener playerListener = new NetherPlayerListener(manager);

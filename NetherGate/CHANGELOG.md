@@ -6,6 +6,7 @@
 - Started on event handlers.
 - Started on data storage, checking for existing Nether areas
 - Added "kit" command
+- Multi-World!!!!
 
 # 0.10
 

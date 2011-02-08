@@ -13,8 +13,7 @@ public class NetherWorldListener extends WorldListener
 	@Override
 	public void onChunkLoaded(ChunkLoadEvent event)
 	{
-		// TODO Auto-generated method stub
-		super.onChunkLoaded(event);
+		manager.onChunkLoaded(event.getChunk());
 	}
 	
 	protected NetherManager manager;

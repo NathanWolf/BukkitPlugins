@@ -20,8 +20,7 @@ public class NetherPlayerListener extends PlayerListener
 	@Override
 	public void onPlayerMove(PlayerMoveEvent event)
 	{
-		// TODO Auto-generated method stub
-		super.onPlayerMove(event);
+		manager.onPlayerMove(event.getPlayer());
 	}
 	
 	protected NetherManager manager;

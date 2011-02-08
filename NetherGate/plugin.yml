@@ -7,5 +7,4 @@ description : An attempt to reproduce Nether Gates in SMP
 commands:
   nether:
     description: Administer Nether areas
-    usage: |
-           /nether create : Create a new Nether area under your feet
+    usage: Use /phelp nether for help

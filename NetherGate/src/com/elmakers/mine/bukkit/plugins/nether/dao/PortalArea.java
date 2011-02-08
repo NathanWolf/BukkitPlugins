@@ -8,11 +8,13 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.util.BlockVector;
 
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
 
 @PersistClass(schema="nether", name="area")
 public class PortalArea
@@ -252,7 +254,7 @@ public class PortalArea
 		this.id = id;
 	}
 
-	@PersistField(contained=true)
+	@PersistField(contained=true, name="internal")
 	public BoundingBox getInternalArea()
 	{
 		return internalArea;
@@ -263,24 +265,29 @@ public class PortalArea
 		this.internalArea = internalArea;
 	}
 
-	@PersistField(contained=true)
 	public BoundingBox getExternalArea()
 	{
-		return externalArea;
-	}
-
-	public void setExternalArea(BoundingBox worldArea)
-	{
-		this.externalArea = worldArea;
+		// TODO - use BoundingBox logic
+		BlockVector location = internalArea.getCenter();
+		int sizeX = internalArea.getSizeX();
+		int sizeZ = internalArea.getSizeZ();
+		int minY = 0;
+		int maxY = 128;
+		int minX = location.getBlockX() - (int)(sizeX * scaleRatio / 2);
+		int maxX = location.getBlockX() + (int)(sizeX * scaleRatio / 2);
+		int minZ = location.getBlockZ() - (int)(sizeZ * scaleRatio / 2);
+		int maxZ = location.getBlockZ() + (int)(sizeZ * scaleRatio / 2);
+		
+		return new BoundingBox(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
 	@PersistField
-	public int getRatio()
+	public double getRatio()
 	{
 		return scaleRatio;
 	}
 
-	public void setRatio(int ratio)
+	public void setRatio(double ratio)
 	{
 		this.scaleRatio = ratio;
 	}
@@ -329,12 +336,47 @@ public class PortalArea
 		this.name = name;
 	}
 
+	@PersistField
+	public WorldData getWorld()
+	{
+		return world;
+	}
+
+	public void setWorld(WorldData world)
+	{
+		this.world = world;
+	}
+	
+	@PersistField
+	public WorldData getTargetWorld()
+	{
+		return targetWorld;
+	}
+
+	public void setTargetWorld(WorldData targetWorld)
+	{
+		this.targetWorld = targetWorld;
+	}
+	
+	@PersistField
+	public BlockVector getTargetCenter()
+	{
+		return targetCenter;
+	}
+
+	public void setTargetCenter(BlockVector targetCenter)
+	{
+		this.targetCenter = targetCenter;
+	}
+	
 	protected PlayerData	owner;
 	protected List<Portal>	internalPortals;
 	protected List<Portal>	externalPortals;
 	protected BoundingBox	internalArea;
-	protected BoundingBox	externalArea;
 	protected int			id;
+	protected WorldData		world;
+	protected WorldData		targetWorld;
+	protected BlockVector	targetCenter;
 	protected String		name;
-	protected int 			scaleRatio;
+	protected double 		scaleRatio;
 }
