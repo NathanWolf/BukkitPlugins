@@ -52,7 +52,15 @@ public class Message
 	 */
 	public String[] getLines(Object ... parameters)
 	{
-		String baseMessage = String.format(message, parameters);
+		String baseMessage;
+		try
+		{
+			baseMessage = String.format(message, parameters);
+		}
+		catch(Throwable e)
+		{
+			baseMessage = message;
+		}
 		return baseMessage.split("\r");
 	}
 	

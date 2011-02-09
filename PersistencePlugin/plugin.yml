@@ -1,6 +1,6 @@
 name: Persistence
 main: com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin
-version: 0.31
+version: 0.32
 website: http://mine.elmakers.com
 author: NathanWolf
 description : A generalized persistence engine for Bukkit.

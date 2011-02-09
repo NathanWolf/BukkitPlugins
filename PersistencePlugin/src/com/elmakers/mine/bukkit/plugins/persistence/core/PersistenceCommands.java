@@ -240,7 +240,7 @@ public class PersistenceCommands
 			return true;
 		}
 		
-		String[] entityPath = parameters[1].split("\\.");
+		String[] entityPath = parameters[0].split("\\.");
 		if (entityPath.length == 1)
 		{
 			describeSchema(messageOutput, entityPath[0]);
@@ -256,15 +256,13 @@ public class PersistenceCommands
 	{
 		if (parameters.length < 1)
 		{
-			listSubCommand.sendShortHelp(messageOutput);
-			return true;
+			return onDescribe(messageOutput, parameters);
 		}
 		
-		String[] entityPath = parameters[1].split("\\.");
+		String[] entityPath = parameters[0].split("\\.");
 		if (entityPath.length < 2)
 		{
-			listSubCommand.sendShortHelp(messageOutput);
-			return true;
+			return onDescribe(messageOutput, parameters);
 		}
 		
 		String schemaName = entityPath[0];
@@ -301,7 +299,6 @@ public class PersistenceCommands
 			String fieldName = field.getName();
 			fieldName = padColumn(fieldName);
 			
-			
 			Object data = field.get(instance);
 			String dataField = "null";
 			if (data != null)
@@ -313,7 +310,7 @@ public class PersistenceCommands
 			rows.add(row);
 		}
 		
-		entityListMessage.sendTo(messageOutput, schemaName, entityName);
+		entityDisplayMessage.sendTo(messageOutput, schemaName, entityName);
 		for (String row : rows)
 		{
 			messageOutput.sendMessage(row);
@@ -393,7 +390,7 @@ public class PersistenceCommands
 		List<Object> entities = new ArrayList<Object>();
 		persisted.getAll(entities);
 		
-		messageOutput.sendMessage(schemaName + "." + entityName + ", " + entities.size() + " entities:");
+		entityListMessage.sendTo(messageOutput, schemaName, entityName, entities.size());
 		
 		int idCount = 0;
 		List<String> idLines = new ArrayList<String>();

@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.32
+
+ - Fix/improve /persist list. (minor release)
+ TODO: I notice that player.orientation is not getting saved correctly- I need to fix this, its a sign of something deeper.
+
 # 0.31
  
  - Yes, MORE object-as-id fixes. I think it's starting to get cleaner now, but could still use some looking-over and refactoring, probably.
