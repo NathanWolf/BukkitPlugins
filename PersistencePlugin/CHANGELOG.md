@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.31
+ 
+ - Yes, MORE object-as-id fixes. I think it's starting to get cleaner now, but could still use some looking-over and refactoring, probably.
+
 # 0.30
 
  - Fix server console commands, which I broke with the Permissions integration.

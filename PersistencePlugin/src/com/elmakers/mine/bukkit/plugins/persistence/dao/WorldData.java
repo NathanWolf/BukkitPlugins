@@ -25,13 +25,13 @@ public class WorldData
 		setEnvironmentType(type);
 	}
 	
-	public WorldData(World world)
+	public void update(World world)
 	{
 		name = world.getName();
 		id = world.getId();
 		Location location = world.getSpawnLocation();
 		spawn = new BlockVector(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-		setEnvironmentType(Environment.NETHER);
+		setEnvironmentType(world.getEnvironment());
 	}
 	
 	public World getWorld(Server server)

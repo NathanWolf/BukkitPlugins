@@ -156,6 +156,23 @@ public class PersistedField
 		return result;
 	}
 	
+	public PersistedClass getReferenceType()
+	{
+		return null;
+	}
+	
+	public PersistedField getConcreteField()
+	{
+		PersistedField concrete = this;
+		PersistedClass reference = this.getReferenceType();
+		if (reference != null)
+		{
+			concrete = reference.getIdField().getConcreteField();
+		}
+		
+		return concrete;
+	}
+	
 	public void populateHeader(DataTable dataTable, PersistedField container)
 	{
 		DataRow headerRow = dataTable.getHeader();

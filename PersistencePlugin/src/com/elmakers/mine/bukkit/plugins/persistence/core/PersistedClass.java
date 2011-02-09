@@ -297,13 +297,38 @@ public class PersistedClass
 		removeFromCache(id);
 		dirty = true;
 	}
+	
+	protected Object getByConcreteId(HashMap<Object, CachedObject> fromCache, Object id)
+	{
+		PersistedField idField = getIdField();
+		if (idField == null || id == null) return null;
+		
+		if (idField.getType().isAssignableFrom(id.getClass()))
+		{
+			CachedObject cached = fromCache.get(id);
+			if (cached != null)
+			{
+				return cached.getObject();
+			}
+		}
+		
+		return null;
+	}
 
 	public Object get(Object id)
 	{
 		checkLoadCache();
-		CachedObject cached = cacheMap.get(id);
-		if (cached == null) return null;
-		return cached.getObject();
+		PersistedField idField = getIdField();
+		if (idField == null) return null;
+		
+		Object result = getByConcreteId(cacheMap, id);
+		if (result == null)
+		{
+			idField = idField.getConcreteField();
+			result = getByConcreteId(concreteIdMap, idField);
+		}
+		
+		return result;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -333,7 +358,6 @@ public class PersistedClass
 		if (cached == null)
 		{
 			cached = addToCache(defaultValue);
-			
 		}
 		return cached.getObject();
 	}
@@ -341,6 +365,7 @@ public class PersistedClass
 	public void clear()
 	{
 		cacheMap.clear();
+		concreteIdMap.clear();
 		cache.clear();
 		loadState = LoadState.UNLOADED;
 	}
@@ -798,6 +823,7 @@ public class PersistedClass
 	protected int							maxId				= 1;
 
 	protected HashMap<Object, CachedObject>	cacheMap			= new HashMap<Object, CachedObject>();
+	protected HashMap<Object, CachedObject>	concreteIdMap		= new HashMap<Object, CachedObject>();
 	protected List<CachedObject>			cache				= new ArrayList<CachedObject>();
 	protected HashMap<Object, CachedObject>	removedMap			= new HashMap<Object, CachedObject>();
 	protected List<CachedObject>			removedFromCache	= new ArrayList<CachedObject>();

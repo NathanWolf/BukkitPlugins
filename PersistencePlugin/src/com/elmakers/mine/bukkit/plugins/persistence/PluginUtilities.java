@@ -101,9 +101,11 @@ public class PluginUtilities
 		WorldData data = persistence.get(world.getName(), WorldData.class);
 		if (data == null)
 		{
-			data = new WorldData(world);
+			data = new WorldData();
 			addNewWorld(server, data);
 		}
+		
+		data.update(world);
 		
 		return data;
 	}

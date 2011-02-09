@@ -94,7 +94,7 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 	{	
 		if (referenceType == null) return null;
 		
-		return DataType.getTypeFromClass(referenceType.getIdField().getType());
+		return getConcreteField().getDataType();
 	}
 	
 	public void populateHeader(DataTable dataTable)
@@ -154,7 +154,7 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 		Object referenceId = null;
 		if (dataField != null)
 		{
-			referenceId = referenceType.getIdData(dataField.getValue());
+			referenceId = dataField.getValue();
 		}
 		
 		deferredReferences.add(new DeferredReference(this, o, referenceId));
