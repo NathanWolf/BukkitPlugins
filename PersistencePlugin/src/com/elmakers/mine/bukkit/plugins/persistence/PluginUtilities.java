@@ -10,11 +10,13 @@ import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
 import com.elmakers.mine.bukkit.plugins.persistence.dao.CommandSenderData;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PermissionType;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginData;
@@ -57,6 +59,22 @@ public class PluginUtilities
 	public Plugin getOwningPlugin()
 	{
 		return owner;
+	}
+	
+	public PlayerData getPlayer(Player player)
+	{
+		PlayerData playerData = persistence.get(player.getName(), PlayerData.class);
+		if (playerData == null)
+		{
+			playerData = new PlayerData(player);
+		}
+		else
+		{
+			playerData.update(player);
+		}
+		persistence.put(playerData);
+		
+		return playerData;
 	}
 	
 	public WorldData getWorld(Server server, String name, Environment defaultType)

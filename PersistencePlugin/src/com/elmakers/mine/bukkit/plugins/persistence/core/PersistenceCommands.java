@@ -410,7 +410,7 @@ public class PersistenceCommands
 			{
 				currentLine = " ";
 			}
-			String thisId = persisted.getId(entity).toString();
+			String thisId = persisted.getIdData(entity).toString();
 			String newLine = currentLine + thisId;
 			if (newLine.length() > maxLineLength)
 			{

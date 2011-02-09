@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.30
+
+ - Fix server console commands, which I broke with the Permissions integration.
+ - Another fix to object->(object->id(object)) kinds of setups. Yikes! Glad I'm doing such crazy stuff with nethergate...
+
 # 0.29
 
  - Fix using an object as an id and then embedding the containg object inside another object. I fixed this with recursion, so

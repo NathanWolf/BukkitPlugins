@@ -692,7 +692,18 @@ public class PersistedClass
 		return newObject;
 	}
 
-	public Object getId(Object o)
+	/**
+	 * Whew! Ok, took me a while to figure out  I needed this...
+	 * 
+	 * getIdData will recurse down objects-as-id reference chains. This is for persisting
+	 * in the data store.
+	 * 
+	 * getId will return the actual id value, which is how data is cached internally.
+	 * 
+	 * A VERY important distinction! You look up object-as-id objects using their id instance,
+	 * not the id of their id (of that id's id, etc...)
+	 */
+	public Object getIdData(Object o)
 	{
 		Object value = null;
 		PersistedField field = idField;
@@ -704,13 +715,23 @@ public class PersistedClass
 				Object refId = idField.get(o);
 				if (ref.getReferenceType() != null)
 				{
-					return ref.getReferenceType().getId(refId);
+					return ref.getReferenceType().getIdData(refId);
 				}
 			}
 			else
 			{
 				value = idField.get(o);				
 			}
+		}
+		return value;
+	}
+	
+	public Object getId(Object o)
+	{
+		Object value = null;
+		if (idField != null)
+		{
+			value = idField.get(o);
 		}
 		return value;
 	}

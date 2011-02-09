@@ -204,16 +204,21 @@ public class PluginCommand implements Comparable<PluginCommand>
 		{
 			player = (Player)sender;
 		}
-		
+
+		if (permissionType == PermissionType.PLAYER_ONLY)
+		{
+			if (player != null) return false;
+		}
+		else
+		{
+			if (player == null) return true;
+		}
 		switch (permissionType)
 		{
 			case ALLOW_ALL: return true;
 			case OPS_ONLY:
 				if (player == null) return false;
 				return player.isOp();
-			case PLAYER_ONLY:
-				if (player != null) return false;
-				// Intentional fall-through
 			case DEFAULT:
 				if (permissionNode != null && permissionNode.length() > 0)
 				{
