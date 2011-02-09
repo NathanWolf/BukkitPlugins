@@ -488,7 +488,12 @@ public class Persistence
 	
 	public boolean hasPermission(Player player, String node)
 	{
-		if (player == null) return false;
+		return hasPermission(player, node, true);
+	}
+	
+	public boolean hasPermission(Player player, String node, boolean defaultValue)
+	{
+		if (player == null) return defaultValue;
 		
 		// Check for su status- this can be toggled by ops with the /su command
 		PlayerData playerData = get(player.getName(), PlayerData.class);
@@ -499,7 +504,7 @@ public class Persistence
 			return Permissions.Security.permission(player, node);
 		}
 		
-		return false;
+		return defaultValue;
 	}
 	
 	/*

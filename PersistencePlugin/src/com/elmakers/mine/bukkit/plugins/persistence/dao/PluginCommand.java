@@ -206,9 +206,15 @@ public class PluginCommand implements Comparable<PluginCommand>
 					return persistence.hasPermission(player, permissionNode);
 				}
 				break;
+			case ADMINS_ONLY:
+				if (permissionNode != null && permissionNode.length() > 0)
+				{
+					return persistence.hasPermission(player, permissionNode, false);
+				}
+				break;
 		}
 		
-		return false;
+		return true;
 	}
 	
 	/**

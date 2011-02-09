@@ -135,6 +135,25 @@ public class PluginUtilities
 	 * @param commandName The command id to retrieve or create
 	 * @param defaultTooltip The default tooltip to use if this is a new command
 	 * @param defaultUsage The default usage string, more can be added
+	 * @param pType The type of permissions to apply to this command
+	 * @return A command descriptor
+	 */
+	public PluginCommand getPlayerCommand(String commandName, String defaultTooltip, String defaultUsage, PermissionType pType)
+	{
+		return getCommand(commandName, defaultTooltip, defaultUsage, playerSender, null, pType);
+	}
+	
+	/**
+	 * Retrieve a player command description based on id. 
+	 * 
+	 * A command description can be used to easily process commands, including
+	 * commands with sub-commands.
+	 * 
+	 * This method automatically creates a player-specific (in-game) command.
+	 * 
+	 * @param commandName The command id to retrieve or create
+	 * @param defaultTooltip The default tooltip to use if this is a new command
+	 * @param defaultUsage The default usage string, more can be added
 	 * @param pNode Override the default permission node
 	 * @param pType The type of permissions to apply to this command
 	 * @return A command descriptor
@@ -161,6 +180,27 @@ public class PluginUtilities
 	public PluginCommand getGeneralCommand(String commandName, String defaultTooltip, String defaultUsage)
 	{
 		return getGeneralCommand(commandName, defaultTooltip, defaultUsage, null, PermissionType.DEFAULT);
+	}
+	
+	/**
+	 * Retrieve a general command description based on id. 
+	 * 
+	 * A command description can be used to easily process commands, including
+	 * commands with sub-commands.
+	 * 
+	 * This method automatically creates a general command that will be passed
+	 * a CommandSender for use as a server or in-game command.
+	 * 
+	 * @param commandName The command id to retrieve or create
+	 * @param defaultTooltip The default tooltip to use if this is a new command
+	 * @param defaultUsage The default usage string, more can be added
+	 * @param pNode Override the default permission node
+	 * @param pType The type of permissions to apply to this command
+	 * @return A command descriptor
+	 */
+	public PluginCommand getGeneralCommand(String commandName, String defaultTooltip, String defaultUsage, PermissionType pType)
+	{
+		return getCommand(commandName, defaultTooltip, defaultUsage, null, null, pType);
 	}
 	
 	/**
