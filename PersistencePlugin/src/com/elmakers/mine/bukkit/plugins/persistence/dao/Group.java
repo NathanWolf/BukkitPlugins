@@ -7,6 +7,8 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 /**
  * Represents a group, which can be assigned permissions and contain players and other groups.
  * 
+ * This isn't used anymore. I'll probably delete it soon.
+ * 
  * @author NathanWolf
  *
  */

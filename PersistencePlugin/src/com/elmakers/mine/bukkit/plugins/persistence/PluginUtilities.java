@@ -76,9 +76,6 @@ public class PluginUtilities
 		//TODO : Ok, really need to find some way to automatically persist references....
 		persistence.put(newWorld);
 		persistence.put(newWorld.getSpawn());
-		
-		// Go-ahead and pre-load the world.
-		newWorld.getWorld(server);
 	}
 	
 	public WorldData getWorld(Server server, World world)
@@ -86,7 +83,6 @@ public class PluginUtilities
 		WorldData data = persistence.get(world.getName(), WorldData.class);
 		if (data == null)
 		{
-			
 			data = new WorldData(world);
 			addNewWorld(server, data);
 		}

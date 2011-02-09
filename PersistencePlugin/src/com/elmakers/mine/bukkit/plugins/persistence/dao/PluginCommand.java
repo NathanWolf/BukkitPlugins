@@ -121,7 +121,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 */
 	public PluginCommand getSubCommand(String subCommandName, String defaultTooltip, String defaultUsage, PermissionType pType)
 	{
-		return getSubCommand(subCommandName, defaultTooltip, defaultUsage, pType);
+		return getSubCommand(subCommandName, defaultTooltip, defaultUsage, null, pType);
 	}
 	
 	/**

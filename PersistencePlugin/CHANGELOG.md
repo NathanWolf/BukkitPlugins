@@ -1,6 +1,11 @@
 # CHANGELOG
 
+# 0.28
+
+ - Don't preload a World when calling getWorld, just create the shadow data. 
+
 # 0.27
+
  - Don't persist command.children, it can be built at runtime from the parents.
  - Permissions integration (Permissions.hasPermission, and CommandData.permissionNode)
  - Remove NetherGate-specific stuff from WorldData- my bad! I promise not to abuse my dual dev/client status in the future :)

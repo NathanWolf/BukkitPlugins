@@ -1,8 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -91,32 +89,6 @@ public class PlayerData
 		lastDisconnect = new Date();
 	}
 	
-	/**
-	 * Add this player to the specified Group.
-	 * 
-	 * @param group The Group to add this player to.
-	 */ 
-	public void addToGroup(Group group)
-	{
-		if (groups == null)
-		{
-			groups = new ArrayList<Group>();
-		}
-		groups.add(group);
-	}
-	
-	/**
-	 * Remove this player from the specified Group.
-	 * 
-	 * @param group The Group to remove this player from.
-	 */
-	public void removeFromGroup(Group group)
-	{
-		if (groups == null) return;
-		
-		groups.remove(group);
-	}
-	
 	@PersistField(id=true)
 	public String getId()
 	{
@@ -194,17 +166,6 @@ public class PlayerData
 		this.online = online;
 	}
 	
-	@PersistField
-	public void setGroups(List<Group> groups)
-	{
-		this.groups = groups;
-	}
-
-	public List<Group> getGroups()
-	{
-		return groups;
-	}
-
 	@PersistField(contained=true)
 	public void setPosition(BlockVector position)
 	{
@@ -234,7 +195,6 @@ public class PlayerData
 	private Date		lastLogin;
 	private	Date		lastDisconnect;
 	private boolean		online;
-	private List<Group> groups;
 	private BlockVector	position;
 	private Orientation orientation;
 
