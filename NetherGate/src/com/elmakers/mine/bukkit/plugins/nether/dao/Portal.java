@@ -5,7 +5,6 @@ import java.util.Date;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
 
 @PersistClass(schema="nether", name="portal")
@@ -56,12 +55,12 @@ public class Portal
 	}
 
 	@PersistField
-	public PlayerData getOwner()
+	public NetherPlayer getOwner()
 	{
 		return owner;
 	}
 
-	public void setOwner(PlayerData owner)
+	public void setOwner(NetherPlayer owner)
 	{
 		this.owner = owner;
 	}
@@ -120,15 +119,15 @@ public class Portal
 	{
 		this.world = world;
 	}
-	
+
 	protected int			id;
 	protected WorldData		world;
 	protected PortalArea	container;
 	protected String		name;
-	protected boolean		active = false;
-	protected boolean		updatePending = false;
+	protected boolean		active			= false;
+	protected boolean		updatePending	= false;
 	protected Date			lastUsed;
 	protected Portal		target;
 	protected BoundingBox	area;
-	protected PlayerData	owner;
+	protected NetherPlayer	owner;
 }

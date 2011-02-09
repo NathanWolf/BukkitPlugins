@@ -13,8 +13,6 @@ import org.bukkit.util.BlockVector;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
 
 @PersistClass(schema="nether", name="area")
 public class PortalArea
@@ -293,12 +291,12 @@ public class PortalArea
 	}
 
 	@PersistField
-	public PlayerData getOwner()
+	public NetherPlayer getOwner()
 	{
 		return owner;
 	}
 
-	public void setOwner(PlayerData owner)
+	public void setOwner(NetherPlayer owner)
 	{
 		this.owner = owner;
 	}
@@ -337,23 +335,23 @@ public class PortalArea
 	}
 
 	@PersistField
-	public WorldData getWorld()
+	public NetherWorld getWorld()
 	{
 		return world;
 	}
 
-	public void setWorld(WorldData world)
+	public void setWorld(NetherWorld world)
 	{
 		this.world = world;
 	}
 	
 	@PersistField
-	public WorldData getTargetWorld()
+	public NetherWorld getTargetWorld()
 	{
 		return targetWorld;
 	}
 
-	public void setTargetWorld(WorldData targetWorld)
+	public void setTargetWorld(NetherWorld targetWorld)
 	{
 		this.targetWorld = targetWorld;
 	}
@@ -369,13 +367,13 @@ public class PortalArea
 		this.targetCenter = targetCenter;
 	}
 	
-	protected PlayerData	owner;
+	protected NetherPlayer	owner;
 	protected List<Portal>	internalPortals;
 	protected List<Portal>	externalPortals;
 	protected BoundingBox	internalArea;
 	protected int			id;
-	protected WorldData		world;
-	protected WorldData		targetWorld;
+	protected NetherWorld	world;
+	protected NetherWorld	targetWorld;
 	protected BlockVector	targetCenter;
 	protected String		name;
 	protected double 		scaleRatio;

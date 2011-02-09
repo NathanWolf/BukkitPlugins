@@ -1,5 +1,21 @@
 # CHANGELOG
 
+# 0.15
+
+ - Portal blocks are okay to stand in! Duh.
+ - Swap scale ratio
+ - Build a Better Platform
+ - Some fixes to the "find a place to stand" code
+ - Distance mapping!
+
+# 0.14
+
+ - Commands should be admin-only.
+ - Permissions integration (via Persistence->Permissions integration)
+ - Don't auto-create a world when using "/go", unless there is only one world
+ - Some refactoring to move NetherGate-specific data from Persistence
+ - Adding some data to objects, such as a home world for each player. Not used yet, though.
+
 # 0.13
 
  - Spells integration!

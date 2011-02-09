@@ -22,11 +22,13 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BlockVector;
 
+import com.elmakers.mine.bukkit.plugins.nether.dao.NetherWorld;
 import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
 import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.PermissionType;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
 
@@ -92,12 +94,12 @@ public class NetherGatePlugin extends JavaPlugin
 	    utilities = persistence.getUtilities(this);
 	    manager.initialize(getServer(), persistence, utilities);
 	    
-		netherCommand = utilities.getPlayerCommand("nether", "Manage portal areas and worlds", "nether <command>");
-		createCommand = netherCommand.getSubCommand("create", "Create a portal area or world", "create <world | area> <name>");
-		worldCommand = createCommand.getSubCommand("world", "Create a new world", "world <name>");
-		areaCommand = createCommand.getSubCommand("area", "Create a new PortalArea underground", "area <name>");
-		kitCommand = netherCommand.getSubCommand("kit", "Give yourself a portal kit", "kit");
-		goCommand = netherCommand.getSubCommand("go", "TP to an area or world", "go [area | world]");
+		netherCommand = utilities.getPlayerCommand("nether", "Manage portal areas and worlds", "nether <command>", PermissionType.ADMINS_ONLY);
+		createCommand = netherCommand.getSubCommand("create", "Create a portal area or world", "create <world | area> <name>", PermissionType.ADMINS_ONLY);
+		worldCommand = createCommand.getSubCommand("world", "Create a new world", "world <name>", PermissionType.ADMINS_ONLY);
+		areaCommand = createCommand.getSubCommand("area", "Create a new PortalArea underground", "area <name>", PermissionType.ADMINS_ONLY);
+		kitCommand = netherCommand.getSubCommand("kit", "Give yourself a portal kit", "kit", PermissionType.ADMINS_ONLY);
+		goCommand = netherCommand.getSubCommand("go", "TP to an area or world", "go [area | world]", PermissionType.ADMINS_ONLY);
 		
 		areaCommand.bind("onCreateArea");
 		worldCommand.bind("onCreateWorld");
@@ -135,7 +137,6 @@ public class NetherGatePlugin extends JavaPlugin
 	{
 		// First, make sure this world is registered!
 		World currentWorld = player.getWorld();
-		utilities.getWorld(getServer(), currentWorld);
 		
 		if (parameters.length < 0)
 		{
@@ -154,14 +155,14 @@ public class NetherGatePlugin extends JavaPlugin
 			}
 		}
 
-		WorldData world = utilities.getWorld(getServer(), worldName, worldType);
+		NetherWorld world = manager.createWorld(getServer(), worldName, worldType, currentWorld);
 		if (world == null)
 		{
 			worldCreateFailedMessage.sendTo(player);
 		}
 		else
 		{
-			worldCreateMessage.sendTo(player, world.getName());
+			worldCreateMessage.sendTo(player, world.getWorld().getName());
 		}
 		
 		return true;
@@ -203,7 +204,7 @@ public class NetherGatePlugin extends JavaPlugin
 			return true;
 		}
 		
-		if (!manager.create(player))
+		if (!manager.createArea(player))
 		{
 			creationFailedMessage.sendTo(player);
 		}
