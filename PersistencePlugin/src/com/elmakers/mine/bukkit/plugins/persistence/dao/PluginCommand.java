@@ -22,30 +22,19 @@ public class PluginCommand implements Comparable<PluginCommand>
 {	
 	/**
 	 * The default constructor, used by Persistence to create instances.
+	 * 
+	 * Use PluginUtilities to create PluginCommands.
+	 * 
+	 * @see PluginUtilities
 	 */
 	public PluginCommand()
 	{
 		
 	}
 	
-	/**
-	 * A constructor used to create new CommandData objects manually.
-	 * 
-	 * This may change in the future.
-	 * 
-	 * @param plugin The plugin that is registering this command
-	 * @param command The command string, or alias
-	 * @param tooltip The tooltip for this command
-	 * @param usage The usage instructions for this command, more can be added later
-	 * @param sender The sender that receives this command, more can be added later
-	 */
-	public PluginCommand(PluginData plugin, String command, String tooltip, String usage, CommandSenderData sender)
+	protected PluginCommand(PluginData plugin)
 	{
 		this.plugin = plugin;
-		this.command = command;
-		this.tooltip = tooltip;
-		addUsage(usage);
-		addSender(sender);
 	}
 	
 	/**
@@ -118,11 +107,43 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 */
 	public PluginCommand getSubCommand(String subCommandName, String defaultTooltip, String defaultUsage)
 	{
+		return getSubCommand(subCommandName, defaultTooltip, defaultUsage, null, PermissionType.DEFAULT);
+	}
+	
+	/**
+	 * Get or create a sub-command of this command.
+	 * 
+	 * @param subCommandName The sub-command name
+	 * @param defaultTooltip The default tooltip
+	 * @param defaultUsage The default usage string
+	 * @param pNode: The permission node to use
+	 * @param pType: The type of permissions to apply
+	 * @return A new command object
+	 */
+	public PluginCommand getSubCommand(String subCommandName, String defaultTooltip, String defaultUsage, String pNode, PermissionType pType)
+	{
 		PluginCommand child = childMap.get(subCommandName);
 		if (child == null)
 		{
-			child = new PluginCommand(plugin, subCommandName, defaultTooltip, defaultUsage, null);
-			addSubCommand(child);
+			child = new PluginCommand(plugin);
+			
+			child.setPermissionType(pType);
+			child.command = subCommandName;
+			child.tooltip = defaultTooltip;
+			child.addUsage(defaultUsage);
+			
+			if (pNode == null)
+			{
+				permissionNode = child.getDefaultPermissionNode();
+			}
+			else
+			{
+				permissionNode = pNode;
+			}
+			child.setPermissionNode(permissionNode);
+			
+			// adds senders
+			addSubCommand(child);	
 			
 			Persistence persistence = Persistence.getInstance();
 			persistence.put(child);
@@ -161,19 +182,52 @@ public class PluginCommand implements Comparable<PluginCommand>
 		}
 	}
 	
+	public boolean checkPermission(CommandSender sender)
+	{
+		Persistence persistence = Persistence.getInstance();
+		Player player = null;
+		if (sender instanceof Player)
+		{
+			player = (Player)sender;
+		}
+		
+		switch (permissionType)
+		{
+			case ALLOW_ALL: return true;
+			case OPS_ONLY:
+				if (player == null) return false;
+				return player.isOp();
+			case PLAYER_ONLY:
+				if (player != null) return false;
+				// Intentional fall-through
+			case DEFAULT:
+				if (permissionNode != null && permissionNode.length() > 0)
+				{
+					return persistence.hasPermission(player, permissionNode);
+				}
+				break;
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Check to see if this command matches a given command string.
 	 * 
-	 * Will eventually check permissions, look for sub-commands, and other 
-	 * things. 
+	 * If the command sender is a player, a permissions check will be done.
 	 * 
+	 * @param the sender requesting access. 
 	 * @param commandString The command string to check
 	 * @return Whether or not the command succeeded
 	 */
-	public boolean checkCommand(String commandString)
+	public boolean checkCommand(CommandSender sender, String commandString)
 	{
-		// TODO: permissions check, sub-commands, etc
-		return command.equals(commandString) || command.equals(commandString.toLowerCase());
+		if (command.equals(commandString) || command.equals(commandString.toLowerCase()))
+		{
+			return checkPermission(sender);
+		}
+			
+		return false;
 	}
 	
 	/**
@@ -227,7 +281,20 @@ public class PluginCommand implements Comparable<PluginCommand>
 			}
 		}
 	}
-		
+
+	public String getDefaultPermissionNode()
+	{
+		String pNode = "";
+		PluginCommand addParent = parent;
+		while (addParent != null)
+		{
+			pNode = addParent.command + "." + pNode;
+			addParent = addParent.parent;
+		}
+		pNode = plugin.getId() + ".commands." + pNode + command;
+		return pNode;
+	}
+	
 	public int compareTo(PluginCommand compare)
 	{
 		return command.compareTo(compare.getCommand());
@@ -288,7 +355,9 @@ public class PluginCommand implements Comparable<PluginCommand>
 	@PersistField
 	public void setParent(PluginCommand parent)
 	{
+		removeFromParent();
 		this.parent = parent;
+		addToParent();
 	}
 
 	public PluginCommand getParent()
@@ -296,22 +365,6 @@ public class PluginCommand implements Comparable<PluginCommand>
 		return parent;
 	}
 	
-	@PersistField
-	public void setChildren(List<PluginCommand> children)
-	{
-		this.children = children;
-		
-		// Create child map
-		childMap.clear();
-		if (children != null)
-		{
-			for (PluginCommand child : children)
-			{
-				childMap.put(child.getCommand(), child);
-			}
-		}
-	}
-
 	public List<PluginCommand> getChildren()
 	{
 		return children;
@@ -365,7 +418,54 @@ public class PluginCommand implements Comparable<PluginCommand>
 	{
 		return callbackMethod;
 	}
+	
+	protected void addToParent()
+	{
+		if (parent != null)
+		{
+			if (parent.children == null)
+			{
+				parent.children = new ArrayList<PluginCommand>();
+			}
+			parent.children.add(this);
+			parent.childMap.put(command, this);
+		}
+	}
+	
+	protected void removeFromParent()
+	{
+		if (parent != null)
+		{
+			parent.children.remove(this);
+			parent.childMap.remove(command);
+		}
+	}
 
+	@PersistField
+	public String getPermissionNode()
+	{
+		return permissionNode;
+	}
+
+	public void setPermissionNode(String permissionNode)
+	{
+		this.permissionNode = permissionNode;
+	}
+
+	@PersistField
+	public void setPermissionType(PermissionType permissionType)
+	{
+		this.permissionType = permissionType;
+	}
+
+	public PermissionType getPermissionType()
+	{
+		return permissionType;
+	}
+
+	private List<PluginCommand>	children;	
+	private PermissionType		permissionType;
+	private String				permissionNode;
 	private String				callbackMethod;
 	private int					id;
 	private boolean				enabled = true;
@@ -374,7 +474,6 @@ public class PluginCommand implements Comparable<PluginCommand>
 	private List<String>		usage;
 	private PluginData			plugin;
 	private PluginCommand		parent;
-	private List<PluginCommand>	children;
 	private List<CommandSenderData> senders;
 	private HashMap<String, PluginCommand> childMap = new HashMap<String, PluginCommand>();
 	private static final String indent = "  ";

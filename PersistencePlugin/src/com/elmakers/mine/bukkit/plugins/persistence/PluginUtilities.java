@@ -14,6 +14,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 
 import com.elmakers.mine.bukkit.plugins.persistence.dao.CommandSenderData;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.PermissionType;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginData;
@@ -72,21 +73,6 @@ public class PluginUtilities
 	
 	protected void addNewWorld(Server server, WorldData newWorld)
 	{		
-		// Link up target worlds
-		List<WorldData> worlds = new ArrayList<WorldData>();
-		persistence.getAll(worlds, WorldData.class);
-		if (worlds.size() > 0)
-		{
-			WorldData target = worlds.get(worlds.size() - 1);
-			WorldData nextWorld = target.getTargetWorld();
-			if (nextWorld == null)
-			{
-				nextWorld = target;
-			}
-			target.setTargetWorld(newWorld);
-			newWorld.setTargetWorld(nextWorld);
-		}
-	
 		//TODO : Ok, really need to find some way to automatically persist references....
 		persistence.put(newWorld);
 		persistence.put(newWorld.getSpawn());
@@ -135,7 +121,27 @@ public class PluginUtilities
 	 */
 	public PluginCommand getPlayerCommand(String commandName, String defaultTooltip, String defaultUsage)
 	{
-		return getCommand(commandName, defaultTooltip, defaultUsage, playerSender);
+		return getPlayerCommand(commandName, defaultTooltip, defaultUsage, null, PermissionType.DEFAULT);
+	}
+	
+	/**
+	 * Retrieve a player command description based on id. 
+	 * 
+	 * A command description can be used to easily process commands, including
+	 * commands with sub-commands.
+	 * 
+	 * This method automatically creates a player-specific (in-game) command.
+	 * 
+	 * @param commandName The command id to retrieve or create
+	 * @param defaultTooltip The default tooltip to use if this is a new command
+	 * @param defaultUsage The default usage string, more can be added
+	 * @param pNode Override the default permission node
+	 * @param pType The type of permissions to apply to this command
+	 * @return A command descriptor
+	 */
+	public PluginCommand getPlayerCommand(String commandName, String defaultTooltip, String defaultUsage, String pNode, PermissionType pType)
+	{
+		return getCommand(commandName, defaultTooltip, defaultUsage, playerSender, pNode, pType);
 	}
 	
 	/**
@@ -154,7 +160,28 @@ public class PluginUtilities
 	 */
 	public PluginCommand getGeneralCommand(String commandName, String defaultTooltip, String defaultUsage)
 	{
-		return getCommand(commandName, defaultTooltip, defaultUsage, null);
+		return getGeneralCommand(commandName, defaultTooltip, defaultUsage, null, PermissionType.DEFAULT);
+	}
+	
+	/**
+	 * Retrieve a general command description based on id. 
+	 * 
+	 * A command description can be used to easily process commands, including
+	 * commands with sub-commands.
+	 * 
+	 * This method automatically creates a general command that will be passed
+	 * a CommandSender for use as a server or in-game command.
+	 * 
+	 * @param commandName The command id to retrieve or create
+	 * @param defaultTooltip The default tooltip to use if this is a new command
+	 * @param defaultUsage The default usage string, more can be added
+	 * @param pNode Override the default permission node
+	 * @param pType The type of permissions to apply to this command
+	 * @return A command descriptor
+	 */
+	public PluginCommand getGeneralCommand(String commandName, String defaultTooltip, String defaultUsage, String pNode, PermissionType pType)
+	{
+		return getCommand(commandName, defaultTooltip, defaultUsage, null, pNode, pType);
 	}
 	
 	/**
@@ -169,9 +196,9 @@ public class PluginUtilities
 	 * @param sender The sender that will issue this command
 	 * @return A command descriptor
 	 */
-	public PluginCommand getCommand(String commandName, String defaultTooltip, String defaultUsage, CommandSenderData sender)
+	public PluginCommand getCommand(String commandName, String defaultTooltip, String defaultUsage, CommandSenderData sender, String pNode, PermissionType pType)
 	{
-		return plugin.getCommand(commandName, defaultTooltip, defaultUsage, sender);
+		return plugin.getCommand(commandName, defaultTooltip, defaultUsage, sender, pNode, pType);
 	}
 
 	/**
@@ -210,8 +237,8 @@ public class PluginUtilities
 	}
 	
 	protected boolean dispatch(Object listener, CommandSender sender, PluginCommand command, String commandString, String[] parameters)
-	{
-		if (command.checkCommand(commandString))
+	{		
+		if (command.checkCommand(sender, commandString))
 		{
 			boolean handledByChild = false;
 			if (parameters != null && parameters.length > 0)

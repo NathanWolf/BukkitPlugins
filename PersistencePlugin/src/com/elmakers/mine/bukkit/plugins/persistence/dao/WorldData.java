@@ -31,8 +31,6 @@ public class WorldData
 		id = world.getId();
 		Location location = world.getSpawnLocation();
 		spawn = new BlockVector(location.getBlockX(), location.getBlockY(), location.getBlockZ());
-		scale = 1.0;
-		targetWorld = null;
 		setEnvironmentType(Environment.NETHER);
 	}
 	
@@ -77,28 +75,6 @@ public class WorldData
 	}
 	
 	@PersistField
-	public WorldData getTargetWorld()
-	{
-		return targetWorld;
-	}
-	
-	public void setTargetWorld(WorldData targetWorld)
-	{
-		this.targetWorld = targetWorld;
-	}
-	
-	@PersistField
-	public double getScale()
-	{
-		return scale;
-	}
-	
-	public void setScale(double scale)
-	{
-		this.scale = scale;
-	}
-	
-	@PersistField
 	public Environment getEnvironmentType()
 	{
 		return environmentType;
@@ -112,8 +88,6 @@ public class WorldData
 	protected String		name;
 	protected long			id;
 	protected BlockVector	spawn;
-	protected WorldData		targetWorld;
-	protected double		scale;
 	protected Environment	environmentType;
 	
 	protected World			world;

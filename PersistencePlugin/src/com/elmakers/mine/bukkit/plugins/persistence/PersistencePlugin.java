@@ -8,6 +8,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
@@ -15,6 +16,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.elmakers.mine.bukkit.plugins.persistence.core.PersistenceCommands;
 import com.elmakers.mine.bukkit.plugins.persistence.core.PersistenceListener;
+
+import com.nijikokun.bukkit.Permissions.Permissions;
 
 /** 
  * The JavaPlugin interface for Persistence- binds Persistence to Bukkit.
@@ -107,7 +110,6 @@ public class PersistencePlugin extends JavaPlugin
 	        log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " failed to initialize");
 	        e.printStackTrace();
 		}
-		initialize();
 	}
 	
 	/*
@@ -141,13 +143,29 @@ public class PersistencePlugin extends JavaPlugin
 	
 	protected void initialize()
 	{
-		handler.initialize(this, getPersistence());
-		listener.initialize(getPersistence());
+		// We use persistence internally, so go ahead and initialize it.
+		persistence = getPersistence();
+		
+		handler.initialize(this, persistence);
+		listener.initialize(persistence);
 		
 		PluginManager pm = getServer().getPluginManager();
 		
 		pm.registerEvent(Type.PLAYER_QUIT, listener, Priority.Normal, this);
 		pm.registerEvent(Type.PLAYER_JOIN, listener, Priority.Normal, this);
+		
+		bindToPermissions();
+	}
+	
+	public void bindToPermissions()
+	{
+		Plugin checkForPermissions = this.getServer().getPluginManager().getPlugin("Permissions");
+	    if (checkForPermissions != null) 
+	    {
+	    	persistence.setPermissions((Permissions)checkForPermissions);
+	    	log.info("Persistence: Found Permissions, using it for permissions.");
+	    } 
+
 	}
 	
 	/*

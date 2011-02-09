@@ -73,7 +73,7 @@ public class PluginData
 		return message;
 	}
 	
-	public PluginCommand getCommand(String commandName, String defaultTooltip, String defaultUsage, CommandSenderData sender)
+	public PluginCommand getCommand(String commandName, String defaultTooltip, String defaultUsage, CommandSenderData sender, String pNode, PermissionType pType)
 	{
 		// First, look for a root command by this name
 		if (commands == null)
@@ -91,7 +91,27 @@ public class PluginData
 		
 		// Create a new un-parented command
 		Persistence persistence = Persistence.getInstance();
-		PluginCommand command = new PluginCommand(this, commandName, defaultTooltip, defaultUsage, sender);
+		PluginCommand command = new PluginCommand(this);
+		
+		command.setPermissionType(pType);
+		command.setCommand(commandName);
+		command.setTooltip(defaultTooltip);
+		command.addUsage(defaultUsage);
+		
+		if (pNode == null)
+		{
+			command.setPermissionNode(command.getDefaultPermissionNode());
+		}
+		else
+		{
+			command.setPermissionNode(pNode);
+		}
+		
+		if (sender != null)
+		{
+			command.addSender(sender);
+		}
+		
 		commands.add(command);
 
 		persistence.put(command);

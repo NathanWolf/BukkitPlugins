@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.PermissionType;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginData;
@@ -38,16 +40,24 @@ public class PersistenceCommands
 		dataSavedMessage = utilities.getMessage("dataSaved", d.dataSavedMessage);
 		pluginListMessage = utilities.getMessage("pluginList", d.pluginListMessage);
 		pluginNotFoundMessage = utilities.getMessage("pluginNotFound", d.pluginNotFoundMessage);
+		suEnabledMessage = utilities.getMessage("suEnabled", d.suEnabledMessage);
+		suDisabledMessage = utilities.getMessage("suDisabled", d.suDisabledMessage);
 
-		// Iniitialize Commands
+		// Initialize Commands
 		persistCommand = utilities.getGeneralCommand(d.persistCommand[0], d.persistCommand[1], d.persistCommand[2]);
 		saveSubCommand = persistCommand.getSubCommand(d.saveSubCommand[0], d.saveSubCommand[1], d.saveSubCommand[2]);
 		describeSubCommand = persistCommand.getSubCommand(d.describeSubCommand[0], d.describeSubCommand[1], d.describeSubCommand[2]);
 		listSubCommand = persistCommand.getSubCommand(d.listSubCommand[0], d.listSubCommand[1], d.listSubCommand[2]);
 		reloadSubCommand = persistCommand.getSubCommand(d.reloadSubCommand[0], d.reloadSubCommand[1], d.reloadSubCommand[2]);
 		resetSubCommand = persistCommand.getSubCommand(d.resetSubCommand[0], d.resetSubCommand[1], d.resetSubCommand[2]);
-		
+
 		helpCommand = utilities.getGeneralCommand(d.helpCommand[0], d.helpCommand[1], d.helpCommand[2]);
+	
+		
+		// Player commands
+		
+		// SU has no permission node- it can only be used by ops.
+		suCommand = utilities.getPlayerCommand(d.suCommand[0], d.suCommand[1], d.suCommand[2], null, PermissionType.OPS_ONLY);
 		
 		for (String usage : d.helpUsage)
 		{
@@ -69,23 +79,40 @@ public class PersistenceCommands
 		listSubCommand.bind("onList");
 		reloadSubCommand.bind("onReload");
 		resetSubCommand.bind("onReset");
+		suCommand.bind("onSU");
 		
 		helpCommand.bind("onHelp");
 	}
 	
 	public boolean process(CommandSender messageOutput, Command cmd, String[] parameters)
 	{
-		// Currently only ops can use Persistence commands.
-		// Anyone can use phelp, though.!
-		if (messageOutput instanceof Player && !helpCommand.checkCommand(cmd.getName()))
-		{
-			Player player = (Player)messageOutput;
-			if (!player.isOp()) return false;
-		}
-	
 		return utilities.dispatch(this, messageOutput, cmd.getName(), parameters);
 	}
+
+	public boolean onSU(Player player, String[] parameters)
+	{
+		PlayerData playerData = persistence.get(player.getName(), PlayerData.class);
+		if (playerData == null) return false;
 		
+		if (playerData.isSuperUser())
+		{
+			suDisabledMessage.sendTo(player);
+			playerData.setSuperUser(false);
+		}
+		else
+		{
+			suEnabledMessage.sendTo(player);
+			playerData.setSuperUser(true);
+		}
+		
+		persistence.put(playerData);
+		
+		// This is an important change.
+		persistence.save();
+		
+		return true;
+	}
+	
 	public boolean onSave(CommandSender messageOutput, String[] parameters)
 	{
    		persistence.save();
@@ -113,7 +140,14 @@ public class PersistenceCommands
 			List<PluginCommand> allCommands = new ArrayList<PluginCommand>();
 			for (PluginData plugin : plugins)
 			{
-				allCommands.addAll(plugin.getCommands());
+				List<PluginCommand> pluginCommands = plugin.getCommands();
+				for (PluginCommand command : pluginCommands)
+				{
+					if (command.checkPermission(messageOutput))
+					{
+						allCommands.add(command);
+					}
+				}
 			}
 			
 			Collections.sort(allCommands);
@@ -132,7 +166,7 @@ public class PersistenceCommands
 			List<PluginCommand> commands = plugin.getCommands();
 			for (PluginCommand command : commands)
 			{
-				if (command.checkCommand(commandName))
+				if (command.checkCommand(messageOutput, commandName))
 				{
 					command.sendHelp(messageOutput, " ", true, true);
 					return true;
@@ -493,6 +527,7 @@ public class PersistenceCommands
 	private PluginCommand reloadSubCommand;
 	private PluginCommand resetSubCommand;
 	private PluginCommand helpCommand;
+	private PluginCommand suCommand;
 
 	private Message resettingEntityMessage;
 	private Message reloadingEntityMessage;
@@ -506,6 +541,8 @@ public class PersistenceCommands
 	private Message dataSavedMessage;
 	private Message pluginListMessage;
 	private Message pluginNotFoundMessage;
+	private Message suEnabledMessage;
+	private Message suDisabledMessage;
 	
 	private PluginUtilities utilities;
 	private Persistence persistence;

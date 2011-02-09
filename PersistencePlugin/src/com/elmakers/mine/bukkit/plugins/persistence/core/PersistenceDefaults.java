@@ -9,6 +9,7 @@ class PersistenceDefaults
 	public final String[] listSubCommand = {"list", "List entities or data", "list <schema>.<entity>"};
 	public final String[] reloadSubCommand = {"reload", "Reload an entity", "reload"};
 	public final String[] resetSubCommand = {"RESET", "DROP an entity table", "RESET <schema>.<entity>"};
+	public final String[] suCommand = {"su", "Enable full permission access", "su"};
 	public final String[] helpCommand = {"phelp", "Get help on Persistence plugins", "phelp"};
 
 	public final String[] describeUsage = {"describe <schema>", "describe <schema>.<entity>"};
@@ -28,4 +29,6 @@ class PersistenceDefaults
 	public final String unknownEntityMessage = "Unknown entity: %s";
 	public final String pluginListMessage = "Use: phelp commands for list of commands\r     phelp <plugin | command> for detailed help";
 	public final String pluginNotFoundMessage = "Plugin %s not found";
+	public final String suEnabledMessage = "Full access enabled. Use /su again to revert to normal user.";
+	public final String suDisabledMessage = "Normal access restored.";
 }

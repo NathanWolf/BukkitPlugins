@@ -16,8 +16,10 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.core.PersistedClass;
 import com.elmakers.mine.bukkit.plugins.persistence.core.Schema;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.CommandSenderData;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataStore;
 import com.elmakers.mine.bukkit.plugins.persistence.data.sql.SqlLiteStore;
+import com.nijikokun.bukkit.Permissions.Permissions;
 
 /** 
  * The main Persistence interface.
@@ -474,11 +476,38 @@ public class Persistence
 		}
 	}
 	
+	protected void setPermissions(Permissions permissions)
+	{
+		this.permissions = permissions;
+	}
+	
+	public Permissions getPermissions()
+	{
+		return permissions;
+	}
+	
+	public boolean hasPermission(Player player, String node)
+	{
+		if (player == null) return false;
+		
+		// Check for su status- this can be toggled by ops with the /su command
+		PlayerData playerData = get(player.getName(), PlayerData.class);
+		if (playerData != null && playerData.isSuperUser()) return true;
+		
+		if (permissions != null)
+		{
+			return Permissions.Security.permission(player, node);
+		}
+		
+		return false;
+	}
+	
 	/*
 	 * private data
 	 */
 	
 	private File dataFolder = null;
+	private Permissions permissions = null;
 	
 	private final HashMap<Class<? extends Object>, PersistedClass> persistedClassMap = new HashMap<Class<? extends Object>, PersistedClass>(); 
 	private final List<PersistedClass> persistedClasses = new ArrayList<PersistedClass>(); 
