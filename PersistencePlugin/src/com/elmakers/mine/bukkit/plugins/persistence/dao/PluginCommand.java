@@ -116,6 +116,20 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 * @param subCommandName The sub-command name
 	 * @param defaultTooltip The default tooltip
 	 * @param defaultUsage The default usage string
+	 * @param pType: The type of permissions to apply
+	 * @return A new command object
+	 */
+	public PluginCommand getSubCommand(String subCommandName, String defaultTooltip, String defaultUsage, PermissionType pType)
+	{
+		return getSubCommand(subCommandName, defaultTooltip, defaultUsage, pType);
+	}
+	
+	/**
+	 * Get or create a sub-command of this command.
+	 * 
+	 * @param subCommandName The sub-command name
+	 * @param defaultTooltip The default tooltip
+	 * @param defaultUsage The default usage string
 	 * @param pNode: The permission node to use
 	 * @param pType: The type of permissions to apply
 	 * @return A new command object
