@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.29
+
+ - Fix using an object as an id and then embedding the containg object inside another object. I fixed this with recursion, so
+   it should handle any depth of craziness like this now.
+
 # 0.28
 
  - Don't preload a World when calling getWorld, just create the shadow data. 

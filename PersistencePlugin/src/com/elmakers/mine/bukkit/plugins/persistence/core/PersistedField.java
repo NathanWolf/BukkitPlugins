@@ -122,6 +122,8 @@ public class PersistedField
 	
 	public Object get(Object o)
 	{
+		if (o == null) return null;
+		
 		Object result = null;
 		if (getter != null)
 		{

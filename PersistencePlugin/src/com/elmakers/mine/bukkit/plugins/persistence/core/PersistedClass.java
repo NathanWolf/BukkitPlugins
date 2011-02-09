@@ -695,9 +695,22 @@ public class PersistedClass
 	public Object getId(Object o)
 	{
 		Object value = null;
-		if (idField != null)
+		PersistedField field = idField;
+		if (field != null)
 		{
-			value = idField.get(o);
+			if (field instanceof PersistedReference)
+			{
+				PersistedReference ref = (PersistedReference)field;
+				Object refId = idField.get(o);
+				if (ref.getReferenceType() != null)
+				{
+					return ref.getReferenceType().getId(refId);
+				}
+			}
+			else
+			{
+				value = idField.get(o);				
+			}
 		}
 		return value;
 	}
