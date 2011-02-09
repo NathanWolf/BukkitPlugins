@@ -416,7 +416,7 @@ public class NetherManager
 			(
 					world, 
 					loc.getBlockX(), 
-					loc.getBlockY(), 
+					currentLocation.getBlockY(), 
 					loc.getBlockZ(),
 					currentLocation.getYaw(),
 					currentLocation.getPitch()
