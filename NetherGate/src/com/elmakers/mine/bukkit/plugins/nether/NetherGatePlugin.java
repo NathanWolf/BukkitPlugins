@@ -1,6 +1,8 @@
 package com.elmakers.mine.bukkit.plugins.nether;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.Location;
@@ -74,6 +76,7 @@ public class NetherGatePlugin extends JavaPlugin
         pm.registerEvent(Type.PLAYER_MOVE, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.CHUNK_LOADED, worldListener, Priority.Normal, this);
+        pm.registerEvent(Type.BLOCK_PHYSICS, physicsListener, Priority.Normal, this);
   }
 	
 	public void initialize()
@@ -94,18 +97,26 @@ public class NetherGatePlugin extends JavaPlugin
 	    utilities = persistence.getUtilities(this);
 	    manager.initialize(getServer(), persistence, utilities);
 	    
-		netherCommand = utilities.getPlayerCommand("nether", "Manage portal areas and worlds", "nether <command>", PermissionType.ADMINS_ONLY);
-		createCommand = netherCommand.getSubCommand("create", "Create a portal area or world", "create <world | area> <name>", PermissionType.ADMINS_ONLY);
-		worldCommand = createCommand.getSubCommand("world", "Create a new world", "world <name>", PermissionType.ADMINS_ONLY);
-		areaCommand = createCommand.getSubCommand("area", "Create a new PortalArea underground", "area <name>", PermissionType.ADMINS_ONLY);
-		kitCommand = netherCommand.getSubCommand("kit", "Give yourself a portal kit", "kit", PermissionType.ADMINS_ONLY);
-		goCommand = netherCommand.getSubCommand("go", "TP to an area or world", "go [area | world]", PermissionType.ADMINS_ONLY);
+		netherCommand = utilities.getPlayerCommand("nether", "Manage portal areas and worlds", "<command>", PermissionType.ADMINS_ONLY);
+		createCommand = netherCommand.getSubCommand("create", "Create a portal area or world", "<world | area> <name>", PermissionType.ADMINS_ONLY);
+		worldCommand = createCommand.getSubCommand("world", "Create a new world", "<name>", PermissionType.ADMINS_ONLY);
+		areaCommand = createCommand.getSubCommand("area", "Create a new PortalArea underground", "<name>", PermissionType.ADMINS_ONLY);
+		kitCommand = netherCommand.getSubCommand("kit", "Give yourself a portal kit", null, PermissionType.ADMINS_ONLY);
+		goCommand = netherCommand.getSubCommand("go", "TP to an area or world", "[name]", PermissionType.ADMINS_ONLY);
+		deleteCommand = netherCommand.getSubCommand("delete", "Delete an area or world", "<world | area> <name>", PermissionType.ADMINS_ONLY);
+		targetCommand = netherCommand.getSubCommand("target", "Re-target worlds or areas", "<world | area> <from> <to>", PermissionType.ADMINS_ONLY);
+		deleteWorldCommand = deleteCommand.getSubCommand("world", "Delete an world", "<name>", PermissionType.ADMINS_ONLY);
+		targetWorldCommand = targetCommand.getSubCommand("world", "Re-target a world", "<from> <to>", PermissionType.ADMINS_ONLY);
+		scaleCommand = netherCommand.getSubCommand("scale", "Re-scale an area or world", "<world | area> <name> <scale>", PermissionType.ADMINS_ONLY); 
+		scaleWorldCommand = scaleCommand.getSubCommand("world", "Re-scale a world", "<name> <scale>", PermissionType.ADMINS_ONLY); 
 		
 		areaCommand.bind("onCreateArea");
 		worldCommand.bind("onCreateWorld");
 		goCommand.bind("onGo");
 		kitCommand.bind("onKit");
-		
+		deleteWorldCommand.bind("onDeleteWorld");
+		targetWorldCommand.bind("onTargetWorld");
+		scaleWorldCommand.bind("onScaleWorld");
 		
 		creationFailedMessage = utilities.getMessage("creationFailed", "Nether creation failed- is there enough room below you?");
 		creationSuccessMessage = utilities.getMessage("creationSuccess", "Created new Nether area");
@@ -115,6 +126,141 @@ public class NetherGatePlugin extends JavaPlugin
 		worldCreateFailedMessage = utilities.getMessage("worldCreateFailed", "World creation failed");
 		goFailedMessage = utilities.getMessage("goFailed", "Failed teleport");
 		goSuccessMessage = utilities.getMessage("goSuccess", "Going to world %s");
+		retargtedWorldMessage = utilities.getMessage("retargedWorld", "Retargeted world %s to %s");
+		deletedWorldMessage = utilities.getMessage("deletedWorld", "Deleted world %s");
+		noWorldMessage = utilities.getMessage("noWorld", "Can't find world %s");
+		scaledWorldMessage = utilities.getMessage("scaleWorld", "Re-scaled world %s to %d");
+		invalidNumberMessage = utilities.getMessage("invalidNumber", "'%s' is not a number");
+		invalidScaleMessage = utilities.getMessage("invalidScale", "A scale of %d wouldn't be a good idea");
+	}
+	
+	public boolean onDeleteWorld(Player player, String[] parameters)
+	{
+		if (parameters.length < 1)
+		{
+			return false;
+		}
+		
+		NetherWorld worldData = null;
+		String worldName = parameters[0];
+		
+		WorldData world = persistence.get(worldName, WorldData.class);
+		if (world != null)
+		{
+			worldData = manager.getWorldData(world);
+		}
+		else
+		{
+			noWorldMessage.sendTo(player, worldName);
+			return true;
+		}
+		
+		List<NetherWorld> allWorlds = new ArrayList<NetherWorld>();
+		persistence.getAll(allWorlds, NetherWorld.class);
+		
+		// Re-target any worlds targeting this one to themselves
+		for (NetherWorld checkWorld : allWorlds)
+		{
+			if (checkWorld.getTargetWorld() == worldData)
+			{
+				checkWorld.setTargetWorld(checkWorld);
+				persistence.put(checkWorld);
+			}
+		}
+		
+		persistence.remove(worldData);
+		
+		deletedWorldMessage.sendTo(player, worldName);
+		
+		return true;
+	}
+	
+	public boolean onScaleWorld(Player player, String[] parameters)
+	{
+		if (parameters.length < 2)
+		{
+			return false;
+		}
+		
+		NetherWorld worldData = null;
+		String worldName = parameters[0];
+		
+		WorldData world = persistence.get(worldName, WorldData.class);
+		if (world != null)
+		{
+			worldData = manager.getWorldData(world);
+		}
+		else
+		{
+			noWorldMessage.sendTo(player, worldName);
+			return true;
+		}
+		
+		double scale = 0;
+		String scaleText = parameters[1];
+		try
+		{
+			scale = Double.parseDouble(scaleText);
+		}
+		catch(Throwable ex)
+		{
+			invalidNumberMessage.sendTo(player, scaleText);
+			return true;
+		}
+		
+		if (scale <= 0.01)
+		{
+			invalidScaleMessage.sendTo(player, scale);
+		}
+				
+		worldData.setScale(scale);
+		persistence.put(worldData);
+		
+		scaledWorldMessage.sendTo(player, worldName, worldData);
+		
+		return true;
+	}
+	
+	public boolean onTargetWorld(Player player, String[] parameters)
+	{
+		if (parameters.length < 2)
+		{
+			return false;
+		}
+		
+		NetherWorld fromWorld = null;
+		NetherWorld toWorld = null;
+		String fromWorldName = parameters[0];
+		String toWorldName = parameters[1];
+		
+		WorldData world = persistence.get(fromWorldName, WorldData.class);
+		if (world != null)
+		{
+			fromWorld = manager.getWorldData(world);
+		}
+		else
+		{
+			noWorldMessage.sendTo(player, fromWorldName);
+			return true;
+		}
+		
+		world = persistence.get(toWorldName, WorldData.class);
+		if (world != null)
+		{
+			toWorld = manager.getWorldData(world);
+		}
+		else
+		{
+			noWorldMessage.sendTo(player, toWorldName);
+			return true;
+		}
+		
+		fromWorld.setTargetWorld(toWorld);
+		persistence.put(fromWorld);
+		
+		retargtedWorldMessage.sendTo(player, fromWorldName, toWorldName);
+		
+		return true;
 	}
 	
 	public boolean onGo(Player player, String[] parameters)
@@ -123,7 +269,14 @@ public class NetherGatePlugin extends JavaPlugin
 			
 		if (targetWorld == null)
 		{
-			goFailedMessage.sendTo(player);
+			if (parameters.length > 0)
+			{
+				noWorldMessage.sendTo(player, parameters[0]);	
+			}
+			else
+			{
+				goFailedMessage.sendTo(player);
+			}
 		}
 		else
 		{	
@@ -236,6 +389,12 @@ public class NetherGatePlugin extends JavaPlugin
 	protected PluginCommand areaCommand;
 	protected PluginCommand goCommand;
 	protected PluginCommand kitCommand;
+	protected PluginCommand targetCommand;
+	protected PluginCommand targetWorldCommand;
+	protected PluginCommand deleteCommand;
+	protected PluginCommand deleteWorldCommand;
+	protected PluginCommand scaleCommand;
+	protected PluginCommand scaleWorldCommand;
 	
 	protected Message creationFailedMessage;
 	protected Message creationSuccessMessage;
@@ -245,10 +404,17 @@ public class NetherGatePlugin extends JavaPlugin
 	protected Message worldCreateFailedMessage;
 	protected Message goFailedMessage;
 	protected Message goSuccessMessage;
+	protected Message retargtedWorldMessage;
+	protected Message deletedWorldMessage;
+	protected Message noWorldMessage;
+	protected Message scaledWorldMessage;
+	protected Message invalidNumberMessage;
+	protected Message invalidScaleMessage;
 	
 	protected NetherManager manager = new NetherManager();
 	protected NetherPlayerListener playerListener = new NetherPlayerListener(manager);
 	protected NetherWorldListener worldListener = new NetherWorldListener(manager);
+	protected NetherBlockListener physicsListener = new NetherBlockListener(manager);
 	
 	protected Persistence persistence = null;
 	protected PluginUtilities utilities = null;

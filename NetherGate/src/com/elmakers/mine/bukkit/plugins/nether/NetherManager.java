@@ -29,12 +29,40 @@ import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
 
 public class NetherManager
 {
+	public HashMap<Material, Boolean> destructible = new HashMap<Material, Boolean>();
+	public HashMap<Material, Boolean> needsPlatform = new HashMap<Material, Boolean>();
+	
+	static final String		DEFAULT_DESTRUCTIBLES	= "1,2,3,10,11,12,13,87,88";
+	
+	public static void parseMaterials(String csvList, HashMap<Material, Boolean> materials)
+	{
+		String[] matIds = csvList.split(",");
+		for (String matId : matIds)
+		{
+			try
+			{
+				int typeId = Integer.parseInt(matId.trim());
+				materials.put(Material.getMaterial(typeId), true);
+			}
+			catch (NumberFormatException ex)
+			{
+				
+			}
+		}
+	}
 	
 	public void initialize(Server server, Persistence persistence, PluginUtilities utilities)
 	{
 		this.server = server;
 		this.utilities = utilities;
 		this.persistence = persistence;
+		
+		needsPlatform.put(Material.WATER, true);
+		needsPlatform.put(Material.STATIONARY_WATER, true);
+		needsPlatform.put(Material.LAVA, true);
+		needsPlatform.put(Material.STATIONARY_LAVA, true);
+		
+		parseMaterials(DEFAULT_DESTRUCTIBLES, destructible);
 	}
 	
 	/*
@@ -224,6 +252,7 @@ public class NetherManager
 		Vector transformed = target;
 		
 		// First, offset to center on local spawn (making sure there is one set)
+		/*
 		BlockVector fromSpawn = from.getWorld().getSpawn();
 		if (fromSpawn != null)
 		{
@@ -232,6 +261,7 @@ public class NetherManager
 		
 		// Apply additional offset
 		transformed.subtract(from.getCenterOffset());
+		*/
 		// Scale
 		double fromScale = from.getScale();
 		double toScale = to.getScale();
@@ -241,6 +271,7 @@ public class NetherManager
 		}
 		
 		// Unwind
+		/*
 		transformed.add(to.getCenterOffset());
 		
 		BlockVector toSpawn = to.getWorld().getSpawn();
@@ -248,7 +279,7 @@ public class NetherManager
 		{
 			transformed.add(toSpawn);
 		}
-		
+		*/
 		transformed.setY(originalY);
 		
 		return new BlockVector(transformed);
@@ -461,34 +492,48 @@ public class NetherManager
 			i++;
 		}
 		
-		buildPlatform(standingBlock);
+		buildPortal(standingBlock, BlockFace.NORTH, true, true);
 		
 		player.teleportTo(targetLocation);
 	}
 	
-	protected void buildPlatform(Block centerBlock)
+	protected void buildPortal(Block centerBlock, BlockFace facing, boolean platform, boolean frame)
 	{
-		for (int x = -1; x <= 1; x++)
+		clearPortalArea(centerBlock, facing);
+		
+		if (platform)
 		{
-			for (int z = -1; z <= 1; z++)
-			{
-				Block block = centerBlock.getRelative(x, 0, z);
-				if (okToPlatform(block.getType()))
-				{
-					block.setType(Material.OBSIDIAN);
-				}
-			}
+			buildPlatform(centerBlock);
 		}
+		
+		buildPortalBlocks(centerBlock, facing);
+		
 	}
 	
-	protected boolean okToPlatform(Material standingMaterial)
+	protected void buildPortalBlocks(Block centerBlock, BlockFace facing)
 	{
-		return (
-				standingMaterial == Material.WATER 
-				|| 	standingMaterial == Material.STATIONARY_WATER
-				||	standingMaterial == Material.LAVA 
-				|| 	standingMaterial == Material.STATIONARY_LAVA
-				);
+		disablePhysics();
+		BoundingBox container = new BoundingBox(centerBlock.getX() - 2, centerBlock.getY() + 2, centerBlock.getZ() - 2,
+				centerBlock.getX(), centerBlock.getY() + 4, centerBlock.getZ());
+		
+		container.fill(centerBlock.getWorld(), Material.PORTAL, destructible);
+		disablePhysics();
+	}
+	
+	protected void clearPortalArea(Block centerBlock, BlockFace facing)
+	{
+		BoundingBox container = new BoundingBox(centerBlock.getX() - 3, centerBlock.getY() + 1, centerBlock.getZ() - 3,
+				centerBlock.getX() + 1, centerBlock.getY() + 5, centerBlock.getZ() + 1);
+		
+		container.fill(centerBlock.getWorld(), Material.AIR, destructible);
+	}
+	
+	protected void buildPlatform(Block centerBlock)
+	{
+		BoundingBox platform = new BoundingBox(centerBlock.getX() - 3, centerBlock.getY(), centerBlock.getZ() - 3,
+				centerBlock.getX() + 2, centerBlock.getY() + 1, centerBlock.getZ() + 2);
+		
+		platform.fill(centerBlock.getWorld(), Material.OBSIDIAN, needsPlatform);
 	}
 	
 	public Location findPlaceToStand(Location startLocation, boolean goUp)
@@ -568,6 +613,26 @@ public class NetherManager
 		return (mat != Material.AIR);
 	}
 	
+	public boolean allowPhysics(Block block)
+	{
+		if (disabledPhysics > 0)
+		{
+			if (System.currentTimeMillis() > disabledPhysics)
+			{
+				disabledPhysics = 0;
+				return true;
+			}
+			
+			return false;
+		}
+		return (block.getType() != Material.PORTAL);
+	}
+	
+	public void disablePhysics()
+	{
+		disabledPhysics = System.currentTimeMillis() + 5000;
+	}
+	
 	public static BlockVector origin = new BlockVector(0, 0, 0);
 
 	protected HashMap<Chunk, PlayerList>	teleporting	= new HashMap<Chunk, PlayerList>();
@@ -577,4 +642,5 @@ public class NetherManager
 	protected Server						server;
 	protected Persistence					persistence;
 	protected PluginUtilities				utilities;
+	protected long							disabledPhysics = 0;
 }

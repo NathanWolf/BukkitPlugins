@@ -1,5 +1,17 @@
 # CHANGELOG
 
+# 0.19
+
+ - Fix NPE when specifying an unknown world to target or delete
+ - Add "scale" command
+
+# 0.18
+
+ - Make sure there's air for the player.
+ - Start creating portal on other side.
+ - Simplify location mapping logic so it's at least symmetrical.
+ - Add "target" and "delete" commands.
+
 # 0.17
  
  - Fix a very bad bug in findPlaceToStand
