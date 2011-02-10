@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.34
+
+ - Some improvements to /phelp.
+ - Fix a bug in the auto-command-child-map creation (I think this was only screwing up phelp)
+ - Allow commands to have no usage information (just pass null for now, no new function signatures)
+
 # 0.33
 
  - _more_ object-as-id fixes, and making "/persist list" AWESOME.

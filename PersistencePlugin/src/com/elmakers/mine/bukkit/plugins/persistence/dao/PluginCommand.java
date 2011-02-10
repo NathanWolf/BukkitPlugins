@@ -185,8 +185,11 @@ public class PluginCommand implements Comparable<PluginCommand>
 		{
 			children = new ArrayList<PluginCommand>();
 		}
-		children.add(command);
+		
+		// Child will self-register!
 		command.setParent(this);
+		
+		// Pass on any senders
 		if (senders != null)
 		{
 			for (CommandSenderData sender : senders)
@@ -285,16 +288,20 @@ public class PluginCommand implements Comparable<PluginCommand>
 	{
 		boolean useSlash = sender instanceof Player;
 		String slash = useSlash ? "/" : "";
-		String currentIndent = getIndent("");
-		String message = currentIndent + slash + " " + getPath() + " : "  + tooltip;
-		sender.sendMessage(prefix + message);
-		currentIndent += indent;
+		String currentIndent = "";
 		
-		if (showUsage && usage != null)
+		if (callbackMethod != null)
 		{
-			for (String exampleUse : usage)
+			String message = currentIndent + slash + getPath() + " : "  + tooltip;
+			sender.sendMessage(prefix + message);
+			currentIndent += indent;
+		
+			if (showUsage && usage != null)
 			{
-				sender.sendMessage(currentIndent + exampleUse);
+				for (String exampleUse : usage)
+				{
+					sender.sendMessage(currentIndent + " ex: " + getPath() + " " + exampleUse);
+				}
 			}
 		}
 		
@@ -323,15 +330,6 @@ public class PluginCommand implements Comparable<PluginCommand>
 	public int compareTo(PluginCommand compare)
 	{
 		return command.compareTo(compare.getCommand());
-	}
-
-	protected String getIndent(String begin)
-	{
-		if (parent != null)
-		{
-			begin = indent + parent.getIndent(begin);
-		}
-		return begin;
 	}
 	
 	protected String getPath()
@@ -363,7 +361,10 @@ public class PluginCommand implements Comparable<PluginCommand>
 	
 	public void setCommand(String command)
 	{
+		// Must do this here too, since we maintain a hash of sub-commands by command name!
+		removeFromParent();
 		this.command = command;
+		addToParent();
 	}
 
 	@PersistField
@@ -452,8 +453,11 @@ public class PluginCommand implements Comparable<PluginCommand>
 			{
 				parent.children = new ArrayList<PluginCommand>();
 			}
-			parent.children.add(this);
-			parent.childMap.put(command, this);
+			if (parent.childMap.get(command) == null)
+			{
+				parent.children.add(this);
+				parent.childMap.put(command, this);
+			}
 		}
 	}
 	
@@ -461,8 +465,11 @@ public class PluginCommand implements Comparable<PluginCommand>
 	{
 		if (parent != null)
 		{
-			parent.children.remove(this);
-			parent.childMap.remove(command);
+			if (parent.childMap.get(command) != null)
+			{
+				parent.children.remove(this);
+				parent.childMap.remove(command);
+			}
 		}
 	}
 

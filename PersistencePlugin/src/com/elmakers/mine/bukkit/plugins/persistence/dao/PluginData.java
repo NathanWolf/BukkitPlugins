@@ -96,7 +96,10 @@ public class PluginData
 		command.setPermissionType(pType);
 		command.setCommand(commandName);
 		command.setTooltip(defaultTooltip);
-		command.addUsage(defaultUsage);
+		if (defaultUsage != null && defaultUsage.length() > 0)
+		{
+			command.addUsage(defaultUsage);
+		}
 		
 		if (pNode == null)
 		{

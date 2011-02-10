@@ -39,6 +39,7 @@ public class PersistenceCommands
 		unknownEntityMessage = utilities.getMessage("unknownEntity", d.unknownEntityMessage);
 		dataSavedMessage = utilities.getMessage("dataSaved", d.dataSavedMessage);
 		pluginListMessage = utilities.getMessage("pluginList", d.pluginListMessage);
+		commandListMessage = utilities.getMessage("commandList", d.commandListMessage);
 		pluginNotFoundMessage = utilities.getMessage("pluginNotFound", d.pluginNotFoundMessage);
 		suEnabledMessage = utilities.getMessage("suEnabled", d.suEnabledMessage);
 		suDisabledMessage = utilities.getMessage("suDisabled", d.suDisabledMessage);
@@ -58,11 +59,6 @@ public class PersistenceCommands
 		
 		// SU has no permission node- it can only be used by ops.
 		suCommand = utilities.getPlayerCommand(d.suCommand[0], d.suCommand[1], d.suCommand[2], null, PermissionType.OPS_ONLY);
-		
-		for (String usage : d.helpUsage)
-		{
-			helpCommand.addUsage(usage);
-		}
 		
 		for (String usage : d.describeUsage)
 		{
@@ -120,6 +116,20 @@ public class PersistenceCommands
     	return true;    	
     }
 	
+	public boolean onHelpPlugins(CommandSender messageOutput, String[] parameters)
+	{
+		List<PluginData> plugins = new ArrayList<PluginData>();
+		persistence.getAll(plugins, PluginData.class);
+
+		pluginListMessage.sendTo(messageOutput);
+				
+		for (PluginData plugin : plugins)
+		{
+			messageOutput.sendMessage(" " + plugin.getId() + " : " + plugin.getDescription());
+		}
+		return true;
+	}
+	
 	public boolean onHelp(CommandSender messageOutput, String[] parameters)
 	{
 		List<PluginData> plugins = new ArrayList<PluginData>();
@@ -127,16 +137,7 @@ public class PersistenceCommands
 
 		if (parameters == null || parameters.length == 0)
 		{
-			pluginListMessage.sendTo(messageOutput);
-			for (PluginData plugin : plugins)
-			{
-				messageOutput.sendMessage(" " + plugin.getId() + " : " + plugin.getDescription());
-			}
-			return true;
-		}
-		
-		if (parameters[0].equalsIgnoreCase("commands"))
-		{
+			commandListMessage.sendTo(messageOutput);
 			List<PluginCommand> allCommands = new ArrayList<PluginCommand>();
 			for (PluginData plugin : plugins)
 			{
@@ -157,7 +158,6 @@ public class PersistenceCommands
 			}
 			
 			return true;
-			
 		}
 		
 		String commandName = parameters[0];
@@ -548,6 +548,7 @@ public class PersistenceCommands
 	private Message unknownEntityMessage;
 	private Message dataSavedMessage;
 	private Message pluginListMessage;
+	private Message commandListMessage;
 	private Message pluginNotFoundMessage;
 	private Message suEnabledMessage;
 	private Message suDisabledMessage;
