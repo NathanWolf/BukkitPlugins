@@ -300,10 +300,21 @@ public class PersistenceCommands
 			fieldName = padColumn(fieldName);
 			
 			Object data = field.get(instance);
+			PersistedClass refType = field.getReferenceType();
+			if (refType != null)
+			{
+				data = refType.getIdData(data);
+			}
+			
 			String dataField = "null";
 			if (data != null)
 			{
 				dataField = data.toString();
+			}
+			
+			if (refType != null)
+			{
+				dataField = refType.getSchema() + "." + refType.getTableName() + "." + dataField;
 			}
 			
 			String row = fieldName + " = " + dataField;

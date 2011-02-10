@@ -167,7 +167,7 @@ public class PersistedField
 		PersistedClass reference = this.getReferenceType();
 		if (reference != null)
 		{
-			concrete = reference.getIdField().getConcreteField();
+			concrete = reference.getConcreteIdField();
 		}
 		
 		return concrete;

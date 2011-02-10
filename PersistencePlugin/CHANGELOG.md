@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.33
+
+ - _more_ object-as-id fixes, and making "/persist list" AWESOME.
+
 # 0.32
 
  - Fix/improve /persist list. (minor release)
