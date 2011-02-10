@@ -12,7 +12,7 @@ import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class BlastSpell extends Spell
 {
-	static final String		DEFAULT_DESTRUCTIBLES	= "1,2,3,10,11,12,13";
+	static final String		DEFAULT_DESTRUCTIBLES	= "1,2,3,10,11,12,13,87,88";
 
 	private List<Material>	destructibleMaterials	= new ArrayList<Material>();
 	private int				defaultRadius			= 4;
@@ -139,7 +139,7 @@ public class BlastSpell extends Spell
 	@Override
 	public void onLoad(PluginProperties properties)
 	{
-		destructibleMaterials = properties.getMaterials("spells-blast-destructible", DEFAULT_DESTRUCTIBLES);
+		destructibleMaterials = PluginProperties.parseMaterials(DEFAULT_DESTRUCTIBLES);
 		defaultRadius = properties.getInteger("spells-blast-radius", defaultRadius);
 		maxRadius = properties.getInteger("spells-blast-max-radius", maxRadius);
 		defaultSearchDistance = properties.getInteger("spells-blast-search-distance", defaultSearchDistance);

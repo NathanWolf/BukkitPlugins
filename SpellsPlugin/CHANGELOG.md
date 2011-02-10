@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.83
+
+ - Add Netherrak and Slowsand to the destructible materials list.
+
 ## 0.82
 
  - Add "default" permission group.

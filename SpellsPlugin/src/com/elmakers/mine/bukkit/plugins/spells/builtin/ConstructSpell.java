@@ -14,7 +14,7 @@ import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class ConstructSpell extends Spell
 {
-	static final String		DEFAULT_DESTRUCTIBLES	= "1,2,3,8,9,10,11,12,13";
+	static final String		DEFAULT_DESTRUCTIBLES	= "1,2,3,8,9,10,11,12,13,87,88";
 
 	private List<Material>	destructibleMaterials	= new ArrayList<Material>();
 	private ConstructionType defaultConstructionType = ConstructionType.SPHERE;
@@ -216,7 +216,7 @@ public class ConstructSpell extends Spell
 	@Override
 	public void onLoad(PluginProperties properties)
 	{
-		destructibleMaterials = properties.getMaterials("spells-construct-destructible", DEFAULT_DESTRUCTIBLES);
+		destructibleMaterials = PluginProperties.parseMaterials(DEFAULT_DESTRUCTIBLES);
 		defaultConstructionType = ConstructionType.parseString(properties.getString("spells-construct-default", ""), defaultConstructionType);
 		defaultRadius = properties.getInteger("spells-construct-radius", defaultRadius);
 		maxRadius = properties.getInteger("spells-construct-max-radius", maxRadius);

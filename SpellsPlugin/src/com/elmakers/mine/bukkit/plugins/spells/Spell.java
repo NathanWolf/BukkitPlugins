@@ -179,7 +179,7 @@ public abstract class Spell implements Comparable<Spell>
 		List<Material> buildingMaterials = spells.getBuildingMaterials();
 		Inventory inventory = player.getInventory();
 		ItemStack[] contents = inventory.getContents();
-		for (int i = 0; i < 9; i++)
+		for (int i = 8; i >= 0; i--)
 		{
 			if (contents[i] == null) break;
 			Material candidate = contents[i].getType();

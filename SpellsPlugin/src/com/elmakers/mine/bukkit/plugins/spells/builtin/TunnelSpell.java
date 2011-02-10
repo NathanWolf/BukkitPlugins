@@ -13,7 +13,7 @@ import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class TunnelSpell extends Spell
 {
-	static final String DEFAULT_DESTRUCTIBLES = "1,3,10,11,12,13";
+	static final String DEFAULT_DESTRUCTIBLES = "1,3,10,11,12,13,87,88";
 	
 	private List<Material> destructibleMaterials = new ArrayList<Material>();
 	private int defaultDepth = 8;
