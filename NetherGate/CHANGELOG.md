@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.17
+ 
+ - Fix a very bad bug in findPlaceToStand
+ - First version that really feels "all worky".
+
 # 0.16 
 
  - OOPS... put back the y-value of the player, that got lost in a refactor. Very embarassing. (Thanks, theLephty!)

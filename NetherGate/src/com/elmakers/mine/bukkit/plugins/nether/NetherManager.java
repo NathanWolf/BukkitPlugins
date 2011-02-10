@@ -220,35 +220,36 @@ public class NetherManager
 	
 	public BlockVector mapLocation(NetherWorld from, NetherWorld to, BlockVector target)
 	{
+		int originalY = target.getBlockY();
 		Vector transformed = target;
 		
 		// First, offset to center on local spawn (making sure there is one set)
 		BlockVector fromSpawn = from.getWorld().getSpawn();
 		if (fromSpawn != null)
 		{
-			transformed = target.subtract(fromSpawn);
+			transformed.subtract(fromSpawn);
 		}
 		
 		// Apply additional offset
-		transformed = transformed.subtract(from.getCenterOffset());
+		transformed.subtract(from.getCenterOffset());
 		// Scale
 		double fromScale = from.getScale();
 		double toScale = to.getScale();
 		if (fromScale != 0 && toScale != 0)
 		{
-			transformed = transformed.multiply(fromScale / toScale);
+			transformed.multiply(fromScale / toScale);
 		}
 		
 		// Unwind
-		transformed = transformed.add(to.getCenterOffset());
+		transformed.add(to.getCenterOffset());
 		
 		BlockVector toSpawn = to.getWorld().getSpawn();
 		if (toSpawn != null)
 		{
-			transformed = transformed.add(toSpawn);
+			transformed.add(toSpawn);
 		}
 		
-		transformed.setY(target.getY());
+		transformed.setY(originalY);
 		
 		return new BlockVector(transformed);
 	}
@@ -416,7 +417,7 @@ public class NetherManager
 			(
 					world, 
 					loc.getBlockX(), 
-					currentLocation.getBlockY(), 
+					loc.getBlockY(), 
 					loc.getBlockZ(),
 					currentLocation.getYaw(),
 					currentLocation.getPitch()
@@ -432,6 +433,7 @@ public class NetherManager
 	{
 		if (location == null) return;
 		
+		// Look up first, then down
 		Location targetLocation = findPlaceToStand(location, true);
 		if (targetLocation == null)
 		{
@@ -443,6 +445,7 @@ public class NetherManager
 		}
 		
 		// Make sure we're not left hanging, look for ground below
+		// THis is kind of "belt and suspenders"- may remove it later when findPlacetoStand is more reliable.
 		Block standingBlock = location.getWorld().getBlockAt(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
 		standingBlock = standingBlock.getFace(BlockFace.DOWN);
 		Material standingMaterial = standingBlock.getType();
@@ -502,25 +505,51 @@ public class NetherManager
 		}
 
 		// get player position
-		int x = (int) Math.round(startLocation.getX() - 0.5);
-		int y = (int) Math.round(startLocation.getY() + step + step);
-		int z = (int) Math.round(startLocation.getZ() - 0.5);
+		int x = startLocation.getBlockX();
+		int y = startLocation.getBlockY() - 1;
+		int z = startLocation.getBlockZ();
 
 		// search for a spot to stand
-		while (y > 5 && y < 100)
+		Block[] blocks = new Block[3];
+		Material[] mats = new Material[3];
+
+		blocks[0] = world.getBlockAt(x, y, z);
+		blocks[1] = blocks[0].getFace(BlockFace.UP);
+		blocks[2] = blocks[1].getFace(BlockFace.UP);
+		
+		for (int i = 0; i < blocks.length; i++)
 		{
-			Block block = world.getBlockAt(x, y, z);
-			Block blockOneUp = world.getBlockAt(x, y + 1, z);
-			Block blockTwoUp = world.getBlockAt(x, y + 2, z);
+			mats[i] = blocks[i].getType();
+		}
+		
+		while (y > 5 && y < 125)
+		{
 			if 
 			(
-				isOkToStandOn(block.getType())
-			&&	isOkToStandIn(blockOneUp.getType())
-			&& 	isOkToStandIn(blockTwoUp.getType())
+				isOkToStandOn(mats[0])
+			&&	isOkToStandIn(mats[1])
+			&& 	isOkToStandIn(mats[2])
 			)
 			{
 				// spot found - return location
 				return new Location(world, x, y + 1, z, startLocation.getYaw(), startLocation.getPitch());
+			}
+			
+			if (goUp)
+			{
+				blocks[0] = blocks[1];
+				blocks[1] = blocks[2];
+				blocks[2] = blocks[2].getFace(BlockFace.UP);
+			}
+			else
+			{
+				blocks[2] = blocks[1];				
+				blocks[1] = blocks[0];
+				blocks[0] = blocks[0].getFace(BlockFace.DOWN);
+			}
+			for (int i = 0; i < blocks.length; i++)
+			{
+				mats[i] = blocks[i].getType();
 			}
 			y += step;
 		}
@@ -536,8 +565,7 @@ public class NetherManager
 
 	public boolean isOkToStandOn(Material mat)
 	{
-		return (mat != Material.AIR || mat == Material.WATER || mat == Material.STATIONARY_WATER
-				|| mat == Material.LAVA || mat == Material.STATIONARY_LAVA);
+		return (mat != Material.AIR);
 	}
 	
 	public static BlockVector origin = new BlockVector(0, 0, 0);
