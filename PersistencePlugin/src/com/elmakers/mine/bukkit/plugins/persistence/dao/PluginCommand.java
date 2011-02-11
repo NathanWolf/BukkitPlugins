@@ -25,7 +25,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 * 
 	 * Use PluginUtilities to create PluginCommands.
 	 * 
-	 * @see PluginUtilities
+	 * @see com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities#getCommand(String, String, String, CommandSenderData, String, PermissionType)
 	 */
 	public PluginCommand()
 	{
@@ -116,7 +116,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 * @param subCommandName The sub-command name
 	 * @param defaultTooltip The default tooltip
 	 * @param defaultUsage The default usage string
-	 * @param pType: The type of permissions to apply
+	 * @param pType The type of permissions to apply
 	 * @return A new command object
 	 */
 	public PluginCommand getSubCommand(String subCommandName, String defaultTooltip, String defaultUsage, PermissionType pType)
@@ -130,8 +130,8 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 * @param subCommandName The sub-command name
 	 * @param defaultTooltip The default tooltip
 	 * @param defaultUsage The default usage string
-	 * @param pNode: The permission node to use
-	 * @param pType: The type of permissions to apply
+	 * @param pNode The permission node to use
+	 * @param pType The type of permissions to apply
 	 * @return A new command object
 	 */
 	public PluginCommand getSubCommand(String subCommandName, String defaultTooltip, String defaultUsage, String pNode, PermissionType pType)
@@ -244,7 +244,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 * 
 	 * If the command sender is a player, a permissions check will be done.
 	 * 
-	 * @param the sender requesting access. 
+	 * @param sender the sender requesting access. 
 	 * @param commandString The command string to check
 	 * @return Whether or not the command succeeded
 	 */

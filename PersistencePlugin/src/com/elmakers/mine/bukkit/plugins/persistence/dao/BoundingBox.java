@@ -1,12 +1,14 @@
 package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.util.BlockVector;
+import org.bukkit.util.Vector;
 
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
@@ -66,7 +68,10 @@ public class BoundingBox
 	
 	public BlockVector getCenter()
 	{
-		return new BlockVector(min.getMidpoint(max));
+		Vector center = new Vector(min.getX(), min.getY(), min.getZ());
+		center = center.getMidpoint(max);
+		
+		return new BlockVector(center);
 	}
 	
 	public int getSizeX()
@@ -132,6 +137,21 @@ public class BoundingBox
 							block.setType(material);
 						}
 					}
+				}
+			}
+		}
+	}
+	
+	public void getBlocks(World world, List<Block> blocks)
+	{
+		for (int x = min.getBlockX(); x < max.getBlockX(); x++)
+		{
+			for (int y = min.getBlockY(); y < max.getBlockY(); y++)
+			{
+				for (int z = min.getBlockZ(); z < max.getBlockZ(); z++)
+				{
+					Block block = world.getBlockAt(x, y, z);
+					blocks.add(block);
 				}
 			}
 		}

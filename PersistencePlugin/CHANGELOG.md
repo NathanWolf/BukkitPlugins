@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.35
+
+ - Some BoundingBox additions and fixes.
+
 # 0.34
 
  - Some improvements to /phelp.
