@@ -881,7 +881,7 @@ public class Spells
 		addSpell(new RecallSpell());
 		addSpell(new DisintegrateSpell());
 		addSpell(new ManifestSpell());
-		addSpell(new PeekSpell());
+		addSpell(new PeekSpell(nether));
 		
 		// wip
 		// addSpell(new TowerSpell());

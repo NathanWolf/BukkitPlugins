@@ -19,7 +19,13 @@ public class PhaseSpell extends Spell
 		{
 			return false;
 		}
-		return nether.go(player, parameters) != null;
+		
+		String worldName = null;
+		if (parameters.length > 0)
+		{
+			worldName = parameters[0];
+		}
+		return nether.go(player, worldName) != null;
 	}
 
 	@Override

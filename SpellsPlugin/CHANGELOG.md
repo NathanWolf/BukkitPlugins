@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.84
+
+ - Add "world" variant of "peek" (!)
+
 ## 0.83
 
  - Add Netherrak and Slowsand to the destructible materials list.
