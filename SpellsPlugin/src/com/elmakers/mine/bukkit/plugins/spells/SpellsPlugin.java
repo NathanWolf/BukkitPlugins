@@ -1,9 +1,16 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.Server;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.Plugin;
@@ -14,6 +21,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.dynmap.DynmapPlugin;
 
 import com.elmakers.mine.bukkit.plugins.nether.NetherGatePlugin;
+import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
+import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
+import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
 
 public class SpellsPlugin extends JavaPlugin
 {
@@ -39,17 +50,23 @@ public class SpellsPlugin extends JavaPlugin
 	
 	public void onEnable() 
 	{
-		bindDynmapPlugin();
-		bindNetherGatePlugin();
-		
-		spells.initialize(this);
-		
-		playerListener.setSpells(spells);
-		entityListener.setSpells(spells);
+		Plugin checkForPersistence = this.getServer().getPluginManager().getPlugin("Persistence");
+	    if(checkForPersistence != null) 
+	    {
+	    	PersistencePlugin plugin = (PersistencePlugin)checkForPersistence;
+	    	persistence = plugin.getPersistence();
+	    } 
+	    else 
+	    {
+	    	log.warning("The Spells plugin depends on Persistence");
+	    	this.getServer().getPluginManager().disablePlugin(this);
+	    	return;
+	    }
+	    
+	    initialize();
 		
         PluginManager pm = getServer().getPluginManager();
 		
-        pm.registerEvent(Type.PLAYER_COMMAND, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_ITEM, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_ANIMATION, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_MOVE, playerListener, Priority.Normal, this);
@@ -68,6 +85,174 @@ public class SpellsPlugin extends JavaPlugin
         
         PluginDescriptionFile pdfFile = this.getDescription();
         log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled");
+	}
+	
+	protected void initialize()
+	{
+		utilities = persistence.getUtilities(this);
+
+		bindDynmapPlugin();
+		bindNetherGatePlugin();
+
+		spells.initialize(this, persistence, utilities);
+
+		playerListener.setSpells(spells);
+		entityListener.setSpells(spells);
+
+		// setup commands
+		castCommand = utilities.getPlayerCommand("cast", "Cast spells by name", "<spellname>");
+		spellsCommand = utilities.getPlayerCommand("spells", "List spells you know", null);
+
+		castCommand.bind("onCast");
+		spellsCommand.bind("onSpells");
+	}
+
+	@Override
+	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args)
+	{
+		return utilities.dispatch(this, sender, cmd.getName(), args);
+	}
+	
+	public boolean onCast(Player player, String[] castParameters)
+	{
+		if (castParameters.length < 1) return false;
+		
+		String spellName = castParameters[0];
+		String[] parameters = new String[castParameters.length - 1];
+		for (int i = 1; i < castParameters.length; i++)
+		{
+			parameters[i - 1] = castParameters[i];
+		}
+		
+    	SpellVariant spell = spells.getSpell(spellName, player);
+    	if (spell == null)
+    	{
+    		return false;
+    	}
+    	
+    	spells.castSpell(spell, parameters, player);
+		
+		return true;
+	}
+	
+	public boolean onReload(CommandSender sender, String[] parameters)
+	{
+		spells.load();
+		sender.sendMessage("Configuration reloaded.");
+		return true;
+	}
+
+	public boolean onSpells(Player player, String[] parameters)
+	{
+		if (parameters.length < 1)
+		{
+			listCategories(player);
+			return true;
+		}
+		
+		String category = parameters[0];
+		listSpellsByCategory(player, category);
+
+		return true;
+	}
+	
+
+	/* 
+	 * Help commands
+	 */
+
+	public void listSpellsByCategory(Player player, String category)
+	{
+		List<SpellVariant> categorySpells = new ArrayList<SpellVariant>();
+		List<SpellVariant> spellVariants = spells.getAllSpells();
+		for (SpellVariant spell : spellVariants)
+		{
+			if (spell.getCategory().equalsIgnoreCase(category) && spell.hasSpellPermission(player))
+			{
+				categorySpells.add(spell);
+			}
+		}
+		
+		if (categorySpells.size() == 0)
+		{
+			player.sendMessage("You don't know any spells");
+			return;
+		}
+		
+		Collections.sort(categorySpells);
+		for (SpellVariant spell : categorySpells)
+		{
+			player.sendMessage(spell.getName() + " [" + spell.getMaterial().name().toLowerCase() + "] : " + spell.getDescription());
+		}
+	}
+	
+	public void listCategories(Player player)
+	{
+		HashMap<String, Integer> spellCounts = new HashMap<String, Integer>();
+		List<String> spellGroups = new ArrayList<String>();
+		List<SpellVariant> spellVariants = spells.getAllSpells();
+		
+		for (SpellVariant spell : spellVariants)
+		{
+			if (!spell.hasSpellPermission(player)) continue;
+			
+			Integer spellCount = spellCounts.get(spell.getCategory());
+			if (spellCount == null || spellCount == 0)
+			{
+				spellCounts.put(spell.getCategory(), 1);
+				spellGroups.add(spell.getCategory());
+			}
+			else
+			{
+				spellCounts.put(spell.getCategory(), spellCount + 1);
+			}
+		}
+		if (spellGroups.size() == 0)
+		{
+			player.sendMessage("You don't know any spells");
+			return;
+		}
+		
+		Collections.sort(spellGroups);
+		for (String group : spellGroups)
+		{
+			player.sendMessage(group + " [" + spellCounts.get(group) + "]");
+		}
+	}
+	
+	public void listSpells(Player player)
+	{
+		HashMap<String, SpellGroup> spellGroups = new HashMap<String, SpellGroup>();
+		List<SpellVariant> spellVariants = spells.getAllSpells();
+		
+		for (SpellVariant spell : spellVariants)
+		{
+			SpellGroup group = spellGroups.get(spell.getCategory());
+			if (group == null)
+			{
+				group = new SpellGroup();
+				group.groupName = spell.getCategory();
+				spellGroups.put(group.groupName, group);	
+			}
+			group.spells.add(spell);
+		}
+		
+		List<SpellGroup> sortedGroups = new ArrayList<SpellGroup>();
+		sortedGroups.addAll(spellGroups.values());
+		Collections.sort(sortedGroups);
+		
+		for (SpellGroup group : sortedGroups)
+		{
+			player.sendMessage(group.groupName + ":");
+			Collections.sort(group.spells);
+			for (SpellVariant spell : group.spells)
+			{
+				if (spell.hasSpellPermission(player))
+				{
+					player.sendMessage(" " + spell.getName() + " [" + spell.getMaterial().name().toLowerCase() + "] : " + spell.getDescription());
+				}
+			}
+		}
 	}
 
 	public void onDisable() 
@@ -111,6 +296,12 @@ public class SpellsPlugin extends JavaPlugin
 	/*
 	 * Private data
 	 */
+	protected Persistence persistence = null;
+	protected PluginUtilities utilities = null;
+
+	protected PluginCommand castCommand;
+	protected PluginCommand spellsCommand;	
+	
 	private final Spells spells = new Spells();
 	private final Logger log = Logger.getLogger("Minecraft");
 	private final SpellsPlayerListener playerListener = new SpellsPlayerListener();

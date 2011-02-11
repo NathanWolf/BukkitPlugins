@@ -17,6 +17,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.bukkit.World;
 
+import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
+import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 /**
@@ -726,8 +728,10 @@ public abstract class Spell implements Comparable<Spell>
 	 * 
 	 * @param instance The spells instance
 	 */
-	public void setPlugin(Spells instance)
+	public void initialize(Spells instance, Persistence persistence, PluginUtilities utilities)
 	{
+		this.persistence = persistence;
+		this.utilities = utilities;
 		this.spells = instance;
 	}
 	
@@ -812,6 +816,29 @@ public abstract class Spell implements Comparable<Spell>
 		targetingComplete = true;
 	}
 	
+	public String getPermissionNode()
+	{
+		return "SpellsPlugin.spells." + getName();
+	}
+	
+	public boolean hasSpellPermission()
+	{
+		return hasSpellPermission(player);
+	}
+	
+	public boolean hasSpellPermission(Player player)
+	{
+		return persistence.hasPermission(player, getPermissionNode());
+	}
+	
+	public boolean otherSpellHasPermission(String spellName)
+	{
+		SpellVariant spell = spells.getSpell(spellName, player);
+		if (spell == null) return false;
+		
+		return spell.hasSpellPermission(player);
+	}
+	
 	/* Used for sorting spells
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
@@ -840,4 +867,6 @@ public abstract class Spell implements Comparable<Spell>
 	private boolean								reverseTargeting		= false;
 	private final List<SpellVariant>			variants				= new ArrayList<SpellVariant>();
 
+	protected Persistence						persistence				= null;
+	protected PluginUtilities					utilities				= null;
 }

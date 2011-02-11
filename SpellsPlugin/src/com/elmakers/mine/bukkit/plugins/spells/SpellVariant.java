@@ -92,4 +92,16 @@ public class SpellVariant implements Comparable<SpellVariant>
  
 		return spell.cast(spellParameters, player);
 	}
+	
+	public String getPermissionNode()
+	{
+		return "SpellsPlugin.spells." + getName();
+	}
+	
+	public boolean hasSpellPermission(Player player)
+	{
+		if (spell == null) return false;
+		
+		return spell.persistence.hasPermission(player, getPermissionNode());
+	}
 }

@@ -137,7 +137,7 @@ public class PeekSpell extends Spell implements BlockRequestListener
 						Material mat = Material.GLASS;
 						if (blocks != null)
 						{
-							mat = blocks.get(x * y * z).getType();
+							mat = blocks.get(x + (y * diameter) + z * diameter * diameter).getType();
 						}
 						
 						peekBlock(x, y, z, target, radius, peekedBlocks, mat);

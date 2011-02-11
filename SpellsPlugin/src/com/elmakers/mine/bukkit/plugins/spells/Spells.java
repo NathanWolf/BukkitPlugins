@@ -1,7 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -15,16 +14,15 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
-import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerItemEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 
-import com.elmakers.mine.bukkit.plugins.groups.Permissions;
-import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
 import com.elmakers.mine.bukkit.plugins.nether.NetherManager;
+import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
+import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.*;
 import com.elmakers.mine.bukkit.plugins.spells.dynmap.MapSpell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
@@ -40,28 +38,18 @@ public class Spells
 	 * Public API - Use for hooking up a plugin, or calling a spell
 	 */
 		
-	public SpellVariant getSpell(Material material, String playerName)
+	public SpellVariant getSpell(Material material, Player player)
 	{
-		PlayerPermissions permissions = getPermissions(playerName);
-		if (permissions == null) return null;
-		
 		SpellVariant spell = spellsByMaterial.get(material);
-		if (spell != null && !permissions.hasPermission(spell.getName())) return null;
+		if (spell != null && !spell.hasSpellPermission(player)) return null;
 		return spell;
 	}
-	
-	public PlayerPermissions getPermissions(String playerName)
-	{
-		PlayerPermissions playerPermissions = permissions.getPlayerPermissions(playerName);
 
-		// TODO hook this directly into the permissions system.
-		Player player = plugin.getServer().getPlayer(playerName);
-		if (playerPermissions != null && player != null && player.isOp())
-		{
-			playerPermissions.setIsOp();
-		}
-		
-		return playerPermissions;
+	public SpellVariant getSpell(String name, Player player)
+	{
+		SpellVariant spell = spellVariants.get(name);
+		if (spell != null && !spell.hasSpellPermission(player)) return null;
+		return spell;
 	}
 	
 	public PlayerSpells getPlayerSpells(Player player)
@@ -73,15 +61,6 @@ public class Spells
 			playerSpells.put(player.getName(), spells);
 		}
 		return spells;
-	}
-	
-	public SpellVariant getSpell(String name, String playerName)
-	{
-		PlayerPermissions permissions = getPermissions(playerName);
-		if (permissions == null) return null;
-		
-		if (!permissions.hasPermission(name)) return null;
-		return spellVariants.get(name);
 	}
 	
 	public boolean castSpell(SpellVariant spell, Player player)
@@ -128,7 +107,7 @@ public class Spells
 		}
 		
 		spells.add(spell);
-		spell.setPlugin(this);
+		spell.initialize(this, persistence, utilities);
 	}
 	
 	/*
@@ -469,108 +448,15 @@ public class Spells
 	 * Internal functions - don't call these, or really anything below here.
 	 */
 	
-	/* 
-	 * Help commands
-	 */
-
-	public void listSpellsByCategory(Player player, String category, PlayerPermissions playerPermissions)
-	{
-		List<SpellVariant> spells = new ArrayList<SpellVariant>();
-		
-		for (SpellVariant spell : spellVariants.values())
-		{
-			if (spell.getCategory().equalsIgnoreCase(category) && playerPermissions.hasPermission(spell.getName()))
-			{
-				spells.add(spell);
-			}
-		}
-		
-		if (spells.size() == 0)
-		{
-			player.sendMessage("You don't know any spells");
-			return;
-		}
-		
-		Collections.sort(spells);
-		for (SpellVariant spell : spells)
-		{
-			player.sendMessage(spell.getName() + " [" + spell.getMaterial().name().toLowerCase() + "] : " + spell.getDescription());
-		}
-	}
-	
-	public void listCategories(Player player, PlayerPermissions playerPermissions)
-	{
-		HashMap<String, Integer> spellCounts = new HashMap<String, Integer>();
-		List<String> spellGroups = new ArrayList<String>();
-		
-		for (SpellVariant spell : spellVariants.values())
-		{
-			if (!playerPermissions.hasPermission(spell.getName())) continue;
-			
-			Integer spellCount = spellCounts.get(spell.getCategory());
-			if (spellCount == null || spellCount == 0)
-			{
-				spellCounts.put(spell.getCategory(), 1);
-				spellGroups.add(spell.getCategory());
-			}
-			else
-			{
-				spellCounts.put(spell.getCategory(), spellCount + 1);
-			}
-		}
-		if (spellGroups.size() == 0)
-		{
-			player.sendMessage("You don't know any spells");
-			return;
-		}
-		
-		Collections.sort(spellGroups);
-		for (String group : spellGroups)
-		{
-			player.sendMessage(group + " [" + spellCounts.get(group) + "]");
-		}
-	}
-	
-	public void listSpells(Player player, PlayerPermissions playerPermissions)
-	{
-		HashMap<String, SpellGroup> spellGroups = new HashMap<String, SpellGroup>();
-	
-		for (SpellVariant spell : spellVariants.values())
-		{
-			SpellGroup group = spellGroups.get(spell.getCategory());
-			if (group == null)
-			{
-				group = new SpellGroup();
-				group.groupName = spell.getCategory();
-				spellGroups.put(group.groupName, group);	
-			}
-			group.spells.add(spell);
-		}
-		
-		List<SpellGroup> sortedGroups = new ArrayList<SpellGroup>();
-		sortedGroups.addAll(spellGroups.values());
-		Collections.sort(sortedGroups);
-		
-		for (SpellGroup group : sortedGroups)
-		{
-			player.sendMessage(group.groupName + ":");
-			Collections.sort(group.spells);
-			for (SpellVariant spell : group.spells)
-			{
-				if (playerPermissions.hasPermission(spell.getName()))
-				{
-					player.sendMessage(" " + spell.getName() + " [" + spell.getMaterial().name().toLowerCase() + "] : " + spell.getDescription());
-				}
-			}
-		}
-	}
 	
 	/*
 	 * Saving and loading
 	 */
 	
-	public void initialize(SpellsPlugin plugin)
+	public void initialize(SpellsPlugin plugin, Persistence persistence, PluginUtilities utilities)
 	{
+		this.persistence = persistence;
+		this.utilities = utilities;
 		this.plugin = plugin;
 		addBuiltinSpells();
 		load();
@@ -599,8 +485,6 @@ public class Spells
 		
 		//buildingMaterials = properties.getMaterials("spells-general-building", DEFAULT_BUILDING_MATERIALS);
 		buildingMaterials = PluginProperties.parseMaterials(DEFAULT_BUILDING_MATERIALS);
-		
-		permissions.load(permissionsFile);
 		
 		for (Spell spell : spells)
 		{
@@ -682,82 +566,6 @@ public class Spells
     	// TODO!
     }
     
-	/**
-     * Commands sent from in game to us.
-     *
-     * @param event The original player chat event
-     */
-    public void onPlayerCommand(PlayerChatEvent event) 
-    {
-    	String[] split = event.getMessage().split(" ");
-    	String commandString = split[0];
-       	
-    	Player player = event.getPlayer();
-    	PlayerPermissions permissions = getPermissions(player.getName());
-    	
-    	if (permissions == null)
-    	{
-    		return;
-    	}
-    	
-    	if (event.isCancelled()) return;
-   	
-    	if (commandString.equalsIgnoreCase("/spells"))
-    	{
-    		event.setCancelled(true);
-    		if (split.length < 2)
-    		{
-    			listCategories(player, permissions);
-    			return;
-    		}
-    		
-    		if (split[1].equalsIgnoreCase("reload") && permissions.isAdministrator())
-    		{
-        		load();
-        		event.getPlayer().sendMessage("Configuration reloaded.");
-        		return;    			
-    		}
-    		
-    		String category = split[1];
-    		listSpellsByCategory(player, category, permissions);
-
-    	}
-    	
-    	if (!allowCommandUse())
-    	{
-    		return;
-    	}
-    	
-    	if (!commandString.equalsIgnoreCase("/cast"))
-    	{
-    		return;
-    	}
-    	
-    	event.setCancelled(true);
-   	
-    	if (split.length < 2)
-    	{
-    		listSpells(player, permissions);
-    		return;
-    	}
-   
-    	String spellName = split[1];
-    	
-    	SpellVariant spell = getSpell(spellName, player.getName());
-    	if (spell == null || spellName.equalsIgnoreCase("help") || spellName.equalsIgnoreCase("list"))
-    	{
-    		listSpells(event.getPlayer(), permissions);
-    		return;
-    	}
-    	
-    	String[] parameters = new String[split.length - 2];
-    	for (int i = 2; i < split.length; i++)
-    	{
-    		parameters[i - 2] = split[i];
-    	}
-    	
-    	castSpell(spell, parameters, event.getPlayer());
-    }
    
     /**
      * Called when a player performs an animation, such as the arm swing
@@ -790,7 +598,14 @@ public class Spells
 		setCurrentMaterialType(event.getPlayer(), material, data);
 	
     }
- 
+
+    public List<SpellVariant> getAllSpells()
+    {
+    	List<SpellVariant> spells = new ArrayList<SpellVariant>();
+    	spells.addAll(spellVariants.values());
+    	return spells;
+    }
+    
     /**
      * Called when a player uses an item
      * 
@@ -804,53 +619,7 @@ public class Spells
     		cancel(event.getPlayer());
     	}
     }
-	
-	/*
-	 * Private data
-	 */
-	private final String propertiesFile = "spells.properties";
-	private String permissionsFile = "spell-classes.txt";
-	
-	private final String wandPropertiesFile = "wand.properties";
-	private int wandTypeId = 280;
-	
-	static final String		DEFAULT_BUILDING_MATERIALS	= "1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,24,25,35,41,42,43,45,46,47,48,49,56,57,60,65,66,73,74,79,80,81,82,83,85,86,87,88,89,91";
-	static final String		STICKY_MATERIALS = "37,38,39,50,51,55,59,63,65,66,68,70,72,75,76,77,78,83";
-	static final String		STICKY_MATERIALS_DOUBLE_HEIGHT = "64,71,";
-	
-	private List<Material>	buildingMaterials	= new ArrayList<Material>();
-	private List<Material>	stickyMaterials		= new ArrayList<Material>();
-	private List<Material>	stickyMaterialsDoubleHeight		= new ArrayList<Material>();
-	private Material gravityFillMaterial = Material.DIRT;
-	
-	private final List<BlockList> cleanupBlocks = new ArrayList<BlockList>();
-	private final Object cleanupLock = new Object();
-	private long lastCleanupTime = 0;
-	
-	private int undoQueueDepth = 256;
-	private boolean silent = false;
-	private boolean quiet = true;
-	private boolean allowCommands = true;
-	private boolean	autoExpandUndo = true;
-	private boolean autoPreventCaveIn = false;
-	private int undoCaveInHeight = 32;
-	private HashMap<String, UndoQueue> playerUndoQueues =  new HashMap<String, UndoQueue>();
-	
-	private final Logger log = Logger.getLogger("Minecraft");
-	private final Permissions permissions = new Permissions();
-	private final HashMap<String, SpellVariant> spellVariants = new HashMap<String, SpellVariant>();
-	private final HashMap<Material, SpellVariant> spellsByMaterial = new HashMap<Material, SpellVariant>();
-	private final List<Spell> spells = new ArrayList<Spell>();
-	private final HashMap<String, PlayerSpells> playerSpells = new HashMap<String, PlayerSpells>();
-	private final List<Spell> movementListeners = new ArrayList<Spell>();
-	private final List<Spell> materialListeners = new ArrayList<Spell>();
-	private final List<Spell> quitListeners = new ArrayList<Spell>();
-	private final List<Spell> deathListeners = new ArrayList<Spell>();
-	
-	private SpellsPlugin plugin = null;
-	private DynmapPlugin dynmap = null;
-	private NetherManager nether = null;
-	
+    
 	public void setNether(NetherManager nether)
 	{
 		this.nether = nether;
@@ -903,4 +672,51 @@ public class Spells
 		}
 	}
 	
+	/*
+	 * Private data
+	 */
+	private final String propertiesFile = "spells.properties";
+	private String permissionsFile = "spell-classes.txt";
+	
+	private final String wandPropertiesFile = "wand.properties";
+	private int wandTypeId = 280;
+	
+	static final String		DEFAULT_BUILDING_MATERIALS	= "1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,24,25,35,41,42,43,45,46,47,48,49,56,57,60,65,66,73,74,79,80,81,82,83,85,86,87,88,89,91";
+	static final String		STICKY_MATERIALS = "37,38,39,50,51,55,59,63,65,66,68,70,72,75,76,77,78,83";
+	static final String		STICKY_MATERIALS_DOUBLE_HEIGHT = "64,71,";
+	
+	private List<Material>	buildingMaterials	= new ArrayList<Material>();
+	private List<Material>	stickyMaterials		= new ArrayList<Material>();
+	private List<Material>	stickyMaterialsDoubleHeight		= new ArrayList<Material>();
+	private Material gravityFillMaterial = Material.DIRT;
+	
+	private final List<BlockList> cleanupBlocks = new ArrayList<BlockList>();
+	private final Object cleanupLock = new Object();
+	private long lastCleanupTime = 0;
+	
+	private int undoQueueDepth = 256;
+	private boolean silent = false;
+	private boolean quiet = true;
+	private boolean allowCommands = true;
+	private boolean	autoExpandUndo = true;
+	private boolean autoPreventCaveIn = false;
+	private int undoCaveInHeight = 32;
+	private HashMap<String, UndoQueue> playerUndoQueues =  new HashMap<String, UndoQueue>();
+	
+	private final Logger log = Logger.getLogger("Minecraft");
+	private final HashMap<String, SpellVariant> spellVariants = new HashMap<String, SpellVariant>();
+	private final HashMap<Material, SpellVariant> spellsByMaterial = new HashMap<Material, SpellVariant>();
+	private final List<Spell> spells = new ArrayList<Spell>();
+	private final HashMap<String, PlayerSpells> playerSpells = new HashMap<String, PlayerSpells>();
+	private final List<Spell> movementListeners = new ArrayList<Spell>();
+	private final List<Spell> materialListeners = new ArrayList<Spell>();
+	private final List<Spell> quitListeners = new ArrayList<Spell>();
+	private final List<Spell> deathListeners = new ArrayList<Spell>();
+	
+	private SpellsPlugin plugin = null;
+	private DynmapPlugin dynmap = null;
+	private NetherManager nether = null;
+	
+	protected Persistence persistence = null;
+	protected PluginUtilities utilities = null;
 }

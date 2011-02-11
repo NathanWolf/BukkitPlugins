@@ -1,7 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.spells;
 
 import org.bukkit.event.player.PlayerAnimationEvent;
-import org.bukkit.event.player.PlayerChatEvent;
 import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerItemEvent;
 import org.bukkit.event.player.PlayerListener;
@@ -15,19 +14,6 @@ class SpellsPlayerListener extends PlayerListener
 	{
 		this.master = master;
 	}
-	
-	/**
-     * Commands sent from in game to us.
-     *
-     * @param player The player who sent the command.
-     * @param split The input line split by spaces.
-     * @return <code>boolean</code> - True denotes that the command existed, false the command doesn't.
-     */
-    @Override
-    public void onPlayerCommand(PlayerChatEvent event) 
-    {
-    	master.onPlayerCommand(event);
-    }
     
     /**
      * Called when a player performs an animation, such as the arm swing

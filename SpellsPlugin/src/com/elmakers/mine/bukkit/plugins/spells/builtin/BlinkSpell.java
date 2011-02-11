@@ -6,7 +6,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 
-import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
@@ -61,8 +60,6 @@ public class BlinkSpell extends Spell
 	@Override
 	public boolean onCast(String[] parameters)
 	{
-		PlayerPermissions permissions = spells.getPermissions(player.getName());
-		
 		if (parameters.length > 0)
 		{
 			if (parameters[0].equalsIgnoreCase("ascend"))
@@ -92,7 +89,7 @@ public class BlinkSpell extends Spell
 		
 		// Auto ascend + descend
 		
-		if (getYRotation() < -80 && permissions.hasPermission("descend") && autoDescend)
+		if (getYRotation() < -80 && otherSpellHasPermission("descend") && autoDescend)
 		{
 			if (descend())
 			{
@@ -100,7 +97,7 @@ public class BlinkSpell extends Spell
 			}
 		}
 		
-		if (getYRotation() > 80 && permissions.hasPermission("ascend") && autoAscend)
+		if (getYRotation() > 80 && otherSpellHasPermission("ascend") && autoAscend)
 		{
 			if (ascend())
 			{

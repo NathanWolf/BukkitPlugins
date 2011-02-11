@@ -9,7 +9,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDeathEvent;
 
-import com.elmakers.mine.bukkit.plugins.groups.PlayerPermissions;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.SpellEventType;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
@@ -50,12 +49,11 @@ public class RecallSpell extends Spell
 			return true;
 		}
 		
-		PlayerPermissions permissions = spells.getPermissions(player.getName());
 		PlayerMarker marker = markers.get(player.getName());
 		
 		if (getYRotation() > 80)
 		{
-			if (marker == null || !marker.isActive && permissions.hasPermission("spawn") && autoSpawn)
+			if (marker == null || !marker.isActive && otherSpellHasPermission("spawn") && autoSpawn)
 			{
 				castMessage(player, "Returning you home");
 				player.teleportTo(player.getWorld().getSpawnLocation());
@@ -66,7 +64,7 @@ public class RecallSpell extends Spell
 				
 				double distance = getDistance(player.getLocation(), marker.location);
 
-				if (distance < disableDistance && permissions.hasPermission("spawn") && autoSpawn)
+				if (distance < disableDistance && otherSpellHasPermission("spawn") && autoSpawn)
 				{
 					castMessage(player, "Returning you home");
 					player.teleportTo(player.getWorld().getSpawnLocation());
@@ -197,8 +195,7 @@ public class RecallSpell extends Spell
 	@Override
 	public void onPlayerDeath(Player player, EntityDeathEvent event)
 	{
-		PlayerPermissions permissions = spells.getPermissions(player.getName());
-		if (autoDropOnDeath && permissions != null && permissions.hasPermission("recall"))
+		if (autoDropOnDeath && hasSpellPermission(player))
 		{
 			PlayerMarker marker = markers.get(player.getName());
 			if (marker == null || !marker.isActive)

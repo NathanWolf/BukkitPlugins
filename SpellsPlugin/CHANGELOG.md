@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.85
+
+ - First-round Persistence integration.
+
 ## 0.84
 
  - Add "world" variant of "peek" (!)
