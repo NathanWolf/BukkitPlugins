@@ -52,7 +52,7 @@ class WandPlayerListener extends PlayerListener
 					{
 						continue;
 					}
-					spell = wands.getSpells().getSpell(contents[i].getType(), player.getName());
+					spell = wands.getSpells().getSpell(contents[i].getType(), player);
 					if (spell != null)
 					{
 						break;
@@ -102,7 +102,7 @@ class WandPlayerListener extends PlayerListener
 				boolean isSpell = false;
 				if (active[i].getType() != Material.AIR)
 				{
-					SpellVariant spell = spells.getSpell(active[i].getType(), player.getName());
+					SpellVariant spell = spells.getSpell(active[i].getType(), player);
 					isSpell = spell != null;
 				}
 				
@@ -171,7 +171,7 @@ class WandPlayerListener extends PlayerListener
 				
 				if (contents[i].getType() != Material.AIR)
 				{
-					SpellVariant ispell = spells.getSpell(contents[i].getType(), player.getName());
+					SpellVariant ispell = spells.getSpell(contents[i].getType(), player);
 
 					if (!foundInventory)
 					{

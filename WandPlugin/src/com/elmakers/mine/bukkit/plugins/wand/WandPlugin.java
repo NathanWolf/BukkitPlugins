@@ -122,7 +122,7 @@ public class WandPlugin extends JavaPlugin
     	}
     	
     	String spellName = parameters[0];
-    	SpellVariant spell = wands.getSpells().getSpell(spellName, player.getName());
+    	SpellVariant spell = wands.getSpells().getSpell(spellName, player);
     	if (spell == null)
     	{
     		player.sendMessage("Spell '" + spellName + "' unknown, Use /spells for spell list");

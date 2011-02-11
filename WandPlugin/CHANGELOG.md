@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.60
+
+ - Support release for Spells refactor. Wand refactor coming soon to a wand near you!
+
 ## 0.59
 
  - Transition to Bukkit Command interface
