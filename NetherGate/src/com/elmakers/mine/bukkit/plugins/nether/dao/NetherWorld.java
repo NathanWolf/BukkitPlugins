@@ -105,5 +105,5 @@ public class NetherWorld
 	protected PortalArea	targetArea;
 	protected BlockVector	targetOffset;
 	protected BlockVector	centerOffset;
-	protected double		scale = 1;
+	protected double		scale;
 }

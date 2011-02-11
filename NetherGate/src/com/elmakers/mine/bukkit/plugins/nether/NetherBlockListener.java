@@ -5,7 +5,6 @@ import org.bukkit.event.block.BlockPhysicsEvent;
 
 public class NetherBlockListener extends BlockListener
 {
-
 	public NetherBlockListener(NetherManager manager)
 	{
 		this.manager = manager;

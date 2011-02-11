@@ -129,9 +129,9 @@ public class NetherGatePlugin extends JavaPlugin
 		retargtedWorldMessage = utilities.getMessage("retargedWorld", "Retargeted world %s to %s");
 		deletedWorldMessage = utilities.getMessage("deletedWorld", "Deleted world %s");
 		noWorldMessage = utilities.getMessage("noWorld", "Can't find world %s");
-		scaledWorldMessage = utilities.getMessage("scaleWorld", "Re-scaled world %s to %d");
+		scaledWorldMessage = utilities.getMessage("scaleWorld", "Re-scaled world %s to %.2f");
 		invalidNumberMessage = utilities.getMessage("invalidNumber", "'%s' is not a number");
-		invalidScaleMessage = utilities.getMessage("invalidScale", "A scale of %d wouldn't be a good idea");
+		invalidScaleMessage = utilities.getMessage("invalidScale", "A scale of %.2f wouldn't be a good idea");
 	}
 	
 	public boolean onDeleteWorld(Player player, String[] parameters)
@@ -211,12 +211,13 @@ public class NetherGatePlugin extends JavaPlugin
 		if (scale <= 0.01)
 		{
 			invalidScaleMessage.sendTo(player, scale);
+			return false;
 		}
 				
 		worldData.setScale(scale);
 		persistence.put(worldData);
 		
-		scaledWorldMessage.sendTo(player, worldName, worldData);
+		scaledWorldMessage.sendTo(player, worldName, scale);
 		
 		return true;
 	}
@@ -265,13 +266,18 @@ public class NetherGatePlugin extends JavaPlugin
 	
 	public boolean onGo(Player player, String[] parameters)
 	{
-		WorldData targetWorld = manager.go(player, parameters);
+		String worldName = null;
+		if (parameters.length > 0)
+		{
+			worldName = parameters[0];
+		}
+		WorldData targetWorld = manager.go(player, worldName);
 			
 		if (targetWorld == null)
 		{
-			if (parameters.length > 0)
+			if (worldName != null)
 			{
-				noWorldMessage.sendTo(player, parameters[0]);	
+				noWorldMessage.sendTo(player, worldName);	
 			}
 			else
 			{

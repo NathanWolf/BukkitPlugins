@@ -1,5 +1,13 @@
 # CHANGELOG
 
+# 0.21
+
+ -  .... peek ..... world .... (!!!!!!)
+
+# 0.20
+
+ - Fix some bugs in the "scale" command.
+
 # 0.19
 
  - Fix NPE when specifying an unknown world to target or delete

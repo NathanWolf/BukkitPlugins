@@ -21,6 +21,8 @@ import com.elmakers.mine.bukkit.plugins.nether.dao.NetherWorld;
 import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherPlayer;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherPlayer.TeleportState;
+import com.elmakers.mine.bukkit.plugins.nether.listener.BlockRequestListener;
+
 import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
@@ -29,46 +31,6 @@ import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
 
 public class NetherManager
 {
-	public HashMap<Material, Boolean> destructible = new HashMap<Material, Boolean>();
-	public HashMap<Material, Boolean> needsPlatform = new HashMap<Material, Boolean>();
-	
-	static final String		DEFAULT_DESTRUCTIBLES	= "1,2,3,10,11,12,13,87,88";
-	
-	public static void parseMaterials(String csvList, HashMap<Material, Boolean> materials)
-	{
-		String[] matIds = csvList.split(",");
-		for (String matId : matIds)
-		{
-			try
-			{
-				int typeId = Integer.parseInt(matId.trim());
-				materials.put(Material.getMaterial(typeId), true);
-			}
-			catch (NumberFormatException ex)
-			{
-				
-			}
-		}
-	}
-	
-	public void initialize(Server server, Persistence persistence, PluginUtilities utilities)
-	{
-		this.server = server;
-		this.utilities = utilities;
-		this.persistence = persistence;
-		
-		needsPlatform.put(Material.WATER, true);
-		needsPlatform.put(Material.STATIONARY_WATER, true);
-		needsPlatform.put(Material.LAVA, true);
-		needsPlatform.put(Material.STATIONARY_LAVA, true);
-		
-		parseMaterials(DEFAULT_DESTRUCTIBLES, destructible);
-	}
-	
-	/*
-	 * Basic player/world access
-	 */
-
 	public NetherWorld createWorld(Server server, String name, Environment defaultType, World currentWorld)
 	{
 		NetherWorld current = getWorldData(currentWorld);
@@ -140,6 +102,84 @@ public class NetherManager
 		return tpPlayer;
 	}
 	
+	public boolean requestBlockList(World currentWorld, String worldName, BlockVector center, int radius, BlockRequestListener listener)
+	{
+		NetherWorld targetWorld = getWorld(worldName, currentWorld);
+		if (targetWorld == null)
+		{
+			return false;
+		}
+		
+		NetherWorld worldData = getWorldData(currentWorld);
+		if (worldData == null)
+		{
+			return false;
+		}
+		
+		BlockRequest request = new BlockRequest(this, center, radius, listener);
+		request.setWorld(targetWorld);
+		request.translate(worldData);
+		
+		BlockVector targetLocation = request.getCenter();
+		World world = targetWorld.getWorld().getWorld(server);
+		Chunk chunk = world.getChunkAt(targetLocation.getBlockX(), targetLocation.getBlockZ());
+		
+		if (world.isChunkLoaded(chunk))
+		{
+			request.dispatch();
+		}
+		else
+		{
+			BlockRequestList requesting = requestMap.get(chunk);
+			if (requesting == null)
+			{
+				requesting = new BlockRequestList();
+				requestMap.put(chunk, requesting);
+			}
+			
+			requesting.add(request);
+			world.loadChunk(chunk);
+		}
+		
+		return true;
+	}
+	
+	protected static void parseMaterials(String csvList, HashMap<Material, Boolean> materials)
+	{
+		String[] matIds = csvList.split(",");
+		for (String matId : matIds)
+		{
+			try
+			{
+				int typeId = Integer.parseInt(matId.trim());
+				materials.put(Material.getMaterial(typeId), true);
+			}
+			catch (NumberFormatException ex)
+			{
+				
+			}
+		}
+	}
+	
+	public void initialize(Server server, Persistence persistence, PluginUtilities utilities)
+	{
+		this.server = server;
+		this.utilities = utilities;
+		this.persistence = persistence;
+		
+		needsPlatform.put(Material.WATER, true);
+		needsPlatform.put(Material.STATIONARY_WATER, true);
+		needsPlatform.put(Material.LAVA, true);
+		needsPlatform.put(Material.STATIONARY_LAVA, true);
+		
+		parseMaterials(DEFAULT_DESTRUCTIBLES, destructible);
+	}
+	
+	/*
+	 * Basic player/world access
+	 */
+
+	
 	/*
 	 * PortalArea
 	 */
@@ -186,7 +226,7 @@ public class NetherManager
 		return true;
 	}
 	
-	public void addToMap(PortalArea nether)
+	protected void addToMap(PortalArea nether)
 	{
 		BlockVector location = nether.getInternalArea().getCenter();
 		Chunk chunk = world.getChunkAt(location.getBlockX(), location.getBlockZ());
@@ -327,17 +367,17 @@ public class NetherManager
 		return true;
 	}
 	
-	public void startTeleport(Player player)
+	protected void startTeleport(Player player)
 	{
 		startTeleport(player, getNextWorld(player.getWorld()));
 	}
 	
-	public boolean startTeleport(Player player, NetherWorld targetWorld)
+	protected boolean startTeleport(Player player, NetherWorld targetWorld)
 	{
 		return teleportPlayer(player, targetWorld, player.getLocation());
 	}
 	
-	public void onPlayerMove(Player player)
+	protected void onPlayerMove(Player player)
 	{
 		NetherPlayer playerData = getPlayerData(player);
 		if (playerData == null) return;
@@ -378,12 +418,12 @@ public class NetherManager
 		startTeleport(player);
 	}
 	
-	public WorldData go(Player player, String[] parameters)
+	protected NetherWorld getWorld(String worldName, World currentWorld)
 	{
 		NetherWorld targetWorld = null;
-		if (parameters.length > 0)
+		if (worldName != null && worldName.length() > 0)
 		{
-			WorldData world = persistence.get(parameters[0], WorldData.class);
+			WorldData world = persistence.get(worldName, WorldData.class);
 			if (world != null)
 			{
 				targetWorld = getWorldData(world);
@@ -391,7 +431,6 @@ public class NetherManager
 		}
 		else
 		{
-			World currentWorld = player.getWorld();
 			WorldData thisWorld = utilities.getWorld(server, currentWorld);
 			if (thisWorld != null)
 			{
@@ -409,6 +448,13 @@ public class NetherManager
 				}
 			}
 		}
+		
+		return targetWorld;
+	}
+	
+	public WorldData go(Player player, String worldName)
+	{
+		NetherWorld targetWorld = getWorld(worldName, player.getWorld());
 		
 		if (targetWorld != null)
 		{
@@ -432,6 +478,16 @@ public class NetherManager
 				finishTeleport(tp, chunk.getWorld());
 			}
 			teleporting.put(chunk, null);
+		}
+		
+		BlockRequestList blockRequests = requestMap.get(chunk);
+		if (blockRequests != null)
+		{
+			for (BlockRequest request : blockRequests)
+			{
+				request.dispatch();
+			}
+			requestMap.put(chunk, null);
 		}
 	}
 	
@@ -475,31 +531,22 @@ public class NetherManager
 			targetLocation = location;
 		}
 		
-		// Make sure we're not left hanging, look for ground below
-		// THis is kind of "belt and suspenders"- may remove it later when findPlacetoStand is more reliable.
 		Block standingBlock = location.getWorld().getBlockAt(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
 		standingBlock = standingBlock.getFace(BlockFace.DOWN);
-		Material standingMaterial = standingBlock.getType();
-		int startY = standingBlock.getY();
-		int maxSearch = 16;
-		int i = 0;
-		while ( i < maxSearch && standingMaterial == Material.AIR)
-		{
-			int y = startY - i;
-			if (y < 4) break;
-			standingBlock = standingBlock.getFace(BlockFace.DOWN);
-			standingMaterial = standingBlock.getType();
-			i++;
-		}
 		
 		buildPortal(standingBlock, BlockFace.NORTH, true, true);
 		
 		player.teleportTo(targetLocation);
 	}
 	
-	protected void buildPortal(Block centerBlock, BlockFace facing, boolean platform, boolean frame)
+	public void buildPortal(Block centerBlock, BlockFace facing, boolean platform, boolean frame)
 	{
 		clearPortalArea(centerBlock, facing);
+	
+		if (frame)
+		{
+			buildFrame(centerBlock, facing);
+		}
 		
 		if (platform)
 		{
@@ -520,6 +567,16 @@ public class NetherManager
 		disablePhysics();
 	}
 	
+	protected void buildFrame(Block centerBlock, BlockFace facing)
+	{
+		disablePhysics();
+		BoundingBox container = new BoundingBox(centerBlock.getX() - 3, centerBlock.getY() + 3, centerBlock.getZ() - 3,
+				centerBlock.getX(), centerBlock.getY() + 5, centerBlock.getZ());
+		
+		container.fill(centerBlock.getWorld(), Material.OBSIDIAN, destructible);
+		disablePhysics();
+	}
+	
 	protected void clearPortalArea(Block centerBlock, BlockFace facing)
 	{
 		BoundingBox container = new BoundingBox(centerBlock.getX() - 3, centerBlock.getY() + 1, centerBlock.getZ() - 3,
@@ -536,7 +593,7 @@ public class NetherManager
 		platform.fill(centerBlock.getWorld(), Material.OBSIDIAN, needsPlatform);
 	}
 	
-	public Location findPlaceToStand(Location startLocation, boolean goUp)
+	protected Location findPlaceToStand(Location startLocation, boolean goUp)
 	{
 		World world = startLocation.getWorld();
 		int step;
@@ -603,12 +660,12 @@ public class NetherManager
 		return null;
 	}
 	
-	public boolean isOkToStandIn(Material mat)
+	protected boolean isOkToStandIn(Material mat)
 	{
 		return (mat == Material.AIR || mat == Material.PORTAL);
 	}
 
-	public boolean isOkToStandOn(Material mat)
+	protected boolean isOkToStandOn(Material mat)
 	{
 		return (mat != Material.AIR);
 	}
@@ -628,19 +685,29 @@ public class NetherManager
 		return (block.getType() != Material.PORTAL);
 	}
 	
-	public void disablePhysics()
+	protected void disablePhysics()
 	{
 		disabledPhysics = System.currentTimeMillis() + 5000;
 	}
 	
-	public static BlockVector origin = new BlockVector(0, 0, 0);
+	public Server getServer()
+	{
+		return server;
+	}
+	
+	public static BlockVector					origin					= new BlockVector(0, 0, 0);
 
-	protected HashMap<Chunk, PlayerList>	teleporting	= new HashMap<Chunk, PlayerList>();
-	protected HashMap<Chunk, NetherList>	netherMap	= new HashMap<Chunk, NetherList>();
-	protected List<PortalArea>				netherAreas	= new ArrayList<PortalArea>();
-	protected World							world;
-	protected Server						server;
-	protected Persistence					persistence;
-	protected PluginUtilities				utilities;
-	protected long							disabledPhysics = 0;
+	protected static final String				DEFAULT_DESTRUCTIBLES	= "1,2,3,10,11,12,13,87,88";
+
+	protected HashMap<Material, Boolean>		destructible			= new HashMap<Material, Boolean>();
+	protected HashMap<Material, Boolean>		needsPlatform			= new HashMap<Material, Boolean>();
+	protected HashMap<Chunk, PlayerList>		teleporting				= new HashMap<Chunk, PlayerList>();
+	protected HashMap<Chunk, NetherList>		netherMap				= new HashMap<Chunk, NetherList>();
+	protected HashMap<Chunk, BlockRequestList>	requestMap				= new HashMap<Chunk, BlockRequestList>();
+	protected List<PortalArea>					netherAreas				= new ArrayList<PortalArea>();
+	protected World								world;
+	protected Server							server;
+	protected Persistence						persistence;
+	protected PluginUtilities					utilities;
+	protected long								disabledPhysics			= 0;
 }
