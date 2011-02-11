@@ -31,23 +31,57 @@ import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
 
 public class NetherManager
 {
-	public NetherWorld createWorld(Server server, String name, Environment defaultType, World currentWorld)
+	public NetherWorld getWorldData(WorldData worldData)
 	{
-		NetherWorld current = getWorldData(currentWorld);
+		if (worldData == null) return null;
+		return persistence.get(worldData, NetherWorld.class);
+	}
+	
+	public NetherWorld getCurrentWorld(World current)
+	{
 		if (current == null) return null;
+		NetherWorld currentWorld = getWorldData(current);
+		if (currentWorld == null)
+		{
+			currentWorld = createWorld(current.getName(), current.getEnvironment());
+		}
 		
+		return currentWorld;
+	}
+	
+	
+	public NetherWorld createWorld(String name, Environment defaultType)
+	{
 		WorldData world = utilities.getWorld(server, name, defaultType);
 		NetherWorld worldData = persistence.get(world, NetherWorld.class);
 		if (worldData == null)
 		{
 			worldData = new NetherWorld(world);
-			worldData.autoBind(current);
-			persistence.put(current);
+			switch (defaultType)
+			{
+				case NETHER:
+					worldData.setScale(8);
+					break;
+				default:
+					worldData.setScale(1);
+			}
 			persistence.put(worldData);
 			persistence.put(worldData.getTargetOffset());
 			persistence.put(worldData.getCenterOffset());
 		}
-		
+
+		return worldData;
+	}
+
+	public NetherWorld createWorld(String name, Environment defaultType, World currentWorld)
+	{
+		NetherWorld current = getWorldData(currentWorld);
+		if (current == null)
+			return null;
+
+		NetherWorld worldData = createWorld(name, defaultType);
+		worldData.autoBind(current);
+
 		return worldData;
 	}
 	
@@ -57,30 +91,42 @@ public class NetherManager
 		return getWorldData(worldData);
 	}
 	
-	public NetherWorld getWorldData(WorldData worldData)
+	public NetherWorld getDefaultNether(World currentWorld)
 	{
-		if (worldData == null) return null;
-		
-		NetherWorld netherData = persistence.get(worldData, NetherWorld.class);
-		if (netherData == null)
+		NetherWorld nether = persistence.get("nether", NetherWorld.class);
+		if (nether != null)
 		{
-			netherData = new NetherWorld(worldData);
-			persistence.put(netherData);
+			return nether;
 		}
-		return netherData;
+				
+		nether = createWorld("nether", Environment.NETHER, currentWorld);
+		persistence.put(nether);
+	
+		return nether;	
 	}
 	
 	public NetherWorld getNextWorld(World currentWorld)
 	{
-		NetherWorld thisWorldData = getWorldData(currentWorld);
+		NetherWorld thisWorldData = getCurrentWorld(currentWorld);
 		if (thisWorldData == null) return null;
 		
 		NetherWorld targetWorld = thisWorldData.getTargetWorld();
-		
-		// Auto-create a default nether world if this is the only one
-		if (targetWorld == null || targetWorld == thisWorldData)
+		if (targetWorld == null)
 		{
-			targetWorld = createWorld(server, "nether", Environment.NETHER, currentWorld);
+			List<NetherWorld> allWorlds = new ArrayList<NetherWorld>();
+			persistence.getAll(allWorlds, NetherWorld.class);
+			
+			// Only auto-bind the first world
+			// TODO - Persistence: a way to get entity could without getting a whole list!
+			if (allWorlds.size() == 1)
+			{
+				targetWorld = getDefaultNether(currentWorld);
+				if (targetWorld != null)
+				{
+					thisWorldData.setTargetWorld(targetWorld);
+					thisWorldData.autoBind(thisWorldData);
+				}
+			}
 		}
 		
 		return targetWorld;
@@ -280,6 +326,8 @@ public class NetherManager
 	
 	public boolean teleportPlayer(Player player, WorldData targetWorldData, Location targetLocation)
 	{
+		if (targetWorldData == null) return false;
+		
 		NetherWorld targetWorld = getWorldData(targetWorldData);
 		if (targetWorld == null) return false;
 		
@@ -289,7 +337,7 @@ public class NetherManager
 	public BlockVector mapLocation(NetherWorld from, NetherWorld to, BlockVector target)
 	{
 		int originalY = target.getBlockY();
-		Vector transformed = target;
+		Vector transformed = new Vector(target.getBlockX(), target.getBlockY(), target.getBlockZ());
 		
 		// First, offset to center on local spawn (making sure there is one set)
 		/*
@@ -307,7 +355,9 @@ public class NetherManager
 		double toScale = to.getScale();
 		if (fromScale != 0 && toScale != 0)
 		{
-			transformed.multiply(fromScale / toScale);
+			//transformed.multiply(fromScale / toScale);
+			transformed.setX(transformed.getBlockX() * fromScale / toScale);
+			transformed.setZ(transformed.getBlockZ() * fromScale / toScale);
 		}
 		
 		// Unwind
@@ -327,11 +377,13 @@ public class NetherManager
 
 	public boolean teleportPlayer(Player player, NetherWorld targetWorld, Location targetLocation)
 	{
+		if (targetWorld == null) return false;
+		
 		NetherPlayer tpPlayer = getPlayerData(player);
 		if (tpPlayer == null) return false;
 		
 		// Register the current world first, in case it's not already.
-		NetherWorld currentWorld = getWorldData(player.getWorld());
+		NetherWorld currentWorld = getCurrentWorld(player.getWorld());
 		if (currentWorld == null) return false;
 			
 		BlockVector target = new BlockVector(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
@@ -431,22 +483,7 @@ public class NetherManager
 		}
 		else
 		{
-			WorldData thisWorld = utilities.getWorld(server, currentWorld);
-			if (thisWorld != null)
-			{
-				NetherWorld thisWorldData = getWorldData(thisWorld);
-				if (thisWorldData != null)
-				{
-					targetWorld = thisWorldData.getTargetWorld();
-				}
-				
-				// Auto-create a default nether world if this is the only one
-				if (targetWorld == null || targetWorld == thisWorldData)
-				{
-					targetWorld = createWorld(server, "nether", Environment.NETHER, currentWorld);
-					targetWorld.setScale(8);
-				}
-			}
+			targetWorld = getNextWorld(currentWorld);
 		}
 		
 		return targetWorld;
@@ -454,17 +491,20 @@ public class NetherManager
 	
 	public WorldData go(Player player, String worldName)
 	{
+		// First make sure this world is registered!
+		getCurrentWorld(player.getWorld());
 		NetherWorld targetWorld = getWorld(worldName, player.getWorld());
-		
-		if (targetWorld != null)
+		if (targetWorld == null)
 		{
-			Location location = player.getLocation();
-			if (!teleportPlayer(player, targetWorld, location))
-			{
-				targetWorld = null;
-			}
+			return null;
 		}
 		
+		Location location = player.getLocation();
+		if (!teleportPlayer(player, targetWorld, location))
+		{
+			targetWorld = null;
+		}
+	
 		return targetWorld.getWorld();
 	}
 	

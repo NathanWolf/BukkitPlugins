@@ -75,6 +75,7 @@ public class BlockRequest
 			center = new BlockVector(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
 		}
 		
+		center = new BlockVector(center.getBlockX(), center.getBlockY() + radius, center.getBlockZ());
 		List<Block> blocks = new ArrayList<Block>();
 		BoundingBox area = getArea();
 		area.getBlocks(targetWorld, blocks);

@@ -149,7 +149,8 @@ public class NetherGatePlugin extends JavaPlugin
 		{
 			worldData = manager.getWorldData(world);
 		}
-		else
+		
+		if (worldData == null)
 		{
 			noWorldMessage.sendTo(player, worldName);
 			return true;
@@ -190,7 +191,8 @@ public class NetherGatePlugin extends JavaPlugin
 		{
 			worldData = manager.getWorldData(world);
 		}
-		else
+		
+		if (worldData == null)
 		{
 			noWorldMessage.sendTo(player, worldName);
 			return true;
@@ -239,7 +241,8 @@ public class NetherGatePlugin extends JavaPlugin
 		{
 			fromWorld = manager.getWorldData(world);
 		}
-		else
+		
+		if (fromWorld == null)
 		{
 			noWorldMessage.sendTo(player, fromWorldName);
 			return true;
@@ -250,12 +253,13 @@ public class NetherGatePlugin extends JavaPlugin
 		{
 			toWorld = manager.getWorldData(world);
 		}
-		else
+		
+		if (toWorld == null)
 		{
 			noWorldMessage.sendTo(player, toWorldName);
 			return true;
 		}
-		
+				
 		fromWorld.setTargetWorld(toWorld);
 		persistence.put(fromWorld);
 		
@@ -314,7 +318,7 @@ public class NetherGatePlugin extends JavaPlugin
 			}
 		}
 
-		NetherWorld world = manager.createWorld(getServer(), worldName, worldType, currentWorld);
+		NetherWorld world = manager.createWorld(worldName, worldType, currentWorld);
 		if (world == null)
 		{
 			worldCreateFailedMessage.sendTo(player);
@@ -378,14 +382,6 @@ public class NetherGatePlugin extends JavaPlugin
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args)
 	{
-		// Currently only ops can use nether
-		// TODO: Implement permissions
-		if (sender instanceof Player)
-		{
-			Player player = (Player)sender;
-			if (!player.isOp()) return true;
-		}
-		
 		return utilities.dispatch(this, sender, cmd.getName(), args);
 	}
 

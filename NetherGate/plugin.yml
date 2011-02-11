@@ -1,6 +1,6 @@
 name: NetherGate
 main: com.elmakers.mine.bukkit.plugins.nether.NetherGatePlugin
-version: 0.21
+version: 0.22
 website: http://mine.elmakers.com
 author: NathanWolf
 description : An attempt to reproduce Nether Gates in SMP

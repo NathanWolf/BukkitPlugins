@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.22
+
+ - Slowly making some progress on a lot of weird little bugs...
+
 # 0.21
 
  -  .... peek ..... world .... (!!!!!!)

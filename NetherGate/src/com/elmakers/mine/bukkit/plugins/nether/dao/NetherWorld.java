@@ -3,6 +3,7 @@ package com.elmakers.mine.bukkit.plugins.nether.dao;
 import org.bukkit.util.BlockVector;
 
 import com.elmakers.mine.bukkit.plugins.nether.NetherManager;
+import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
@@ -33,6 +34,10 @@ public class NetherWorld
 		
 		targetWorld = currentWorld.targetWorld;
 		currentWorld.targetWorld = this;
+		
+		Persistence persistence = Persistence.getInstance();
+		persistence.put(targetWorld);
+		persistence.put(currentWorld);
 	}
 	
 	@PersistField(id=true)
@@ -95,6 +100,7 @@ public class NetherWorld
 	{
 		return scale;
 	}
+	
 	public void setScale(double scale)
 	{
 		this.scale = scale;
