@@ -112,10 +112,15 @@ public class BoundingBox
 	
 	public void fill(World world, Material material)
 	{
-		fill(world, material, null);
+		fill(world, material, null, null);
 	}
 	
 	public void fill(World world, Material material, HashMap<Material, ? extends Object> destructable)
+	{
+		fill(world, material, destructable, null);
+	}
+	
+	public void fill(World world, Material material, HashMap<Material, ? extends Object> destructable, List<Block> blocks)
 	{
 		for (int x = min.getBlockX(); x < max.getBlockX(); x++)
 		{
@@ -128,6 +133,10 @@ public class BoundingBox
 					if (destructable == null)
 					{
 						block.setType(material);
+						if (blocks != null)
+						{
+							blocks.add(block);
+						}
 					}
 					else
 					{
@@ -135,6 +144,10 @@ public class BoundingBox
 						if (destructable.get(blockType) != null)
 						{
 							block.setType(material);
+							if (blocks != null)
+							{
+								blocks.add(block);
+							}
 						}
 					}
 				}
