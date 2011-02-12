@@ -157,7 +157,14 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 			referenceId = dataField.getValue();
 		}
 		
-		deferredReferences.add(new DeferredReference(this, o, referenceId));
+		if (referenceId == null)
+		{
+			set(o, referenceId);
+		}
+		else
+		{
+			deferredReferences.add(new DeferredReference(this, o, referenceId));
+		}
 	}
 		
 	public static void beginDefer()

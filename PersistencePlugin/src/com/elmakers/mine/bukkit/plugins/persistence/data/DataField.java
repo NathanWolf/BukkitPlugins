@@ -17,6 +17,11 @@ public class DataField
 	{	
 	}
 	
+	public DataField(Object value)
+	{	
+		this.value = value;
+	}
+	
 	public DataField(String name, DataType type)
 	{
 		this.name = name;
@@ -55,6 +60,11 @@ public class DataField
 	}
 	
 	public Object getValue(Class<?> targetClass)
+	{
+		return convertValue(value, targetClass);
+	}
+	
+	public static Object convertValue(Object value, Class<?> targetClass)
 	{
 		if (value == null) 
 		{

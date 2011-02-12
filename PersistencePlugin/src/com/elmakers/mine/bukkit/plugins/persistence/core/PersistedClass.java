@@ -302,9 +302,22 @@ public class PersistedClass
 	protected Object getById(PersistedField idField, HashMap<Object, CachedObject> fromCache, Object id)
 	{
 		if (idField == null || id == null) return null;
-		
-		if (idField.getType().isAssignableFrom(id.getClass()))
+		if (id.getClass().isAssignableFrom(idField.getType()))
 		{
+			CachedObject cached = fromCache.get(id);
+			if (cached != null)
+			{
+				return cached.getObject();
+			}
+		}
+		else
+		{
+			// Try to do some fancy casting.
+			// This is mainly here to avoid the Integer/int problem.
+			
+			DataField requestId = new DataField(id);
+			id = requestId.getValue(idField.getType());
+				
 			CachedObject cached = fromCache.get(id);
 			if (cached != null)
 			{

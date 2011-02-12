@@ -1,5 +1,21 @@
 # CHANGELOG
 
+# 0.38
+
+ - More object-as-id fixes, this time for id-objects with primitive id types.
+   You can't use reflection (easily) to cast down an Integer to an int (for instance- I mean this in a blind way)
+   so I now make use of the DataField data conversion function I'd already been using to deal with type conversion
+   to/from the database- I use this when I need to look up by conrete id- because by the time it gets to me, any 
+   primitive types will be wrapped in their object equivalent, and will fail the isAssignable from when looking
+   up that object by concrete id.
+   
+   Whew!
+
+# 0.37
+
+ - Move BlockRequestListener to Persistence
+ - Don't defer object binding if the object's id is null anyway
+
 # 0.36
 
  - Another nasty object-as-id fix: 
