@@ -12,6 +12,8 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Ghast;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
@@ -109,6 +111,7 @@ public class NetherGatePlugin extends JavaPlugin
 		targetWorldCommand = targetCommand.getSubCommand("world", "Re-target a world", "<from> <to>", PermissionType.ADMINS_ONLY);
 		scaleCommand = netherCommand.getSubCommand("scale", "Re-scale an area or world", "<world | area> <name> <scale>", PermissionType.ADMINS_ONLY); 
 		scaleWorldCommand = scaleCommand.getSubCommand("world", "Re-scale a world", "<name> <scale>", PermissionType.ADMINS_ONLY); 
+		killGhastsCommand = netherCommand.getSubCommand("nuke", "Kill all those ghasts!", "[world]"); 
 		
 		areaCommand.bind("onCreateArea");
 		worldCommand.bind("onCreateWorld");
@@ -117,6 +120,7 @@ public class NetherGatePlugin extends JavaPlugin
 		deleteWorldCommand.bind("onDeleteWorld");
 		targetWorldCommand.bind("onTargetWorld");
 		scaleWorldCommand.bind("onScaleWorld");
+		killGhastsCommand.bind("onKillGhasts");
 		
 		creationFailedMessage = utilities.getMessage("creationFailed", "Nether creation failed- is there enough room below you?");
 		creationSuccessMessage = utilities.getMessage("creationSuccess", "Created new Nether area");
@@ -132,6 +136,9 @@ public class NetherGatePlugin extends JavaPlugin
 		scaledWorldMessage = utilities.getMessage("scaleWorld", "Re-scaled world %s to %.2f");
 		invalidNumberMessage = utilities.getMessage("invalidNumber", "'%s' is not a number");
 		invalidScaleMessage = utilities.getMessage("invalidScale", "A scale of %.2f wouldn't be a good idea");
+		killedGhastsMessage = utilities.getMessage("killedGhasts", "Nuked %d of those darn ghasts!");
+		noGhastsMessage = utilities.getMessage("noGhasts", "You are currently ghast-free. Congrats!");
+		killFailedMessage = utilities.getMessage("killFailed", "Sorry, couldn't kill any ghasts! :*(");
 	}
 	
 	public boolean onDeleteWorld(Player player, String[] parameters)
@@ -267,6 +274,63 @@ public class NetherGatePlugin extends JavaPlugin
 		
 		return true;
 	}
+
+	public boolean onKillGhasts(Player player, String[] parameters)
+	{
+		String worldName = null;
+		NetherWorld targetWorld = null;
+		if (parameters.length > 0)
+		{
+			worldName = parameters[0];
+			targetWorld = manager.getWorld(worldName, player.getWorld());
+		}
+		else
+		{
+			targetWorld = manager.getCurrentWorld(player.getWorld());
+		}
+		
+		if (targetWorld == null)
+		{
+			if (worldName != null)
+			{
+				noWorldMessage.sendTo(player, worldName);	
+			}
+			else
+			{
+				killFailedMessage.sendTo(player);
+				return true;
+			}
+		}
+		
+		World world = targetWorld.getWorld().getWorld(getServer());
+		if (world == null)
+		{
+			killFailedMessage.sendTo(player);
+			return true;
+		}
+		
+		int killCount = 0;
+		List<LivingEntity> entities = world.getLivingEntities();
+		for (LivingEntity entity : entities)
+		{
+			if (entity instanceof Ghast)
+			{
+				entity.setHealth(0);
+				killCount++;
+			}
+		}
+		
+		if (killCount > 0)
+		{
+			killedGhastsMessage.sendTo(player, killCount);
+		}
+		else
+		{
+			noGhastsMessage.sendTo(player);
+		}
+		
+		return true;
+	}
 	
 	public boolean onGo(Player player, String[] parameters)
 	{
@@ -397,6 +461,7 @@ public class NetherGatePlugin extends JavaPlugin
 	protected PluginCommand deleteWorldCommand;
 	protected PluginCommand scaleCommand;
 	protected PluginCommand scaleWorldCommand;
+	protected PluginCommand killGhastsCommand;
 	
 	protected Message creationFailedMessage;
 	protected Message creationSuccessMessage;
@@ -412,6 +477,9 @@ public class NetherGatePlugin extends JavaPlugin
 	protected Message scaledWorldMessage;
 	protected Message invalidNumberMessage;
 	protected Message invalidScaleMessage;
+	protected Message killedGhastsMessage;
+	protected Message killFailedMessage;
+	protected Message noGhastsMessage;
 	
 	protected NetherManager manager = new NetherManager();
 	protected NetherPlayerListener playerListener = new NetherPlayerListener(manager);

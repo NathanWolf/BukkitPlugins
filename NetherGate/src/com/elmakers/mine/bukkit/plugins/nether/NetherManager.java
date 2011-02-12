@@ -31,64 +31,65 @@ import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
 
 public class NetherManager
 {
-	public NetherWorld getWorldData(WorldData worldData)
-	{
-		if (worldData == null) return null;
-		return persistence.get(worldData, NetherWorld.class);
-	}
-	
 	public NetherWorld getCurrentWorld(World current)
 	{
 		if (current == null) return null;
 		NetherWorld currentWorld = getWorldData(current);
 		if (currentWorld == null)
 		{
-			currentWorld = createWorld(current.getName(), current.getEnvironment());
+			currentWorld = createWorld(current.getName(), current.getEnvironment(), null);
 		}
 		
 		return currentWorld;
 	}
 	
-	
-	public NetherWorld createWorld(String name, Environment defaultType)
+	public NetherWorld createWorld(String name, Environment defaultType, World currentWorld)
 	{
+		NetherWorld currentWorldData = null;
+		if (currentWorld != null)
+		{
+			currentWorldData = getWorldData(currentWorld);
+		}
+
 		WorldData world = utilities.getWorld(server, name, defaultType);
-		NetherWorld worldData = persistence.get(world, NetherWorld.class);
+		if (world == null) return null;
+		
+		NetherWorld worldData = getWorldData(world);
 		if (worldData == null)
 		{
 			worldData = new NetherWorld(world);
 			switch (defaultType)
 			{
 				case NETHER:
-					worldData.setScale(8);
+					//worldData.setScale(8); // hrm..
+					worldData.setScale(0);
 					break;
 				default:
-					worldData.setScale(1);
+					worldData.setScale(0); // TODO: Fix all this!
 			}
 			persistence.put(worldData);
 			persistence.put(worldData.getTargetOffset());
 			persistence.put(worldData.getCenterOffset());
+			
+			if (currentWorldData != null)
+			{
+				worldData.autoBind(currentWorldData);
+			}
 		}
 
 		return worldData;
 	}
-
-	public NetherWorld createWorld(String name, Environment defaultType, World currentWorld)
-	{
-		NetherWorld current = getWorldData(currentWorld);
-		if (current == null)
-			return null;
-
-		NetherWorld worldData = createWorld(name, defaultType);
-		worldData.autoBind(current);
-
-		return worldData;
-	}
 	
-	public NetherWorld getWorldData(World world)
+	protected NetherWorld getWorldData(World world)
 	{
 		WorldData worldData = utilities.getWorld(server, world);
 		return getWorldData(worldData);
+	}
+	
+	protected NetherWorld getWorldData(WorldData worldData)
+	{
+		if (worldData == null) return null;
+		return persistence.get(worldData, NetherWorld.class);
 	}
 	
 	public NetherWorld getDefaultNether(World currentWorld)
@@ -285,7 +286,7 @@ public class NetherManager
 		list.add(nether);
 	}
 	
-	public void load(World w)
+	protected void load(World w)
 	{
 		if (world != null)
 		{
@@ -324,7 +325,7 @@ public class NetherManager
 	 * Player teleportation
 	 */
 	
-	public boolean teleportPlayer(Player player, WorldData targetWorldData, Location targetLocation)
+	protected boolean teleportPlayer(Player player, WorldData targetWorldData, Location targetLocation)
 	{
 		if (targetWorldData == null) return false;
 		
@@ -375,12 +376,18 @@ public class NetherManager
 		return new BlockVector(transformed);
 	}
 
-	public boolean teleportPlayer(Player player, NetherWorld targetWorld, Location targetLocation)
+	protected boolean teleportPlayer(Player player, NetherWorld targetWorld, Location targetLocation)
 	{
 		if (targetWorld == null) return false;
 		
 		NetherPlayer tpPlayer = getPlayerData(player);
 		if (tpPlayer == null) return false;
+			
+		if (!persistence.hasPermission(player, "NetherGate.portal.use")) 
+		{
+			cancelTeleport(tpPlayer);
+			return false;
+		}
 		
 		// Register the current world first, in case it's not already.
 		NetherWorld currentWorld = getCurrentWorld(player.getWorld());
@@ -470,8 +477,11 @@ public class NetherManager
 		startTeleport(player);
 	}
 	
-	protected NetherWorld getWorld(String worldName, World currentWorld)
+	public NetherWorld getWorld(String worldName, World currentWorld)
 	{
+		// First, make sure the current world is loaded!
+		getCurrentWorld(currentWorld);
+		
 		NetherWorld targetWorld = null;
 		if (worldName != null && worldName.length() > 0)
 		{
@@ -531,6 +541,12 @@ public class NetherManager
 		}
 	}
 	
+	protected void cancelTeleport(NetherPlayer playerData)
+	{
+		playerData.setState(TeleportState.NONE);
+		persistence.put(playerData);
+	}
+	
 	protected void finishTeleport(NetherPlayer playerData, World world)
 	{
 		Player player = server.getPlayer(playerData.getPlayer().getName());
@@ -556,7 +572,7 @@ public class NetherManager
 		persistence.put(playerData);
 	}	
 	
-	public void teleportTo(Player player, Location location)
+	protected void teleportTo(Player player, Location location)
 	{
 		if (location == null) return;
 		
@@ -574,23 +590,36 @@ public class NetherManager
 		Block standingBlock = location.getWorld().getBlockAt(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
 		standingBlock = standingBlock.getFace(BlockFace.DOWN);
 		
-		buildPortal(standingBlock, BlockFace.NORTH, true, true);
+		if (persistence.hasPermission(player, "NetherGate.portal.create"))
+		{
+			boolean buildPortal = persistence.hasPermission(player, "NetherGate.portal.create.portal");
+			boolean buildPlatform = persistence.hasPermission(player, "NetherGate.portal.create.platform");
+			
+			if (buildPortal)
+			{
+				buildPortal(standingBlock, BlockFace.NORTH, true, true, null);	
+			}
+			else if (buildPlatform)
+			{
+				buildPlatform(standingBlock, null);
+			}
+		}
 		
 		player.teleportTo(targetLocation);
 	}
 	
-	public void buildPortal(Block centerBlock, BlockFace facing, boolean platform, boolean frame)
+	public void buildPortal(Block centerBlock, BlockFace facing, boolean platform, boolean frame, List<Block> blockList)
 	{
-		clearPortalArea(centerBlock, facing);
+		clearPortalArea(centerBlock, facing, blockList);
 	
 		if (frame)
 		{
-			buildFrame(centerBlock, facing);
+			//buildFrame(centerBlock, facing);
 		}
 		
 		if (platform)
 		{
-			buildPlatform(centerBlock);
+			buildPlatform(centerBlock, blockList);
 		}
 		
 		buildPortalBlocks(centerBlock, facing);
@@ -600,8 +629,8 @@ public class NetherManager
 	protected void buildPortalBlocks(Block centerBlock, BlockFace facing)
 	{
 		disablePhysics();
-		BoundingBox container = new BoundingBox(centerBlock.getX() - 2, centerBlock.getY() + 2, centerBlock.getZ() - 2,
-				centerBlock.getX(), centerBlock.getY() + 4, centerBlock.getZ());
+		BoundingBox container = new BoundingBox(centerBlock.getX() - 1, centerBlock.getY() + 1, centerBlock.getZ() - 1,
+				centerBlock.getX() + 1, centerBlock.getY() + 4, centerBlock.getZ());
 		
 		container.fill(centerBlock.getWorld(), Material.PORTAL, destructible);
 		disablePhysics();
@@ -610,27 +639,27 @@ public class NetherManager
 	protected void buildFrame(Block centerBlock, BlockFace facing)
 	{
 		disablePhysics();
-		BoundingBox container = new BoundingBox(centerBlock.getX() - 3, centerBlock.getY() + 3, centerBlock.getZ() - 3,
-				centerBlock.getX(), centerBlock.getY() + 5, centerBlock.getZ());
+		BoundingBox container = new BoundingBox(centerBlock.getX() - 2, centerBlock.getY() + 1, centerBlock.getZ() - 1,
+				centerBlock.getX() + 2, centerBlock.getY() + 5, centerBlock.getZ());
 		
 		container.fill(centerBlock.getWorld(), Material.OBSIDIAN, destructible);
 		disablePhysics();
 	}
 	
-	protected void clearPortalArea(Block centerBlock, BlockFace facing)
+	protected void clearPortalArea(Block centerBlock, BlockFace facing, List<Block> blockList)
 	{
 		BoundingBox container = new BoundingBox(centerBlock.getX() - 3, centerBlock.getY() + 1, centerBlock.getZ() - 3,
-				centerBlock.getX() + 1, centerBlock.getY() + 5, centerBlock.getZ() + 1);
+				centerBlock.getX() + 2, centerBlock.getY() + 5, centerBlock.getZ() + 2);
 		
-		container.fill(centerBlock.getWorld(), Material.AIR, destructible);
+		container.fill(centerBlock.getWorld(), Material.AIR, destructible, blockList);
 	}
 	
-	protected void buildPlatform(Block centerBlock)
+	protected void buildPlatform(Block centerBlock, List<Block> blockList)
 	{
 		BoundingBox platform = new BoundingBox(centerBlock.getX() - 3, centerBlock.getY(), centerBlock.getZ() - 3,
 				centerBlock.getX() + 2, centerBlock.getY() + 1, centerBlock.getZ() + 2);
 		
-		platform.fill(centerBlock.getWorld(), Material.OBSIDIAN, needsPlatform);
+		platform.fill(centerBlock.getWorld(), Material.OBSIDIAN, needsPlatform, blockList);
 	}
 	
 	protected Location findPlaceToStand(Location startLocation, boolean goUp)
@@ -737,7 +766,7 @@ public class NetherManager
 	
 	public static BlockVector					origin					= new BlockVector(0, 0, 0);
 
-	protected static final String				DEFAULT_DESTRUCTIBLES	= "1,2,3,10,11,12,13,87,88";
+	protected static final String				DEFAULT_DESTRUCTIBLES	= "0,1,2,3,10,11,12,13,87,88";
 
 	protected HashMap<Material, Boolean>		destructible			= new HashMap<Material, Boolean>();
 	protected HashMap<Material, Boolean>		needsPlatform			= new HashMap<Material, Boolean>();

@@ -1,5 +1,16 @@
 # CHANGELOG
 
+# 0.23
+
+ - Add "/nether nuke", to kill all ghasts!
+ - Set scales to 0 by default until I've got that sorted out.
+ - Add permission nodes:
+   NetherGate.portal.create
+   NetherGate.portal.create.platform
+   NetherGate.portal.create.portal
+ - I also fixed a really nasty bug in Persistence that was keeping worlds from auto-binding.
+ - Some work on the portal creation- nearly there!
+ 
 # 0.22
 
  - Slowly making some progress on a lot of weird little bugs...

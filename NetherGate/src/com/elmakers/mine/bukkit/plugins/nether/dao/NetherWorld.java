@@ -27,16 +27,22 @@ public class NetherWorld
 	
 	public void autoBind(NetherWorld currentWorld)
 	{
-		if (currentWorld.targetWorld == null)
-		{
-			currentWorld.targetWorld = currentWorld;
-		}
-		
-		targetWorld = currentWorld.targetWorld;
-		currentWorld.targetWorld = this;
+		if (targetWorld != null) return;
 		
 		Persistence persistence = Persistence.getInstance();
-		persistence.put(targetWorld);
+		
+		if (currentWorld.targetWorld == null)
+		{
+			currentWorld.targetWorld = this;
+			targetWorld = currentWorld;
+		}
+		else
+		{
+			targetWorld = currentWorld.targetWorld;
+			currentWorld.targetWorld = this;
+		}
+		
+		// Save changes to current world target
 		persistence.put(currentWorld);
 	}
 	
