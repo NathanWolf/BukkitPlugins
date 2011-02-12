@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.25
+
+ - Add home and sethome commands
+
 # 0.24
 
  - Add setspawn command.

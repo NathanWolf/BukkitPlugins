@@ -27,6 +27,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BlockVector;
 
+import com.elmakers.mine.bukkit.plugins.nether.dao.NetherPlayer;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherWorld;
 import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
 import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
@@ -112,8 +113,10 @@ public class NetherGatePlugin extends JavaPlugin
 		targetWorldCommand = targetCommand.getSubCommand("world", "Re-target a world", "<from> <to>", PermissionType.ADMINS_ONLY);
 		scaleCommand = netherCommand.getSubCommand("scale", "Re-scale an area or world", "<world | area> <name> <scale>", PermissionType.ADMINS_ONLY); 
 		scaleWorldCommand = scaleCommand.getSubCommand("world", "Re-scale a world", "<name> <scale>", PermissionType.ADMINS_ONLY); 
-		setSpawnCommand = netherCommand.getSubCommand("setspawn", "The set the current world's spawn point", null, PermissionType.ADMINS_ONLY); 
+		setSpawnCommand = netherCommand.getSubCommand("setspawn", "Set the current world's spawn point", null, PermissionType.ADMINS_ONLY); 
 
+		setHomeCommand = netherCommand.getSubCommand("sethome", "Set your home world and location", null); 
+		goHomeCommand = netherCommand.getSubCommand("home", "Go to your home world and location", null);
 		killGhastsCommand = netherCommand.getSubCommand("nuke", "Kill all those ghasts!", "[world]"); 
 		
 		areaCommand.bind("onCreateArea");
@@ -125,6 +128,8 @@ public class NetherGatePlugin extends JavaPlugin
 		scaleWorldCommand.bind("onScaleWorld");
 		killGhastsCommand.bind("onKillGhasts");
 		setSpawnCommand.bind("onSetSpawn");
+		goHomeCommand.bind("onGoHome");
+		setHomeCommand.bind("onSetHome");
 		
 		creationFailedMessage = utilities.getMessage("creationFailed", "Nether creation failed- is there enough room below you?");
 		creationSuccessMessage = utilities.getMessage("creationSuccess", "Created new Nether area");
@@ -143,8 +148,13 @@ public class NetherGatePlugin extends JavaPlugin
 		killedGhastsMessage = utilities.getMessage("killedGhasts", "Nuked %d of those darn ghasts!");
 		noGhastsMessage = utilities.getMessage("noGhasts", "You are currently ghast-free. Congrats!");
 		killFailedMessage = utilities.getMessage("killFailed", "Sorry, couldn't kill any ghasts! :*(");
-		spawnSetMessage = utilities.getMessage("setSpawn", "The spawn for world %s now set to (%d,%d,%d)");
+		spawnSetMessage = utilities.getMessage("setSpawn", "The spawn for world %s now set to (%d, %d, %d)");
 		spawnSetFailedMessage = utilities.getMessage("setSpawnfailed", "Couldn't set the spawn, sorry!");
+		homeSetMessage = utilities.getMessage("setHome", "Set your home to (%d, %d, %d) in %s");
+		homeSetFailedMessage = utilities.getMessage("setSpawnfailed", "Couldn't set your home, sorry!");
+		goHomeFailedMessage = utilities.getMessage("goHomeFailed", "Couldn't go home, sorry!");
+		goHomeSuccessMessage = utilities.getMessage("goHome", "Going home!");
+		noHomeMessage = utilities.getMessage("nohome", "Use /sethome to set your home");
 	}
 	
 	public boolean onDeleteWorld(Player player, String[] parameters)
@@ -396,6 +406,74 @@ public class NetherGatePlugin extends JavaPlugin
 		return true;
 	}
 	
+	public boolean onSetHome(Player player, String[] parameters)
+	{
+		NetherWorld currentWorld = manager.getCurrentWorld(player.getWorld());
+		
+		if (currentWorld == null || currentWorld.getWorld() == null)
+		{
+			homeSetFailedMessage.sendTo(player);
+			return true;
+		}
+		
+		NetherPlayer playerData = manager.getPlayerData(player);
+		if (playerData == null)
+		{
+			homeSetFailedMessage.sendTo(player);
+			return true;
+		}
+		
+		int x = player.getLocation().getBlockX();
+		int y = player.getLocation().getBlockY();
+		int z = player.getLocation().getBlockZ();
+
+		BlockVector homeVector = new BlockVector(x, y, z);
+		playerData.setHome(homeVector);
+		playerData.setHomeWorld(currentWorld);
+		persistence.put(playerData);
+		persistence.put(homeVector);
+		
+		homeSetMessage.sendTo(player, x, y, z, currentWorld.getWorld().getName());
+	
+		return true;
+	}
+	
+	public boolean onGoHome(Player player, String[] parameters)
+	{
+		NetherPlayer playerData = manager.getPlayerData(player);
+		if (playerData == null)
+		{
+			goHomeFailedMessage.sendTo(player);
+			return true;
+		}
+		
+		NetherWorld homeWorld = playerData.getHomeWorld();
+		if (homeWorld == null || homeWorld.getWorld() == null)
+		{
+			noHomeMessage.sendTo(player);
+			return true;
+		}
+		
+		BlockVector home = playerData.getHome();
+		if (home == null)
+		{
+			noHomeMessage.sendTo(player);
+			return true;
+		}		
+		
+		Location location = new Location(homeWorld.getWorld().getWorld(getServer()), home.getX(), home.getY(), home.getZ(), player.getLocation().getYaw(), player.getLocation().getPitch());
+		if (!manager.teleportPlayer(player, homeWorld, location))
+		{
+			goHomeFailedMessage.sendTo(player);
+		}
+		else
+		{	
+			goHomeSuccessMessage.sendTo(player);
+		}
+			
+		return true;
+	}
+	
 	public boolean onGo(Player player, String[] parameters)
 	{
 		String worldName = null;
@@ -527,6 +605,8 @@ public class NetherGatePlugin extends JavaPlugin
 	protected PluginCommand scaleWorldCommand;
 	protected PluginCommand killGhastsCommand;
 	protected PluginCommand setSpawnCommand;
+	protected PluginCommand setHomeCommand;
+	protected PluginCommand goHomeCommand;
 	
 	protected Message creationFailedMessage;
 	protected Message creationSuccessMessage;
@@ -547,6 +627,11 @@ public class NetherGatePlugin extends JavaPlugin
 	protected Message noGhastsMessage;
 	protected Message spawnSetMessage;
 	protected Message spawnSetFailedMessage;
+	protected Message homeSetMessage;
+	protected Message homeSetFailedMessage;
+	protected Message goHomeFailedMessage;
+	protected Message goHomeSuccessMessage;
+	protected Message noHomeMessage;
 	
 	protected NetherManager manager = new NetherManager();
 	protected NetherPlayerListener playerListener = new NetherPlayerListener(manager);
