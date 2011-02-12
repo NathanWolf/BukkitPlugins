@@ -80,6 +80,11 @@ public class DataRow
 		fields.add(newField);
 	}
 	
+	public DataField getField(String fieldName)
+	{
+		return fieldMap.get(fieldName);
+	}
+	
 	protected DataTable table;
 	protected static Logger log = Persistence.getLogger();
 	protected HashMap<String, DataField> fieldMap = new HashMap<String, DataField>();

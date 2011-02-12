@@ -1,5 +1,16 @@
 # CHANGELOG
 
+# 0.36
+
+ - Another nasty object-as-id fix: 
+   Objects with objects as ids need to use the value from the data store to cache their "concrete"
+   id at load time, before deferred binding.
+   
+   This is because their true id is null at the time- it will be deferred-bound once the other
+   object's persisted class has had a chance ot load it.
+   
+   So, caching the object by id results in a big mess- I think this should be cleaned up now.
+
 # 0.35
 
  - Some BoundingBox additions and fixes.

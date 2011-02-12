@@ -165,7 +165,7 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 		deferStackDepth++;
 	}
 	
-	public static void endDefer()
+	public static void endDefer(PersistedClass owningClass)
 	{
 		deferStackDepth--;
 		if (deferStackDepth > 0) return;
@@ -178,6 +178,9 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 		{
 			Object reference = ref.referenceField.referenceType.get(ref.referenceId);
 			ref.referenceField.set(ref.object, reference);
+			
+			// Re-add to cache so that we can cache by the new id
+			owningClass.addToCache(ref.object);
 		}
 		
 	}

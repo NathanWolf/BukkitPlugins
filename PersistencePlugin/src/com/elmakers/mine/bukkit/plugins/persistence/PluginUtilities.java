@@ -102,10 +102,13 @@ public class PluginUtilities
 		if (data == null)
 		{
 			data = new WorldData();
+			data.update(world);
 			addNewWorld(server, data);
 		}
-		
-		data.update(world);
+		else
+		{
+			data.update(world);
+		}
 		
 		return data;
 	}
