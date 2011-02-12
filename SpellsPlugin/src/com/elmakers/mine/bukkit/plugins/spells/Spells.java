@@ -667,7 +667,7 @@ public class Spells
 		// NetherGate spells
 		if (nether != null)
 		{
-			addSpell(new PortalSpell());
+			addSpell(new PortalSpell(nether));
 			addSpell(new PhaseSpell(nether));
 		}
 	}

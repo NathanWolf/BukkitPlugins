@@ -1,15 +1,24 @@
 package com.elmakers.mine.bukkit.plugins.spells.builtin;
 
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.util.BlockVector;
 
+import com.elmakers.mine.bukkit.plugins.nether.NetherManager;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 
 public class PortalSpell extends Spell
 {
 	private int				defaultSearchDistance	= 32;
+	
+	public PortalSpell(NetherManager nether)
+	{
+		this.nether = nether;
+	}
 	
 	@Override
 	public boolean onCast(String[] parameters)
@@ -44,19 +53,11 @@ public class PortalSpell extends Spell
 		
 		BlockList portalBlocks = new BlockList();
 		portalBlocks.setTimeToLive(10000);
+		portalBase = portalBase.getFace(BlockFace.DOWN);
 
-		for (int y = 0; y < 5; y++)
-		{
-			setBlock(portalBlocks, portalBase, 0, y, 0, Material.OBSIDIAN);
-			setBlock(portalBlocks, portalBase, 0, y, 3, Material.OBSIDIAN);
-		}
 		
-		for (int z = 1; z < 3; z++)
-		{
-			setBlock(portalBlocks, portalBase, 0, 4, z, Material.OBSIDIAN);
-			setBlock(portalBlocks, portalBase, 0, 0, z, Material.OBSIDIAN);
-		}
 		
+		/*
 		for (int z = 0; z < 2; z++)
 		{
 			for (int y = 0; y < 4; y++)
@@ -64,7 +65,30 @@ public class PortalSpell extends Spell
 				setBlock(portalBlocks, portalBase, 0, y, z, Material.PORTAL);
 			}
 		}
+		*/
+		
+		
+		// Temp...
+		BoundingBox container = new BoundingBox(portalBase.getX() - 3, portalBase.getY() + 1, portalBase.getZ() - 3,
+				portalBase.getX() + 2, portalBase.getY() + 5, portalBase.getZ() + 2);
+		
+		BlockVector min = container.getMin();
+		BlockVector max = container.getMax();
+		World world = portalBase.getWorld();
+		
+		for (int x = min.getBlockX(); x < max.getBlockX(); x++)
+		{
+			for (int y = min.getBlockY(); y < max.getBlockY(); y++)
+			{
+				for (int z = min.getBlockZ(); z < max.getBlockZ(); z++)
+				{
+					Block block = world.getBlockAt(x, y, z);
+					portalBlocks.addBlock(block);
+				}
+			}
+		}
 	
+		nether.buildPortal(portalBase, getPlayerFacing(), false, true, null);
 		spells.scheduleCleanup(portalBlocks);
 		
 		return true;
@@ -103,5 +127,7 @@ public class PortalSpell extends Spell
 	{
 		return Material.FLINT_AND_STEEL;
 	}
+	
+	protected NetherManager nether;
 
 }

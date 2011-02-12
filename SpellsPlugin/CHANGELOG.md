@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.86
+
+ - Use NetherGate to create a portal-less portal for the portal spell!
+
 ## 0.85
 
  - First-round Persistence integration.
