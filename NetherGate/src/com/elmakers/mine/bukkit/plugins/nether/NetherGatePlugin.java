@@ -12,6 +12,7 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.entity.Ghast;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -111,6 +112,8 @@ public class NetherGatePlugin extends JavaPlugin
 		targetWorldCommand = targetCommand.getSubCommand("world", "Re-target a world", "<from> <to>", PermissionType.ADMINS_ONLY);
 		scaleCommand = netherCommand.getSubCommand("scale", "Re-scale an area or world", "<world | area> <name> <scale>", PermissionType.ADMINS_ONLY); 
 		scaleWorldCommand = scaleCommand.getSubCommand("world", "Re-scale a world", "<name> <scale>", PermissionType.ADMINS_ONLY); 
+		setSpawnCommand = netherCommand.getSubCommand("setspawn", "The set the current world's spawn point", null, PermissionType.ADMINS_ONLY); 
+
 		killGhastsCommand = netherCommand.getSubCommand("nuke", "Kill all those ghasts!", "[world]"); 
 		
 		areaCommand.bind("onCreateArea");
@@ -121,6 +124,7 @@ public class NetherGatePlugin extends JavaPlugin
 		targetWorldCommand.bind("onTargetWorld");
 		scaleWorldCommand.bind("onScaleWorld");
 		killGhastsCommand.bind("onKillGhasts");
+		setSpawnCommand.bind("onSetSpawn");
 		
 		creationFailedMessage = utilities.getMessage("creationFailed", "Nether creation failed- is there enough room below you?");
 		creationSuccessMessage = utilities.getMessage("creationSuccess", "Created new Nether area");
@@ -139,6 +143,8 @@ public class NetherGatePlugin extends JavaPlugin
 		killedGhastsMessage = utilities.getMessage("killedGhasts", "Nuked %d of those darn ghasts!");
 		noGhastsMessage = utilities.getMessage("noGhasts", "You are currently ghast-free. Congrats!");
 		killFailedMessage = utilities.getMessage("killFailed", "Sorry, couldn't kill any ghasts! :*(");
+		spawnSetMessage = utilities.getMessage("setSpawn", "The spawn for world %s now set to (%d,%d,%d)");
+		spawnSetFailedMessage = utilities.getMessage("setSpawnfailed", "Couldn't set the spawn, sorry!");
 	}
 	
 	public boolean onDeleteWorld(Player player, String[] parameters)
@@ -332,6 +338,64 @@ public class NetherGatePlugin extends JavaPlugin
 		return true;
 	}
 	
+	public boolean onSetSpawn(Player player, String[] parameters)
+	{
+		String worldName = null;
+		NetherWorld targetWorld = null;
+		if (parameters.length > 0)
+		{
+			worldName = parameters[0];
+			targetWorld = manager.getWorld(worldName, player.getWorld());
+		}
+		else
+		{
+			targetWorld = manager.getCurrentWorld(player.getWorld());
+		}
+		
+		if (targetWorld == null)
+		{
+			if (worldName != null)
+			{
+				noWorldMessage.sendTo(player, worldName);	
+			}
+			else
+			{
+				spawnSetFailedMessage.sendTo(player);
+				return true;
+			}
+		}
+		
+		WorldData worldData = targetWorld.getWorld();
+		if (worldData == null)
+		{
+			spawnSetFailedMessage.sendTo(player);
+			return true;
+		}
+		
+		World world = worldData.getWorld(getServer());
+		if (world == null)
+		{
+			spawnSetFailedMessage.sendTo(player);
+			return true;
+		}
+		
+		worldData.update(world);
+		persistence.put(worldData);
+		
+		CraftWorld cWorld = (CraftWorld)world;
+		int x = player.getLocation().getBlockX();
+		int y = player.getLocation().getBlockY();
+		int z = player.getLocation().getBlockZ();
+		
+		cWorld.getHandle().spawnX = player.getLocation().getBlockX();
+		cWorld.getHandle().spawnY = player.getLocation().getBlockY();
+		cWorld.getHandle().spawnZ = player.getLocation().getBlockZ();
+		
+		spawnSetMessage.sendTo(player, worldData.getName(), x, y, z);
+	
+		return true;
+	}
+	
 	public boolean onGo(Player player, String[] parameters)
 	{
 		String worldName = null;
@@ -462,6 +526,7 @@ public class NetherGatePlugin extends JavaPlugin
 	protected PluginCommand scaleCommand;
 	protected PluginCommand scaleWorldCommand;
 	protected PluginCommand killGhastsCommand;
+	protected PluginCommand setSpawnCommand;
 	
 	protected Message creationFailedMessage;
 	protected Message creationSuccessMessage;
@@ -480,6 +545,8 @@ public class NetherGatePlugin extends JavaPlugin
 	protected Message killedGhastsMessage;
 	protected Message killFailedMessage;
 	protected Message noGhastsMessage;
+	protected Message spawnSetMessage;
+	protected Message spawnSetFailedMessage;
 	
 	protected NetherManager manager = new NetherManager();
 	protected NetherPlayerListener playerListener = new NetherPlayerListener(manager);

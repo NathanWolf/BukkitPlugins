@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.24
+
+ - Add setspawn command.
+
 # 0.23
 
  - Add "/nether nuke", to kill all ghasts!
