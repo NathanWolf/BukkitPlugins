@@ -1,5 +1,14 @@
 # CHANGELOG
 
+# 0.27
+
+ - Not a "real" release, I just fixed the Persistence bug that was keeping home locations from saving.
+
+# 0.26
+
+ - More location mapping work
+ - Move BlockRequestListener to Persistence
+
 # 0.25
 
  - Add home and sethome commands

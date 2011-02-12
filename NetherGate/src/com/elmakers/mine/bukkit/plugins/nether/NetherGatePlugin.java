@@ -154,7 +154,7 @@ public class NetherGatePlugin extends JavaPlugin
 		homeSetFailedMessage = utilities.getMessage("setSpawnfailed", "Couldn't set your home, sorry!");
 		goHomeFailedMessage = utilities.getMessage("goHomeFailed", "Couldn't go home, sorry!");
 		goHomeSuccessMessage = utilities.getMessage("goHome", "Going home!");
-		noHomeMessage = utilities.getMessage("nohome", "Use /sethome to set your home");
+		noHomeMessage = utilities.getMessage("nohome", "Use sethome to set your home");
 	}
 	
 	public boolean onDeleteWorld(Player player, String[] parameters)

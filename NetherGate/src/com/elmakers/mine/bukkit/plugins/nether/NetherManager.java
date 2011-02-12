@@ -21,8 +21,8 @@ import com.elmakers.mine.bukkit.plugins.nether.dao.NetherWorld;
 import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherPlayer;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherPlayer.TeleportState;
-import com.elmakers.mine.bukkit.plugins.nether.listener.BlockRequestListener;
 
+import com.elmakers.mine.bukkit.plugins.persistence.BlockRequestListener;
 import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
@@ -341,7 +341,7 @@ public class NetherManager
 		Vector transformed = new Vector(target.getBlockX(), target.getBlockY(), target.getBlockZ());
 		
 		// First, offset to center on local spawn (making sure there is one set)
-		/*
+		
 		BlockVector fromSpawn = from.getWorld().getSpawn();
 		if (fromSpawn != null)
 		{
@@ -349,28 +349,34 @@ public class NetherManager
 		}
 		
 		// Apply additional offset
-		transformed.subtract(from.getCenterOffset());
-		*/
+		BlockVector fromOffset = from.getCenterOffset();
+		if (fromOffset != null)
+		{
+			transformed.subtract(fromOffset);
+		}
+		
 		// Scale
 		double fromScale = from.getScale();
 		double toScale = to.getScale();
 		if (fromScale != 0 && toScale != 0)
 		{
-			//transformed.multiply(fromScale / toScale);
-			transformed.setX(transformed.getBlockX() * fromScale / toScale);
-			transformed.setZ(transformed.getBlockZ() * fromScale / toScale);
+			transformed.multiply(fromScale / toScale);
 		}
 		
 		// Unwind
-		/*
-		transformed.add(to.getCenterOffset());
+		
+		BlockVector toOffset = to.getCenterOffset();
+		if (toOffset != null)
+		{
+			transformed.add(toOffset);
+		}
 		
 		BlockVector toSpawn = to.getWorld().getSpawn();
 		if (toSpawn != null)
 		{
 			transformed.add(toSpawn);
 		}
-		*/
+		
 		transformed.setY(originalY);
 		
 		return new BlockVector(transformed);
@@ -565,6 +571,11 @@ public class NetherManager
 					currentLocation.getYaw(),
 					currentLocation.getPitch()
 			);
+			
+			Persistence.getLogger().info("From: " + currentLocation.getBlockX() + ", " + currentLocation.getBlockY() + ", " + currentLocation.getBlockZ()
+					+ " to " + targetLocation.getBlockX() + ", " + targetLocation.getBlockY() + ", " + targetLocation.getBlockZ());
+			
+			
 			teleportTo(player, targetLocation);
 			playerData.update(player);
 		}
