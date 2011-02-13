@@ -1,5 +1,17 @@
 # CHANGELOG
 
+# 0.29
+
+ - Maven-ize. Just never got around to that.
+ - Nasty BlockPhysics bugfix- I think this is why portals are so much more resilient than I expected them to be!
+ - No need to persist all that player teleporting state data. Not sure why I thought I needed to do that.
+ - Get rid of any fire in the target area
+ - Add ore blocks to destructibles- better to lose some ore than die :)
+
+# 0.28
+
+ - Turn off auto-gate creation for now. Rollback to 0.27 if you want it.
+
 # 0.27
 
  - Not a "real" release, I just fixed the Persistence bug that was keeping home locations from saving.

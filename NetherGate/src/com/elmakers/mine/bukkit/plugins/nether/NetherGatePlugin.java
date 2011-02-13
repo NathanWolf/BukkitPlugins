@@ -52,13 +52,11 @@ public class NetherGatePlugin extends JavaPlugin
 		return manager;
 	}
 
-	@Override
 	public void onDisable()
 	{
 		
 	}
 
-	@Override
 	public void onEnable()
 	{
 		try
@@ -81,7 +79,8 @@ public class NetherGatePlugin extends JavaPlugin
         pm.registerEvent(Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.CHUNK_LOADED, worldListener, Priority.Normal, this);
         pm.registerEvent(Type.BLOCK_PHYSICS, physicsListener, Priority.Normal, this);
-  }
+        pm.registerEvent(Type.ENTITY_DEATH, entityListener, Priority.Normal, this);
+    }
 	
 	public void initialize()
 	{
@@ -637,6 +636,7 @@ public class NetherGatePlugin extends JavaPlugin
 	protected NetherPlayerListener playerListener = new NetherPlayerListener(manager);
 	protected NetherWorldListener worldListener = new NetherWorldListener(manager);
 	protected NetherBlockListener physicsListener = new NetherBlockListener(manager);
+	protected NetherEntityListener entityListener = new NetherEntityListener(manager);
 	
 	protected Persistence persistence = null;
 	protected PluginUtilities utilities = null;

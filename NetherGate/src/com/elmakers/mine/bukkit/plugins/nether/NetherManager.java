@@ -14,6 +14,7 @@ import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;
 
@@ -388,7 +389,7 @@ public class NetherManager
 		
 		NetherPlayer tpPlayer = getPlayerData(player);
 		if (tpPlayer == null) return false;
-			
+		
 		if (!persistence.hasPermission(player, "NetherGate.portal.use")) 
 		{
 			cancelTeleport(tpPlayer);
@@ -409,6 +410,13 @@ public class NetherManager
 		tpPlayer.setSourcePortal(null);
 		tpPlayer.setTargetPortal(null);
 		
+		// Set home world, if none is set
+		if (tpPlayer.getHomeWorld() == null)
+		{
+			tpPlayer.setHomeWorld(currentWorld);
+			persistence.put(tpPlayer);
+		}
+			
 		World world = targetWorld.getWorld().getWorld(server);
 		Chunk chunk = world.getChunkAt(targetLocation.getBlockX(), targetLocation.getBlockZ());
 		
@@ -608,7 +616,7 @@ public class NetherManager
 			
 			if (buildPortal)
 			{
-				buildPortal(standingBlock, BlockFace.NORTH, true, true, null);	
+				buildPortal(standingBlock, BlockFace.NORTH, true, false, false, null);	
 			}
 			else if (buildPlatform)
 			{
@@ -620,6 +628,11 @@ public class NetherManager
 	}
 	
 	public void buildPortal(Block centerBlock, BlockFace facing, boolean platform, boolean frame, List<Block> blockList)
+	{
+		buildPortal(centerBlock, facing, platform, frame, true, blockList);
+	}
+	
+	public void buildPortal(Block centerBlock, BlockFace facing, boolean platform, boolean frame, boolean portal, List<Block> blockList)
 	{
 		clearPortalArea(centerBlock, facing, blockList);
 	
@@ -633,8 +646,10 @@ public class NetherManager
 			buildPlatform(centerBlock, blockList);
 		}
 		
-		buildPortalBlocks(centerBlock, facing);
-		
+		if (portal)
+		{
+			buildPortalBlocks(centerBlock, facing);
+		}
 	}
 	
 	protected void buildPortalBlocks(Block centerBlock, BlockFace facing)
@@ -760,9 +775,10 @@ public class NetherManager
 				return true;
 			}
 			
-			return false;
+			return (block.getType() != Material.PORTAL);
 		}
-		return (block.getType() != Material.PORTAL);
+		
+		return true;
 	}
 	
 	protected void disablePhysics()
@@ -775,9 +791,35 @@ public class NetherManager
 		return server;
 	}
 	
+	public void onPlayerDeath(Player player, EntityDeathEvent event)
+	{
+		NetherPlayer playerData = getPlayerData(player);
+		if (playerData == null)
+		{
+			return;
+		}
+		
+		NetherWorld homeWorld = playerData.getHomeWorld();
+		if (homeWorld != null)
+		{
+			BlockVector spawn = homeWorld.getWorld().getSpawn();
+			World home = homeWorld.getWorld().getWorld(server);
+			Location spawnPoint = new Location
+			(
+					home,
+					spawn.getX(),
+					spawn.getY(),
+					spawn.getZ(),
+					player.getLocation().getYaw(),
+					player.getLocation().getPitch()
+			);
+			teleportPlayer(player, homeWorld, spawnPoint);
+		}
+	}
+	
 	public static BlockVector					origin					= new BlockVector(0, 0, 0);
 
-	protected static final String				DEFAULT_DESTRUCTIBLES	= "0,1,2,3,10,11,12,13,87,88";
+	protected static final String				DEFAULT_DESTRUCTIBLES	= "0,1,2,3,4,10,11,12,13,14,15,16,21,51,56,78,79,82,87,88,89";
 
 	protected HashMap<Material, Boolean>		destructible			= new HashMap<Material, Boolean>();
 	protected HashMap<Material, Boolean>		needsPlatform			= new HashMap<Material, Boolean>();
@@ -790,4 +832,5 @@ public class NetherManager
 	protected Persistence						persistence;
 	protected PluginUtilities					utilities;
 	protected long								disabledPhysics			= 0;
+	
 }

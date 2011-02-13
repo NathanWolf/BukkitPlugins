@@ -46,7 +46,6 @@ public class NetherPlayer
 		this.player = player;
 	}
 	
-	@PersistField
 	public TeleportState getState()
 	{
 		return state;
@@ -57,7 +56,6 @@ public class NetherPlayer
 		this.state = state;
 	}
 
-	@PersistField
 	public BlockVector getTargetLocation()
 	{
 		return targetLocation;
@@ -91,17 +89,6 @@ public class NetherPlayer
 	}
 
 	@PersistField
-	public NetherWorld getTargetWorld()
-	{
-		return targetWorld;
-	}
-
-	public void setTargetWorld(NetherWorld targetWorld)
-	{
-		this.targetWorld = targetWorld;
-	}
-	
-	@PersistField
 	public BlockVector getLastLocation()
 	{
 		return lastLocation;
@@ -112,7 +99,17 @@ public class NetherPlayer
 		this.lastLocation = lastLocation;
 	}
 	
-	@PersistField
+
+	public NetherWorld getTargetWorld()
+	{
+		return targetWorld;
+	}
+
+	public void setTargetWorld(NetherWorld targetWorld)
+	{
+		this.targetWorld = targetWorld;
+	}
+	
 	public NetherWorld getSourceWorld()
 	{
 		return sourceWorld;
@@ -123,7 +120,6 @@ public class NetherPlayer
 		this.sourceWorld = sourceWorld;
 	}
 
-	@PersistField
 	public PortalArea getTargetArea()
 	{
 		return targetArea;
@@ -134,7 +130,6 @@ public class NetherPlayer
 		this.targetArea = targetArea;
 	}
 
-	@PersistField
 	public PortalArea getSourceArea()
 	{
 		return sourceArea;
@@ -145,7 +140,6 @@ public class NetherPlayer
 		this.sourceArea = sourceArea;
 	}
 	
-	@PersistField
 	public Portal getTargetPortal()
 	{
 		return targetPortal;
@@ -156,7 +150,6 @@ public class NetherPlayer
 		this.targetPortal = targetPortal;
 	}
 
-	@PersistField
 	public Portal getSourcePortal()
 	{
 		return sourcePortal;
