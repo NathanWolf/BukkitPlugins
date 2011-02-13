@@ -5,12 +5,15 @@ import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.util.BlockVector;
 
+import com.elmakers.mine.bukkit.plugins.nether.NetherManager;
+import com.elmakers.mine.bukkit.plugins.persistence.BlockRequestListener;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
-public class PeekSpell extends Spell
+public class WindowSpell extends Spell implements BlockRequestListener
 {
 	static final String		DEFAULT_PEEKABLES		= "1,2,3,10,11,12,13";
 
@@ -18,7 +21,15 @@ public class PeekSpell extends Spell
 	private int				defaultRadius			= 3;
 	private int				maxRadius				= 32;
 	private int				defaultSearchDistance	= 32;
-
+	
+	private int				radius					= defaultRadius;
+	private Block			targetBlock				= null;
+	private NetherManager	nether					= null;
+	
+	public WindowSpell(NetherManager nether)
+	{
+		this.nether = nether;
+	}
 
 	@Override
 	public boolean onCast(String[] parameters)
@@ -36,12 +47,24 @@ public class PeekSpell extends Spell
 			return false;
 		}
 
-		int radius = defaultRadius;
-		if (parameters.length > 0)
+		String worldName = null;
+		radius = defaultRadius;
+		
+		for (int i = 0; i < parameters.length; i++)
 		{
+			String parameter = parameters[i];
+			if (parameter.equalsIgnoreCase("world"))
+			{
+				if (i < parameters.length - 1)
+				{
+					worldName = parameters[i + 1];
+				}
+			}
+			// Try for number
 			try
 			{
-				radius = Integer.parseInt(parameters[0]);
+				int r = Integer.parseInt(parameter);
+				radius = r;
 				if (radius > maxRadius && maxRadius > 0)
 				{
 					radius = maxRadius;
@@ -49,44 +72,70 @@ public class PeekSpell extends Spell
 			} 
 			catch(NumberFormatException ex)
 			{
-				radius = defaultRadius;
 			}
 		}
 		
+		if (targetBlock == null)
+		{
+			targetBlock = target;
+			
+			nether.requestBlockList(player.getWorld(), worldName, new BlockVector(target.getX(), target.getY(), target.getZ()), radius, this);
+		}
+		else
+		{
+			sendMessage(player, "You must wait for your previous window");
+			return false;
+		}
+
+		return true;
+	}
+	
+	protected BlockList peek(Block target, int radius, List<Block> blocks)
+	{
 		BlockList peekedBlocks = new BlockList();
 		int diameter = radius * 2;
-		int midX = (diameter - 1) / 2;
-		int midY = (diameter - 1) / 2;
-		int midZ = (diameter - 1) / 2;
-		int diameterOffset = diameter - 1;
-
-		for (int x = 0; x < radius; ++x)
+		
+		// Sanity check
+		if (blocks.size() != diameter * diameter * diameter)
 		{
-			for (int y = 0; y < radius; ++y)
+			return null;
+		}
+		
+		for (int x = 0; x < diameter; ++x)
+		{
+			for (int y = 0; y < diameter; ++y)
 			{
-				for (int z = 0; z < radius; ++z)
-				{
-					if (checkPosition(x - midX, y - midY, z - midZ, radius) <= 0)
+				for (int z = 0; z < diameter; ++z)
+				{	
+					Material mat = Material.GLASS;
+					if (blocks != null)
 					{
-						blastBlock(x, y, z, target, radius, peekedBlocks);
-						blastBlock(diameterOffset - x, y, z, target, radius, peekedBlocks);
-						blastBlock(x, diameterOffset - y, z, target, radius, peekedBlocks);
-						blastBlock(x, y, diameterOffset - z, target, radius, peekedBlocks);
-						blastBlock(diameterOffset - x, diameterOffset - y, z, target, radius, peekedBlocks);
-						blastBlock(x, diameterOffset - y, diameterOffset - z, target, radius, peekedBlocks);
-						blastBlock(diameterOffset - x, y, diameterOffset - z, target, radius, peekedBlocks);
-						blastBlock(diameterOffset - x, diameterOffset - y, diameterOffset - z, target, radius, peekedBlocks);
+						mat = blocks.get(x + (y * diameter) + z * diameter * diameter).getType();
 					}
+					
+					windowBlock(x, y, z, target, radius, peekedBlocks, mat);			
 				}
 			}
+			
 		}
 		
 		peekedBlocks.setTimeToLive(8000);
+		
+		return peekedBlocks;
+	}
+	
+
+	public void onBlockListLoaded(List<Block> blocks)
+	{
+		BlockList peekedBlocks = peek(targetBlock, radius, blocks);
+		targetBlock = null;
+		if (peekedBlocks == null)
+		{
+			return;
+		}
 		spells.scheduleCleanup(peekedBlocks);
-
-		castMessage(player, "Peeked through  " + peekedBlocks.getCount() + "blocks");
-
-		return true;
+	
+		castMessage(player, "Windowed through  " + peekedBlocks.getCount() + "blocks");
 	}
 	
 
@@ -95,24 +144,24 @@ public class PeekSpell extends Spell
 		return (x * x) + (y * y) + (z * z) - (R * R);
 	}
 
-	public void blastBlock(int dx, int dy, int dz, Block centerPoint, int radius, BlockList blocks)
+	public void windowBlock(int dx, int dy, int dz, Block centerPoint, int radius, BlockList blocks, Material mat)
 	{
 		int x = centerPoint.getX() + dx - radius;
 		int y = centerPoint.getY() + dy - radius;
 		int z = centerPoint.getZ() + dz - radius;
 		Block block = player.getWorld().getBlockAt(x, y, z);
-		if (!isPeekable(block))
+		if (!isWindowable(block))
 		{
 			return;
 		}
 		blocks.addBlock(block);
-		block.setType(Material.GLASS);
+		block.setType(mat);
 	}
 
-	public boolean isPeekable(Block block)
+	public boolean isWindowable(Block block)
 	{
 		if (block.getType() == Material.AIR)
-			return false;
+			return true;
 		
 		if (block.getType() == Material.GLASS)
 			return false;
@@ -138,7 +187,7 @@ public class PeekSpell extends Spell
 	@Override
 	public String getCategory()
 	{
-		return "exploring";
+		return "exploration";
 	}
 
 	@Override

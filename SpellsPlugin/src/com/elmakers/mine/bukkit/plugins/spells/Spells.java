@@ -651,7 +651,7 @@ public class Spells
 		addSpell(new RecallSpell());
 		addSpell(new DisintegrateSpell());
 		addSpell(new ManifestSpell());
-		addSpell(new PeekSpell(nether));
+		addSpell(new PeekSpell());
 		
 		// wip
 		// addSpell(new TowerSpell());
@@ -670,6 +670,7 @@ public class Spells
 		{
 			addSpell(new PortalSpell(nether));
 			addSpell(new PhaseSpell(nether));
+			addSpell(new WindowSpell(nether));
 		}
 	}
 	

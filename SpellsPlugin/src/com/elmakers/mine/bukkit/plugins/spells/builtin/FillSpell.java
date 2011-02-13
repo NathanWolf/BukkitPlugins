@@ -27,17 +27,11 @@ public class FillSpell extends Spell
 	{
 		Block targetBlock = getTargetBlock();
 		Material material = spells.finishMaterialUse(player);
-		boolean overrideMaterial = false;
 		boolean singleBlock = false;
 		byte data = spells.getMaterialData(player);
 	
 		for (int i = 0; i < parameters.length; i++)
 		{
-			if (parameters[i].equalsIgnoreCase("with"))
-			{
-				overrideMaterial = true;
-			}
-			
 			if (parameters[i].equalsIgnoreCase("single"))
 			{
 				singleBlock = true;
@@ -50,24 +44,21 @@ public class FillSpell extends Spell
 			return false;
 		}
 		
-		if (overrideMaterial)
+		boolean overrideMaterial = false;
+		
+		ItemStack buildWith = getBuildingMaterial();
+		if (buildWith != null)
 		{
-			ItemStack buildWith = getBuildingMaterial();
-			if (buildWith != null)
+			material = buildWith.getType();
+			MaterialData targetData = buildWith.getData();
+			if (targetData != null)
 			{
-				material = buildWith.getType();
-				MaterialData targetData = buildWith.getData();
-				if (targetData != null)
-				{
-					data = targetData.getData();
-				}
-			}
-			else
-			{
-				overrideMaterial = false;
+				data = targetData.getData();
+				overrideMaterial = true;
 			}
 		}
-		
+	
+	
 		if (singleBlock)
 		{
 			BlockList filledBlocks = new BlockList();

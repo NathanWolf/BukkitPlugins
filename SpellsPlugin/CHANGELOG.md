@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.89
+
+ - Merge "with" variant code to base fill- though I had done this already!
+ - Separate "peek" and "window".
+
 ## 0.88
 
  - Keep trying to undo blocks in an unloaded chunk
