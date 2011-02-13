@@ -418,8 +418,6 @@ public class Persistence
 		updateCommandSender("player" , Player.class);
 		
 		// Create BlockVector class
-		// TODO!
-		
 		EntityInfo vectorInfo = new EntityInfo("global", "vector");
 		FieldInfo vectorId = new FieldInfo("id");
 		FieldInfo fieldX = new FieldInfo("x");
