@@ -125,7 +125,7 @@ public class PortalSpell extends Spell
 	@Override
 	public Material getMaterial()
 	{
-		return Material.FLINT_AND_STEEL;
+		return Material.PORTAL;
 	}
 	
 	protected NetherManager nether;

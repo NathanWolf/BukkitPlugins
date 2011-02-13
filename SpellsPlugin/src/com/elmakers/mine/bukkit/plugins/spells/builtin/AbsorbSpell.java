@@ -9,8 +9,6 @@ import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class AbsorbSpell extends Spell 
 {
-	private int defaultAmount = 1;
-
 	@Override
 	public boolean onCast(String[] parameters) 
 	{
@@ -26,12 +24,24 @@ public class AbsorbSpell extends Spell
 			castMessage(player, "No target");
 			return false;
 		}
-		int amount = defaultAmount;
+		int amount = 1;
 		
 		castMessage(player, "Absorbing some " + target.getType().name().toLowerCase());
-		for (int i = 0; i < amount; i++)
+		ItemStack itemStack = new ItemStack(target.getType(), amount, (short)0 , target.getData());
+		boolean active = false;
+		for (int i = 8; i >= 0; i--)
 		{
-			ItemStack itemStack = new ItemStack(target.getType(), 1, (short)0 , target.getData());
+			ItemStack current = player.getInventory().getItem(i);
+			if (current == null || current.getType() == Material.AIR)
+			{
+				player.getInventory().setItem(i, itemStack);
+				active = true;
+				break;
+			}
+		}
+		
+		if (!active)
+		{
 			player.getInventory().addItem(itemStack);
 		}
 		
@@ -59,7 +69,7 @@ public class AbsorbSpell extends Spell
 	@Override
 	public void onLoad(PluginProperties properties)
 	{
-		defaultAmount = properties.getInteger("spells-absorb-amount", defaultAmount);
+		//defaultAmount = properties.getInteger("spells-absorb-amount", defaultAmount);
 	}
 
 	@Override

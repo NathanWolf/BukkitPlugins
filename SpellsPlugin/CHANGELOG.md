@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 0.88
+
+ - Keep trying to undo blocks in an unloaded chunk
+ - Modify absorb to give you blocks starting at the right of your inventory
+ - Always use the right-most inventory slot for construction, unless you have no building materials
+
+## 0.87
+
+ - Move BlockRequestListener to Persistence
+ - Modify torch to turn netherrak to glowstone
+
 ## 0.86
 
  - Use NetherGate to create a portal-less portal for the portal spell!

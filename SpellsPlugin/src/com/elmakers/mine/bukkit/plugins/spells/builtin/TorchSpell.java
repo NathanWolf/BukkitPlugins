@@ -89,7 +89,15 @@ public class TorchSpell extends Spell
 		}
 		else
 		{
-			face.setType(Material.TORCH);
+			if (target.getType() == Material.NETHERRACK || target.getType() == Material.SOUL_SAND)
+			{
+				target.setType(Material.GLOWSTONE);
+				torchBlock.addBlock(target);
+			}
+			else
+			{
+				face.setType(Material.TORCH);
+			}
 		}
 		
 		spells.addToUndoQueue(player, torchBlock);

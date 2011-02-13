@@ -289,11 +289,12 @@ public class Spells
 			long timePassed = System.currentTimeMillis() - lastCleanupTime;
 			for (BlockList blocks : tempList)
 			{
+				boolean undoSuccess = false;
 				if (blocks.age((int)timePassed))
 				{
-					blocks.undo();
+					undoSuccess = blocks.undo();
 				}
-				if (blocks.isExpired())
+				if (undoSuccess && blocks.isExpired())
 				{
 					cleanupBlocks.remove(blocks);
 				}

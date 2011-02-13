@@ -41,7 +41,7 @@ public class TransmuteSpell extends Spell
 			return false;
 		}
 		
-		ItemStack targetItem = getBuildingMaterial(true);
+		ItemStack targetItem = getBuildingMaterial();
 		if (targetItem == null)
 		{
 			sendMessage(player, "Nothing to transmute with");

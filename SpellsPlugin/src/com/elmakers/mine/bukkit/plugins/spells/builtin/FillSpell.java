@@ -52,7 +52,7 @@ public class FillSpell extends Spell
 		
 		if (overrideMaterial)
 		{
-			ItemStack buildWith = getBuildingMaterial(!singleBlock);
+			ItemStack buildWith = getBuildingMaterial();
 			if (buildWith != null)
 			{
 				material = buildWith.getType();
