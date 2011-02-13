@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.61
+
+ - Implement material cycling system- crouch and right-click!
+
 ## 0.60
 
  - Support release for Spells refactor. Wand refactor coming soon to a wand near you!

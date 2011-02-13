@@ -1,5 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.wand;
 
+import java.util.List;
+
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerAnimationEvent;
@@ -67,6 +69,179 @@ class WandPlayerListener extends PlayerListener
 			}
 		}
     }
+	
+	public boolean cycleMaterials(Player player)
+	{
+		Spells spells = wands.getSpells();
+		List<Material> buildingMaterials = spells.getBuildingMaterials();
+		Inventory inventory = player.getInventory();
+		ItemStack[] contents = inventory.getContents();
+		int firstMaterialSlot = 8;
+		boolean foundAir = false;
+		
+		for (int i = 8; i >= 0; i--)
+		{
+			Material mat = contents[i].getType();
+			if (mat == Material.AIR)
+			{
+				if (foundAir)
+				{
+					break;
+				}
+				else
+				{
+					foundAir = true;
+					firstMaterialSlot = i;
+					continue;
+				}
+			}
+			else
+			{
+				if (buildingMaterials.contains(mat))
+				{
+					firstMaterialSlot = i;
+					continue;
+				}
+			}
+		}
+		
+		if (firstMaterialSlot == 8) return false;
+		
+		ItemStack lastSlot = contents[8];
+		for (int i = 7; i >= firstMaterialSlot; i--)
+		{
+			contents[i + 1] = contents[i];
+		}
+		contents[firstMaterialSlot] = lastSlot;
+
+		inventory.setContents(contents);
+		CraftPlayer cPlayer = ((CraftPlayer)player);
+		cPlayer.getHandle().l();
+		
+		return true;
+	}
+	
+	public void cycleSpells(Player player)
+	{
+		Spells spells = wands.getSpells();
+		Inventory inventory = player.getInventory();
+		ItemStack[] contents = inventory.getContents();
+		ItemStack[] active = new ItemStack[9];
+		
+		for (int i = 0; i < 9; i++) { active[i] = contents[i]; }
+		
+		int maxSpellSlot = 0;
+		int firstSpellSlot = -1;
+		for (int i = 0; i < 9; i++)
+		{
+			boolean isWand = active[i].getTypeId() == wands.getWandTypeId();
+			boolean isSpell = false;
+			if (active[i].getType() != Material.AIR)
+			{
+				SpellVariant spell = spells.getSpell(active[i].getType(), player);
+				isSpell = spell != null;
+			}
+			
+			if (isSpell)
+			{
+				if (firstSpellSlot < 0) firstSpellSlot = i;
+				maxSpellSlot = i;
+			}
+			else
+			{
+				if (!isWand && firstSpellSlot >= 0)
+				{
+					break;
+				}
+			}
+			
+		}
+		
+		int numSpellSlots = firstSpellSlot < 0 ? 0 : maxSpellSlot - firstSpellSlot + 1;
+		
+		if (numSpellSlots < 2)
+		{
+			return;
+		}
+		
+		for (int ddi = 0; ddi < numSpellSlots; ddi++)
+		{
+			int i = ddi + firstSpellSlot;
+			if (contents[i].getTypeId() != wands.getWandTypeId())
+			{
+				for (int di = 1; di < numSpellSlots; di++)
+				{
+					int dni = (ddi + di) % numSpellSlots;
+					int ni = dni + firstSpellSlot;
+					if (active[ni].getTypeId() != wands.getWandTypeId())
+					{
+						contents[i] = active[ni];
+						break;
+					}
+				}
+			}
+		}
+		
+		inventory.setContents(contents);
+		CraftPlayer cPlayer = ((CraftPlayer)player);
+		cPlayer.getHandle().l();
+	}
+	
+	public void spellHelp(Player player)
+	{
+		// Check for magic item
+		Inventory inventory = player.getInventory();
+		ItemStack[] contents = inventory.getContents();
+		Spells spells = wands.getSpells();
+		
+		boolean inInventory = false;
+		boolean foundInventory = false;
+		SpellVariant spell = null;
+		boolean hasWand = false;
+		
+		for (int i = 0; i < 9; i++)
+		{
+			if (contents[i].getTypeId() == wands.getWandTypeId())
+			{
+				hasWand = true;
+				continue;
+			}
+			
+			if (contents[i].getType() != Material.AIR)
+			{
+				SpellVariant ispell = spells.getSpell(contents[i].getType(), player);
+
+				if (!foundInventory)
+				{
+					if (!inInventory)
+					{
+						if (ispell != null)
+						{
+							inInventory = true;
+						}
+					}
+					else
+					{
+						if (ispell == null)
+						{
+							inInventory = false;
+							foundInventory = true;
+						}
+					}
+				}
+				
+				if (inInventory && i == player.getInventory().getHeldItemSlot())
+				{
+					spell = ispell;
+				}
+			}
+		}
+
+		if (hasWand && spell != null)
+		{
+			player.sendMessage(spell.getName() + " : " + spell.getDescription());
+		}
+	}
   
     /**
      * Called when a player uses an item
@@ -77,7 +252,6 @@ class WandPlayerListener extends PlayerListener
     public void onPlayerItem(PlayerItemEvent event) 
 	{
 		int materialId = event.getPlayer().getInventory().getItemInHand().getTypeId();
-		Spells spells = wands.getSpells();
 		Player player = event.getPlayer();
 		WandPermissions permissions = wands.getPermissions(player.getName());
 
@@ -88,121 +262,21 @@ class WandPlayerListener extends PlayerListener
 		
 		if (materialId == wands.getWandTypeId())
 		{	
-			Inventory inventory = player.getInventory();
-			ItemStack[] contents = inventory.getContents();
-			ItemStack[] active = new ItemStack[9];
-			
-			for (int i = 0; i < 9; i++) { active[i] = contents[i]; }
-			
-			int maxSpellSlot = 0;
-			int firstSpellSlot = -1;
-			for (int i = 0; i < 9; i++)
+			if (player.isSneaking())
 			{
-				boolean isWand = active[i].getTypeId() == wands.getWandTypeId();
-				boolean isSpell = false;
-				if (active[i].getType() != Material.AIR)
+				if (!cycleMaterials(event.getPlayer()))
 				{
-					SpellVariant spell = spells.getSpell(active[i].getType(), player);
-					isSpell = spell != null;
-				}
-				
-				if (isSpell)
-				{
-					if (firstSpellSlot < 0) firstSpellSlot = i;
-					maxSpellSlot = i;
-				}
-				else
-				{
-					if (!isWand && firstSpellSlot >= 0)
-					{
-						break;
-					}
-				}
-				
-			}
-			
-			int numSpellSlots = firstSpellSlot < 0 ? 0 : maxSpellSlot - firstSpellSlot + 1;
-			
-			if (numSpellSlots < 2)
-			{
-				return;
-			}
-			
-			for (int ddi = 0; ddi < numSpellSlots; ddi++)
-			{
-				int i = ddi + firstSpellSlot;
-				if (contents[i].getTypeId() != wands.getWandTypeId())
-				{
-					for (int di = 1; di < numSpellSlots; di++)
-					{
-						int dni = (ddi + di) % numSpellSlots;
-						int ni = dni + firstSpellSlot;
-						if (active[ni].getTypeId() != wands.getWandTypeId())
-						{
-							contents[i] = active[ni];
-							break;
-						}
-					}
+					cycleSpells(event.getPlayer());
 				}
 			}
-			
-			inventory.setContents(contents);
-			CraftPlayer cPlayer = ((CraftPlayer)event.getPlayer());
-			cPlayer.getHandle().l();
+			else
+			{
+				cycleSpells(event.getPlayer());
+			}
 		}
 		else
 		{
-			// Check for magic item
-			Inventory inventory = player.getInventory();
-			ItemStack[] contents = inventory.getContents();
-			
-			boolean inInventory = false;
-			boolean foundInventory = false;
-			SpellVariant spell = null;
-			boolean hasWand = false;
-			
-			for (int i = 0; i < 9; i++)
-			{
-				if (contents[i].getTypeId() == wands.getWandTypeId())
-				{
-					hasWand = true;
-					continue;
-				}
-				
-				if (contents[i].getType() != Material.AIR)
-				{
-					SpellVariant ispell = spells.getSpell(contents[i].getType(), player);
-
-					if (!foundInventory)
-					{
-						if (!inInventory)
-						{
-							if (ispell != null)
-							{
-								inInventory = true;
-							}
-						}
-						else
-						{
-							if (ispell == null)
-							{
-								inInventory = false;
-								foundInventory = true;
-							}
-						}
-					}
-					
-					if (inInventory && i == player.getInventory().getHeldItemSlot())
-					{
-						spell = ispell;
-					}
-				}
-			}
-
-			if (hasWand && spell != null)
-			{
-				player.sendMessage(spell.getName() + " : " + spell.getDescription());
-			}
+			spellHelp(event.getPlayer());
 		}
     }
 
