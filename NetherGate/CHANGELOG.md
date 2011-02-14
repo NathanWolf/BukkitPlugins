@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.30
+
+ - Work on the find place to stand code. Looking good!
+ - Add "all" and entity type parameters to nuke
+ - Allow "0" to the "scale" command to allow disabling scaling again once you've turned it on
+
 # 0.29
 
  - Maven-ize. Just never got around to that.

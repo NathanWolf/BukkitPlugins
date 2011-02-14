@@ -181,25 +181,25 @@ public class WindowSpell extends Spell implements BlockRequestListener
 	@Override
 	protected String getName()
 	{
-		return "peek";
+		return "window";
 	}
 
 	@Override
 	public String getCategory()
 	{
-		return "exploration";
+		return "nether";
 	}
 
 	@Override
 	public String getDescription()
 	{
-		return "Temporarily glass your target surface";
+		return "Create a temporary window into other worlds";
 	}
 
 	@Override
 	public Material getMaterial()
 	{
-		return Material.SUGAR_CANE;
+		return Material.MOB_SPAWNER;
 	}
 
 }

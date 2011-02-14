@@ -13,6 +13,7 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.util.BlockVector;
@@ -338,6 +339,11 @@ public class NetherManager
 	
 	public BlockVector mapLocation(NetherWorld from, NetherWorld to, BlockVector target)
 	{
+		double fromScale = from.getScale();
+		double toScale = to.getScale();
+		
+		if (fromScale == 0 || toScale == 0) return target;
+		
 		int originalY = target.getBlockY();
 		Vector transformed = new Vector(target.getBlockX(), target.getBlockY(), target.getBlockZ());
 		
@@ -357,8 +363,6 @@ public class NetherManager
 		}
 		
 		// Scale
-		double fromScale = from.getScale();
-		double toScale = to.getScale();
 		if (fromScale != 0 && toScale != 0)
 		{
 			transformed.multiply(fromScale / toScale);
@@ -596,14 +600,16 @@ public class NetherManager
 		if (location == null) return;
 		
 		// Look up first, then down
-		Location targetLocation = findPlaceToStand(location, true);
+		Location targetLocation = findPlaceToStand(location);
 		if (targetLocation == null)
 		{
-			targetLocation = findPlaceToStand(location, false);
-		}
-		if (targetLocation == null)
-		{
+			Persistence.getLogger().info("Couldn't find a place for " + player.getName() + " to stand - sorry for the fall!");
 			targetLocation = location;
+		}
+		else
+		{
+			// Go one up- findPlaceToStand returns a block, not a place to tp to.
+			targetLocation.setY(targetLocation.getBlockY() + 1);
 		}
 		
 		Block standingBlock = location.getWorld().getBlockAt(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
@@ -625,6 +631,95 @@ public class NetherManager
 		}
 		
 		player.teleportTo(targetLocation);
+	}
+	
+
+	protected Location findPlaceToStand(Location startLocation)
+	{
+		World world = startLocation.getWorld();
+
+		// get player position, start from top
+		int x = startLocation.getBlockX();
+		int y = 125;
+		int z = startLocation.getBlockZ();		
+		
+		// First, try built-in!
+		CraftWorld cWorld = (CraftWorld)world;
+		int highestY = cWorld.getHighestBlockYAt(x, z);
+		
+		if (highestY > 0 && highestY < 128)
+		{
+			Block block = world.getBlockAt(x, highestY, z);
+			Block oneUp = block.getFace(BlockFace.UP);
+			Block twoUp = oneUp.getFace(BlockFace.UP);
+			if 
+			(
+				isOkToStandOn(block.getType())
+			&&	isOkToStandIn(oneUp.getType())
+			&& 	isOkToStandIn(twoUp.getType())
+			)
+			{
+				return block.getLocation();
+			}
+		}
+
+		// search for a spot to stand
+		Block[] blocks = new Block[3];
+		Material[] mats = new Material[3];
+
+		blocks[0] = world.getBlockAt(x, y, z);
+		blocks[1] = blocks[0].getFace(BlockFace.UP);
+		blocks[2] = blocks[1].getFace(BlockFace.UP);
+		
+		for (int i = 0; i < blocks.length; i++)
+		{
+			mats[i] = blocks[i].getType();
+		}
+		
+		for (;y > 5; y--)
+		{
+			if 
+			(
+				isOkToStandOn(mats[0])
+			&&	isOkToStandIn(mats[1])
+			&& 	isOkToStandIn(mats[2])
+			)
+			{
+				// spot found - return location
+				return new Location(world, x, y, z, startLocation.getYaw(), startLocation.getPitch());
+			}
+			
+	
+			blocks[2] = blocks[1];				
+			blocks[1] = blocks[0];
+			blocks[0] = blocks[0].getFace(BlockFace.DOWN);
+	
+			for (int i = 0; i < blocks.length; i++)
+			{
+				mats[i] = blocks[i].getType();
+			}
+		}
+
+		// no spot found
+		return tryToLand(startLocation);
+	}
+	
+	protected Location tryToLand(Location startLocation)
+	{
+		World world = startLocation.getWorld();
+		Block currentBlock = world.getBlockAt(startLocation.getBlockX(), startLocation.getBlockY(), startLocation.getBlockZ());
+		int y = currentBlock.getY();
+		while (y > 5)
+		{
+			if (isOkToStandOn(currentBlock.getType()))
+			{
+				return new Location(world, currentBlock.getX(), currentBlock.getY(), currentBlock.getZ(), startLocation.getYaw(), startLocation.getPitch()); 
+			}
+			y--;
+		}
+		
+		// Uh-oh! Good luck...
+		return null;
 	}
 	
 	public void buildPortal(Block centerBlock, BlockFace facing, boolean platform, boolean frame, List<Block> blockList)
@@ -688,72 +783,6 @@ public class NetherManager
 		platform.fill(centerBlock.getWorld(), Material.OBSIDIAN, needsPlatform, blockList);
 	}
 	
-	protected Location findPlaceToStand(Location startLocation, boolean goUp)
-	{
-		World world = startLocation.getWorld();
-		int step;
-		if (goUp)
-		{
-			step = 1;
-		}
-		else
-		{
-			step = -1;
-		}
-
-		// get player position
-		int x = startLocation.getBlockX();
-		int y = startLocation.getBlockY() - 1;
-		int z = startLocation.getBlockZ();
-
-		// search for a spot to stand
-		Block[] blocks = new Block[3];
-		Material[] mats = new Material[3];
-
-		blocks[0] = world.getBlockAt(x, y, z);
-		blocks[1] = blocks[0].getFace(BlockFace.UP);
-		blocks[2] = blocks[1].getFace(BlockFace.UP);
-		
-		for (int i = 0; i < blocks.length; i++)
-		{
-			mats[i] = blocks[i].getType();
-		}
-		
-		while (y > 5 && y < 125)
-		{
-			if 
-			(
-				isOkToStandOn(mats[0])
-			&&	isOkToStandIn(mats[1])
-			&& 	isOkToStandIn(mats[2])
-			)
-			{
-				// spot found - return location
-				return new Location(world, x, y + 1, z, startLocation.getYaw(), startLocation.getPitch());
-			}
-			
-			if (goUp)
-			{
-				blocks[0] = blocks[1];
-				blocks[1] = blocks[2];
-				blocks[2] = blocks[2].getFace(BlockFace.UP);
-			}
-			else
-			{
-				blocks[2] = blocks[1];				
-				blocks[1] = blocks[0];
-				blocks[0] = blocks[0].getFace(BlockFace.DOWN);
-			}
-			for (int i = 0; i < blocks.length; i++)
-			{
-				mats[i] = blocks[i].getType();
-			}
-			y += step;
-		}
-
-		// no spot found
-		return null;
-	}
 	
 	protected boolean isOkToStandIn(Material mat)
 	{

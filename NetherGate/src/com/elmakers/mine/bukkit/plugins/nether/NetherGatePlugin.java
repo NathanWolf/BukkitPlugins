@@ -13,8 +13,6 @@ import org.bukkit.World.Environment;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.CraftWorld;
-import org.bukkit.entity.Ghast;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
@@ -27,6 +25,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BlockVector;
 
+import com.elmakers.mine.bukkit.plugins.gameplay.EntityType;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherPlayer;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherWorld;
 import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
@@ -112,11 +111,11 @@ public class NetherGatePlugin extends JavaPlugin
 		targetWorldCommand = targetCommand.getSubCommand("world", "Re-target a world", "<from> <to>", PermissionType.ADMINS_ONLY);
 		scaleCommand = netherCommand.getSubCommand("scale", "Re-scale an area or world", "<world | area> <name> <scale>", PermissionType.ADMINS_ONLY); 
 		scaleWorldCommand = scaleCommand.getSubCommand("world", "Re-scale a world", "<name> <scale>", PermissionType.ADMINS_ONLY); 
-		setSpawnCommand = netherCommand.getSubCommand("setspawn", "Set the current world's spawn point", null, PermissionType.ADMINS_ONLY); 
-
+		setSpawnCommand = netherCommand.getSubCommand("setspawn", "Set the current world's spawn point", null, PermissionType.ADMINS_ONLY);
+		nukeCommand = netherCommand.getSubCommand("nuke", "Kill all ghasts (or whatever)", "[all | mobtype] [world]", PermissionType.ADMINS_ONLY);
+		
 		setHomeCommand = netherCommand.getSubCommand("sethome", "Set your home world and location", null); 
 		goHomeCommand = netherCommand.getSubCommand("home", "Go to your home world and location", null);
-		killGhastsCommand = netherCommand.getSubCommand("nuke", "Kill all those ghasts!", "[world]"); 
 		
 		areaCommand.bind("onCreateArea");
 		worldCommand.bind("onCreateWorld");
@@ -125,7 +124,7 @@ public class NetherGatePlugin extends JavaPlugin
 		deleteWorldCommand.bind("onDeleteWorld");
 		targetWorldCommand.bind("onTargetWorld");
 		scaleWorldCommand.bind("onScaleWorld");
-		killGhastsCommand.bind("onKillGhasts");
+		nukeCommand.bind("onNuke");
 		setSpawnCommand.bind("onSetSpawn");
 		goHomeCommand.bind("onGoHome");
 		setHomeCommand.bind("onSetHome");
@@ -143,10 +142,10 @@ public class NetherGatePlugin extends JavaPlugin
 		noWorldMessage = utilities.getMessage("noWorld", "Can't find world %s");
 		scaledWorldMessage = utilities.getMessage("scaleWorld", "Re-scaled world %s to %.2f");
 		invalidNumberMessage = utilities.getMessage("invalidNumber", "'%s' is not a number");
-		invalidScaleMessage = utilities.getMessage("invalidScale", "A scale of %.2f wouldn't be a good idea");
-		killedGhastsMessage = utilities.getMessage("killedGhasts", "Nuked %d of those darn ghasts!");
-		noGhastsMessage = utilities.getMessage("noGhasts", "You are currently ghast-free. Congrats!");
-		killFailedMessage = utilities.getMessage("killFailed", "Sorry, couldn't kill any ghasts! :*(");
+		disableScaleMessage = utilities.getMessage("disableScale", "Disabling scaling for world %s");
+		killedEntitiesMessage = utilities.getMessage("killedEntities", "Nuked %d of those darn %ss!");
+		noEntityMessage = utilities.getMessage("noEntities", "You are currently %s-free. Congrats!");
+		killFailedMessage = utilities.getMessage("killFailed", "Sorry, couldn't kill any &ss!");
 		spawnSetMessage = utilities.getMessage("setSpawn", "The spawn for world %s now set to (%d, %d, %d)");
 		spawnSetFailedMessage = utilities.getMessage("setSpawnfailed", "Couldn't set the spawn, sorry!");
 		homeSetMessage = utilities.getMessage("setHome", "Set your home to (%d, %d, %d) in %s");
@@ -234,14 +233,17 @@ public class NetherGatePlugin extends JavaPlugin
 		
 		if (scale <= 0.01)
 		{
-			invalidScaleMessage.sendTo(player, scale);
-			return false;
+			scale = 0;
+			disableScaleMessage.sendTo(player, worldName);
 		}
 				
 		worldData.setScale(scale);
 		persistence.put(worldData);
 		
-		scaledWorldMessage.sendTo(player, worldName, scale);
+		if (scale != 0)
+		{
+			scaledWorldMessage.sendTo(player, worldName, scale);
+		}
 		
 		return true;
 	}
@@ -290,11 +292,22 @@ public class NetherGatePlugin extends JavaPlugin
 		return true;
 	}
 
-	public boolean onKillGhasts(Player player, String[] parameters)
+	public boolean onNuke(Player player, String[] parameters)
 	{
 		String worldName = null;
 		NetherWorld targetWorld = null;
+		EntityType targetType = EntityType.GHAST;
+		
 		if (parameters.length > 0)
+		{
+			targetType = EntityType.parseString(parameters[0]);
+			if (targetType == EntityType.UNKNOWN)
+			{
+				targetType = EntityType.GHAST;
+			}
+		}
+		
+		if (parameters.length > 1)
 		{
 			worldName = parameters[0];
 			targetWorld = manager.getWorld(worldName, player.getWorld());
@@ -312,7 +325,7 @@ public class NetherGatePlugin extends JavaPlugin
 			}
 			else
 			{
-				killFailedMessage.sendTo(player);
+				killFailedMessage.sendTo(player, targetType.getName());
 				return true;
 			}
 		}
@@ -320,28 +333,20 @@ public class NetherGatePlugin extends JavaPlugin
 		World world = targetWorld.getWorld().getWorld(getServer());
 		if (world == null)
 		{
-			killFailedMessage.sendTo(player);
+			killFailedMessage.sendTo(player, targetType.getName());
 			return true;
 		}
 		
-		int killCount = 0;
-		List<LivingEntity> entities = world.getLivingEntities();
-		for (LivingEntity entity : entities)
-		{
-			if (entity instanceof Ghast)
-			{
-				entity.setHealth(0);
-				killCount++;
-			}
-		}
+		Nuke nuke = new Nuke();
+		int killCount = nuke.nuke(world, targetType);
 		
 		if (killCount > 0)
 		{
-			killedGhastsMessage.sendTo(player, killCount);
+			killedEntitiesMessage.sendTo(player, killCount, targetType.getName());
 		}
 		else
 		{
-			noGhastsMessage.sendTo(player);
+			noEntityMessage.sendTo(player, targetType.getName());
 		}
 		
 		return true;
@@ -602,7 +607,7 @@ public class NetherGatePlugin extends JavaPlugin
 	protected PluginCommand deleteWorldCommand;
 	protected PluginCommand scaleCommand;
 	protected PluginCommand scaleWorldCommand;
-	protected PluginCommand killGhastsCommand;
+	protected PluginCommand nukeCommand;
 	protected PluginCommand setSpawnCommand;
 	protected PluginCommand setHomeCommand;
 	protected PluginCommand goHomeCommand;
@@ -620,10 +625,10 @@ public class NetherGatePlugin extends JavaPlugin
 	protected Message noWorldMessage;
 	protected Message scaledWorldMessage;
 	protected Message invalidNumberMessage;
-	protected Message invalidScaleMessage;
-	protected Message killedGhastsMessage;
+	protected Message disableScaleMessage;
+	protected Message killedEntitiesMessage;
 	protected Message killFailedMessage;
-	protected Message noGhastsMessage;
+	protected Message noEntityMessage;
 	protected Message spawnSetMessage;
 	protected Message spawnSetFailedMessage;
 	protected Message homeSetMessage;
