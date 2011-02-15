@@ -4,7 +4,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
@@ -35,11 +34,7 @@ public class BridgeSpell extends Spell
 		if (buildWith != null)
 		{
 			material = buildWith.getType();
-			MaterialData targetData = buildWith.getData();
-			if (targetData != null)
-			{
-				data = targetData.getData();
-			}
+			data = getItemData(buildWith);
 		}
 		
 		int distance = 0;

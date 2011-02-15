@@ -95,7 +95,7 @@ public class SpellVariant implements Comparable<SpellVariant>
 	
 	public String getPermissionNode()
 	{
-		return "SpellsPlugin.spells." + getName();
+		return "Spells.cast." + getName();
 	}
 	
 	public boolean hasSpellPermission(Player player)

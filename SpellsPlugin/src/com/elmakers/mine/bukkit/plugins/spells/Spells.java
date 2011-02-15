@@ -18,7 +18,6 @@ import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.event.player.PlayerItemEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
 
 import com.elmakers.mine.bukkit.plugins.nether.NetherManager;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
@@ -590,11 +589,7 @@ public class Spells
 			{
 				return;
 			}
-			MaterialData mData = item.getData();
-			if (mData != null)
-			{
-				data = mData.getData();
-			}
+			data = Spell.getItemData(item);
 		}
 		setCurrentMaterialType(event.getPlayer(), material, data);
 	

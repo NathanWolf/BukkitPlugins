@@ -167,6 +167,12 @@ public abstract class Spell implements Comparable<Spell>
 		variants.add(new SpellVariant(this));
 	}
 	
+	public static byte getItemData(ItemStack stack)
+	{
+		if (stack == null) return 0;
+		return (byte)stack.getDurability();
+	}
+	
 	/*
 	 * General helper functions
 	 */
@@ -177,21 +183,30 @@ public abstract class Spell implements Comparable<Spell>
 		Inventory inventory = player.getInventory();
 		ItemStack[] contents = inventory.getContents();
 		
-		boolean hasBuildingMaterial = false;
+		result = contents[8];
+		boolean isAir = result == null || result.getType() == Material.AIR;
+		if (!isAir && buildingMaterials.contains(result.getType()))
+		{
+			return result;
+		}
+		
+		if (!isAir && !buildingMaterials.contains(result.getType()))
+		{
+			return null;
+		}
+		
+		// Should be air now
+		result = null;
+		
 		for (int i = 8; i >= 0; i--)
 		{
 			if (contents[i] == null) break;
 			Material candidate = contents[i].getType();
 			if (buildingMaterials.contains(candidate))
 			{
-				hasBuildingMaterial = true;
+				result = new ItemStack(Material.AIR);
 				break;
 			}
-		}
-		
-		if (hasBuildingMaterial)
-		{
-			result = contents[8];
 		}
 		
 		return result;
@@ -554,7 +569,14 @@ public abstract class Spell implements Comparable<Spell>
 
 		if (length > range)
 		{
-			return null;
+			if (allowMaxRange)
+			{
+				return getBlockAt(targetX, targetY, targetZ);
+			}
+			else
+			{
+				return null;
+			}
 		}
 
 		return getBlockAt(targetX, targetY, targetZ);
@@ -567,7 +589,7 @@ public abstract class Spell implements Comparable<Spell>
 	 */
 	public Block getCurBlock()
 	{
-		if (length > range)
+		if (length > range && !allowMaxRange)
 		{
 			return null;
 		}
@@ -850,10 +872,34 @@ public abstract class Spell implements Comparable<Spell>
 		return getName().compareTo(other.getName());
 	}
 	
+	protected void setMaxRange(int range, boolean allow)
+	{
+		this.range = range;
+		this.allowMaxRange = allow;
+	}
+	
+	protected Material getMaterial(String matName, List<Material> materials)
+	{
+		Material material = Material.AIR;
+		StringBuffer simplify = new StringBuffer ("_");
+		matName = matName.replace(simplify, new StringBuffer(""));
+		for (Material checkMat : materials)
+		{
+			String checkName = checkMat.name().replace(simplify, new StringBuffer(""));
+			if (checkName.equalsIgnoreCase(matName))
+			{
+				material = checkMat;
+				break;
+			}
+		}
+		return material;
+	}
+	
 	/*
 	 * private data
 	 */
 
+	private boolean								allowMaxRange			= false;
 	private int									range					= 200;
 	private double								viewHeight				= 1.65;
 	private double								step					= 0.2;

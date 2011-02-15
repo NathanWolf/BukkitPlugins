@@ -6,7 +6,6 @@ import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
@@ -26,13 +25,15 @@ public class ConstructSpell extends Spell
 	{
 		addVariant("shell", Material.BOWL, getCategory(), "Create a large shell using your selected material", "shell 12");
 		addVariant("superblob", Material.CLAY_BRICK, getCategory(), "Create a large sphere at your target", "sphere 11");
+		addVariant("sandblast", Material.SANDSTONE, getCategory(), "Create a blob of sand to drop on an enemy", "sphere 4 with sand");
 	}
 	
 	enum ConstructionType
 	{
 		SPHERE,
 		CUBOID,
-		SHELL;
+		SHELL,
+		UNKNOWN;
 		
 		public static ConstructionType parseString(String s, ConstructionType defaultType)
 		{
@@ -51,6 +52,7 @@ public class ConstructSpell extends Spell
 	@Override
 	public boolean onCast(String[] parameters)
 	{
+		setMaxRange(defaultSearchDistance, true);
 		targetThrough(Material.GLASS);
 		Block target = getTargetBlock();
 		if (target == null)
@@ -65,28 +67,6 @@ public class ConstructSpell extends Spell
 			}
 		}
 		
-		ConstructionType conType = defaultConstructionType;
-		if (parameters.length > 0)
-		{
-			conType = ConstructionType.parseString(parameters[0], conType);
-		}
-		
-		int radius = defaultRadius;
-		if (parameters.length > 1)
-		{
-			try
-			{
-				radius = Integer.parseInt(parameters[1]);
-				if (radius > maxRadius && maxRadius > 0)
-				{
-					radius = maxRadius;
-				}
-			} 
-			catch(NumberFormatException ex)
-			{
-				radius = defaultRadius;
-			}
-		}
 		
 		Material material = target.getType();
 		byte data = target.getData();
@@ -95,11 +75,42 @@ public class ConstructSpell extends Spell
 		if (buildWith != null)
 		{
 			material = buildWith.getType();
-			MaterialData targetData = buildWith.getData();
-			if (targetData != null)
+			data = getItemData(buildWith);
+		}
+
+		ConstructionType conType = defaultConstructionType;
+		int radius = defaultRadius;
+		for (int i = 0; i < parameters.length; i++)
+		{
+			String parameter = parameters[i];
+			if (parameter.equalsIgnoreCase("with") && i < parameters.length - 1)
 			{
-				data = targetData.getData();
+				String materialName = parameters[i + 1];
+				data = 0;
+				material = getMaterial(materialName, spells.getBuildingMaterials());
+				i++;
+				continue;
 			}
+			
+			// try radius
+			try
+			{
+				radius = Integer.parseInt(parameters[1]);
+				if (radius > maxRadius && maxRadius > 0)
+				{
+					radius = maxRadius;
+				}
+				
+				// Assume number, ok to continue
+				continue;
+			} 
+			catch(NumberFormatException ex)
+			{
+				radius = defaultRadius;
+			}
+
+			// Try con type
+			conType = ConstructionType.parseString(parameters[0], conType);
 		}
 		
 		switch (conType)

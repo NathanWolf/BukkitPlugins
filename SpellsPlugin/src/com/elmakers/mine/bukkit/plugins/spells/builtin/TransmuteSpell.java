@@ -3,7 +3,6 @@ package com.elmakers.mine.bukkit.plugins.spells.builtin;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
@@ -49,12 +48,7 @@ public class TransmuteSpell extends Spell
 		}
 		
 		Material material = targetItem.getType();
-		byte data = 0;
-		MaterialData targetData = targetItem.getData();
-		if (targetData != null)
-		{
-			data = targetData.getData();
-		}
+		byte data = getItemData(targetItem);
 				
 		for (UndoableBlock undoBlock : transmuteAction.getBlocks())
 		{

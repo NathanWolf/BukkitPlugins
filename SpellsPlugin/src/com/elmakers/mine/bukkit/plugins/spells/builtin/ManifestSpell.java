@@ -27,17 +27,7 @@ public class ManifestSpell extends Spell
 			{
 				matName = matName + parameters[i];
 			}
-			StringBuffer simplify = new StringBuffer ("_");
-			matName = parameters[0].replace(simplify, new StringBuffer(""));
-			for (Material checkMat : buildingMaterials)
-			{
-				String checkName = checkMat.name().replace(simplify, new StringBuffer(""));
-				if (checkName.equalsIgnoreCase(matName))
-				{
-					material = checkMat;
-					break;
-				}
-			}
+			material = getMaterial(matName, buildingMaterials);
 			if (material == Material.AIR)
 			{
 				castMessage(player, "Uknown material '" + matName + "'");

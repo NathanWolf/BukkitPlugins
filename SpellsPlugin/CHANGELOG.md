@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 0.91
+
+ - Make spell permission node names consistent
+ - Colored wool! Yes! Thanks, SqualSeeD31
+ - Add "with" command for construct, "sandblast" variant - thanks, anon!
+
+## 0.90
+
+ - Fix a really nasty material selection bug that allowed selection of items!
+
 ## 0.89
 
  - Merge "with" variant code to base fill- though I had done this already!

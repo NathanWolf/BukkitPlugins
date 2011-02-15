@@ -5,7 +5,6 @@ import java.util.HashMap;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.material.MaterialData;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
@@ -50,12 +49,8 @@ public class FillSpell extends Spell
 		if (buildWith != null)
 		{
 			material = buildWith.getType();
-			MaterialData targetData = buildWith.getData();
-			if (targetData != null)
-			{
-				data = targetData.getData();
-				overrideMaterial = true;
-			}
+			data = getItemData(buildWith);
+			overrideMaterial = true;
 		}
 	
 	
