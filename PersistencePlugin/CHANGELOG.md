@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.39
+
+ - Adding in amkeyte's LocationData class- THANKS!
+   Had to just throw is in real quick- I might add to it later, and Persistence
+   code needs a global reformat anyway, so I'm not too worried about it for now- I trust ya ;)
+
 # 0.38
 
  - More object-as-id fixes, this time for id-objects with primitive id types.

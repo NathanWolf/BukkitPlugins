@@ -28,6 +28,7 @@ public abstract class SqlStore extends DataStore
 	public abstract String getMasterTableName();
 	public abstract String getConnectionString(String schema, String user, String password);
 	public abstract String getTypeName(DataType dataType);
+	public abstract DataTable getTableSchema(String tableName);
 	
 	/**
 	 * Called on connect- override to perform special actions on connect.
@@ -229,7 +230,17 @@ public abstract class SqlStore extends DataStore
 		}
 		else
 		{
-			// TODO: validate schema, migrate data or add columns
+			// Validate schema- this is going to start to look
+			// pretty database-specific for now.
+			
+			/* TODO
+			DataTable currentTable = getTableSchema(table.getName());
+			DataRow currentHeader = currentTable.getHeader();
+			DataRow tableHeader = table.getHeader();
+			*/
+			// Don't worry about type for now!
+			
+			
 		}
 		
 		return true;
@@ -282,6 +293,31 @@ public abstract class SqlStore extends DataStore
 		
 		return true;
 	}
+	
+	protected int load(DataTable table, String sqlQuery)
+	{
+		int rowCount = 0;
+		try
+		{
+			PreparedStatement ps = connection.prepareStatement(sqlQuery);
+			ResultSet rs = ps.executeQuery();
+		
+			while (rs.next())
+			{
+				SqlDataRow row = new SqlDataRow(table, rs);
+				table.addRow(row);
+				rowCount++;
+			}
+			rs.close();
+		}
+		catch (SQLException ex)
+		{
+			log.warning("Persistence: Error selecting from table " + table.getName() + ": " + ex.getMessage());
+			return -1;
+		}
+		
+		return rowCount;
+	}
 
 	@Override
 	public boolean load(DataTable table)
@@ -292,30 +328,17 @@ public abstract class SqlStore extends DataStore
 		// This lets me sort out missing columns instead of throwing SQL errors.
 		String selectQuery = "SELECT * FROM \"" + tableName + "\"";
 		
-		try
-		{
-			PreparedStatement ps = connection.prepareStatement(selectQuery);
-			ResultSet rs = ps.executeQuery();
+		int rowCount = load(table, selectQuery);
+		log.info("Persistence: loaded " + rowCount + " objects from " + schema + "." + tableName);
 		
-			while (rs.next())
-			{
-				SqlDataRow row = new SqlDataRow(table, rs);
-				table.addRow(row);
-			}
-			rs.close();
-		}
-		catch (SQLException ex)
-		{
-			log.warning("Persistence: Error selecting from table " + tableName + ": " + ex.getMessage());
-			return false;
-		}
-		
-		return true;
+		return rowCount >= 0;
 	}
 	
 	@Override
 	public boolean save(DataTable table)
 	{
+		int rowCount = 0;
+		
 		if (table.getRows().size() == 0)
 		{
 			return clear(table);
@@ -360,6 +383,7 @@ public abstract class SqlStore extends DataStore
 					index++;
 				}
            
+				rowCount++;
 				updateStatement.execute();
 			}
 			catch (SQLException ex)
@@ -370,6 +394,9 @@ public abstract class SqlStore extends DataStore
 			}
 			
         }
+		
+		log.info("Persistence: saved " + rowCount + " objects to " + schema + "." + tableName);
+		
 		return true;
 	}
 	
@@ -377,13 +404,16 @@ public abstract class SqlStore extends DataStore
 	@Override
 	public boolean clearIds(DataTable table, List<Object> ids)
 	{
+		int rowCount = 0;
+		
 		if (ids.size() <= 0) return true;
 		
 		List<String> idFields = table.getIdFieldNames();
 		if (idFields.size() < 1) return false;
 		
+		String tableName = table.getName();
 		String idField = idFields.get(0);
-		String deleteSql = "DELETE FROM \"" + table.getName() + "\" WHERE \"" + idField + "\" IN (";
+		String deleteSql = "DELETE FROM \"" + tableName + "\" WHERE \"" + idField + "\" IN (";
 		
 		boolean firstId = true;
 		for (int i = 0; i < ids.size(); i++)
@@ -391,6 +421,7 @@ public abstract class SqlStore extends DataStore
 			if (!firstId) deleteSql += ", ";
 			firstId = false;
 			deleteSql += "?";
+			rowCount++;
 		}
 		deleteSql += ")";
 		
@@ -409,7 +440,7 @@ public abstract class SqlStore extends DataStore
 		}
 		catch (SQLException ex)
 		{
-			log.warning("Persistence: Error deleting ids " + table.getName() + ": " + ex.getMessage());
+			log.warning("Persistence: Error deleting ids " + tableName + ": " + ex.getMessage());
 			log.info(deleteSql);
 			return false;
 		}
@@ -418,6 +449,8 @@ public abstract class SqlStore extends DataStore
 		{
 			save(table);
 		}
+	
+		log.info("Persistence: deleted " + rowCount + " objects from " + schema + "." + tableName);
 		
 		return true;
 	}

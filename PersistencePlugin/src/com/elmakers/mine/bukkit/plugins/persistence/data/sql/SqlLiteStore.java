@@ -1,7 +1,11 @@
 package com.elmakers.mine.bukkit.plugins.persistence.data.sql;
 
 import java.io.File;
+import java.util.List;
 
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataField;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataRow;
+import com.elmakers.mine.bukkit.plugins.persistence.data.DataTable;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataType;
 
 public class SqlLiteStore extends SqlStore
@@ -43,6 +47,55 @@ public class SqlLiteStore extends SqlStore
 				return "TEXT";
 		}
 		return null;
+	}
+	
+	// This is all really pointless since SqlLite doesn't even really type things :\
+	public DataType getTypeFromName(String typeName)
+	{
+		if (typeName.equalsIgnoreCase("INTEGER"))
+		{
+			return DataType.LONG;
+		}
+		else if (typeName.equalsIgnoreCase("REAL"))
+		{
+			return DataType.DOUBLE;
+		}
+		else if (typeName.equalsIgnoreCase("TEXT"))
+		{
+			return DataType.STRING;
+		}
+		
+		return DataType.NULL;
+	}
+
+
+	@Override
+	public DataTable getTableSchema(String tableName)
+	{
+		DataTable currentTable = new DataTable(tableName);
+		DataRow headerRow = currentTable.getHeader();
+		
+		DataTable pragmaTable = new DataTable("pragma");
+		String pragmaSql = "PRAGMA TABLE_INFO(\"" + tableName +"\")";
+		load(pragmaTable, pragmaSql);
+		
+		List<DataRow> pragmaRows = pragmaTable.getRows();
+		for (DataRow row : pragmaRows)
+		{
+			DataField nameField = row.get("name");
+			DataField typeField = row.get("type");
+			
+			if (nameField == null || typeField == null) continue;
+			
+			String fieldName = (String)nameField.getValue();
+			String fieldType = (String)typeField.getValue(); 
+			DataType dataType = getTypeFromName(fieldType);
+			
+			DataField newColumn = new DataField(fieldName, dataType);
+			headerRow.add(newColumn);
+		}
+		
+		return currentTable;
 	}
 	
 }
