@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.31
+
+ - Disable the "return you on death" code, too much trouble.
+
 # 0.30
 
  - Work on the find place to stand code. Looking good!

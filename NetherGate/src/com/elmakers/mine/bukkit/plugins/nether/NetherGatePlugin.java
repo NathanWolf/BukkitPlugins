@@ -78,7 +78,7 @@ public class NetherGatePlugin extends JavaPlugin
         pm.registerEvent(Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.CHUNK_LOADED, worldListener, Priority.Normal, this);
         pm.registerEvent(Type.BLOCK_PHYSICS, physicsListener, Priority.Normal, this);
-        pm.registerEvent(Type.ENTITY_DEATH, entityListener, Priority.Normal, this);
+       // pm.registerEvent(Type.ENTITY_DEATH, entityListener, Priority.Normal, this);
     }
 	
 	public void initialize()
