@@ -102,6 +102,10 @@ class WandPlayerListener extends PlayerListener
 					firstMaterialSlot = i;
 					continue;
 				}
+				else
+				{
+					break;
+				}
 			}
 		}
 		
@@ -189,6 +193,8 @@ class WandPlayerListener extends PlayerListener
 	
 	public void spellHelp(Player player)
 	{
+		if (!wands.showItemHelp()) return;
+		
 		// Check for magic item
 		Inventory inventory = player.getInventory();
 		ItemStack[] contents = inventory.getContents();

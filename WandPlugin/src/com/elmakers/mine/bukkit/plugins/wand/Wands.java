@@ -63,6 +63,9 @@ public class Wands
 		String wandAdmins = properties.getString("wand-admins", "");
 		String wandDenyUsers = properties.getString("wand-deny-users", "");
 		
+		String itemHelp = properties.getProperty("wand-item-help", "true");
+		showItemHelp = itemHelp.equalsIgnoreCase("true");
+		
 		parsePermissions(wandUsers, wandMods, wandAdmins, wandDenyUsers);
 		
 		properties.save();
@@ -159,6 +162,11 @@ public class Wands
 	{
 		return wandTypeId;
 	}
+	
+	public boolean showItemHelp()
+	{
+		return showItemHelp;
+	}
 
 	/*
 	 * Private data
@@ -175,6 +183,8 @@ public class Wands
 	private boolean allCanUse = true;
 	private boolean allCanAdminister = true;
 	private boolean allCanModify = true;
+	
+	private boolean showItemHelp = true;
 	
 
 }

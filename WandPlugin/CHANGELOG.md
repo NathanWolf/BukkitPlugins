@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.62
+
+ - Add properties file option for turning off the item help
+
 ## 0.61
 
  - Implement material cycling system- crouch and right-click!
