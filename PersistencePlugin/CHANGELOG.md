@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.40
+
+ - Return true from a command handler on Permission fail, to avoid having Bukkit print auto-help.
+ - Marge in latest LocationData class (not really in this commit, but accepted the pull round this time)
+
 # 0.39
 
  - Adding in amkeyte's LocationData class- THANKS!

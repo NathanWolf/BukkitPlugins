@@ -250,12 +250,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 */
 	public boolean checkCommand(CommandSender sender, String commandString)
 	{
-		if (command.equals(commandString) || command.equals(commandString.toLowerCase()))
-		{
-			return checkPermission(sender);
-		}
-			
-		return false;
+		return (command.equals(commandString) || command.equals(commandString.toLowerCase()));
 	}
 	
 	/**

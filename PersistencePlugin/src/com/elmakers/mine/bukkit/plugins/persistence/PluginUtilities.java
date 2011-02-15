@@ -299,6 +299,11 @@ public class PluginUtilities
 	{		
 		if (command.checkCommand(sender, commandString))
 		{
+			if (!command.checkPermission(sender))
+			{
+				return true;
+			}
+			
 			boolean handledByChild = false;
 			if (parameters != null && parameters.length > 0)
 			{

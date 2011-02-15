@@ -166,7 +166,7 @@ public class PersistenceCommands
 			List<PluginCommand> commands = plugin.getCommands();
 			for (PluginCommand command : commands)
 			{
-				if (command.checkCommand(messageOutput, commandName))
+				if (command.checkCommand(messageOutput, commandName) && command.checkPermission(messageOutput))
 				{
 					command.sendHelp(messageOutput, " ", true, true);
 					return true;
