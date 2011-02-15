@@ -2,7 +2,6 @@ package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
-
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
@@ -106,7 +105,7 @@ public class LocationData {
      *
      * @return the blockVector
      */
-    @PersistField(readonly = true, contained = true)
+    @PersistField(contained = true)
     public BlockVector getBlockVector() {
 
         return blockVector;
@@ -116,7 +115,7 @@ public class LocationData {
      * read only
      * @return the orientation
      */
-    @PersistField(readonly = true, contained = true)
+    @PersistField(contained = true)
     public Orientation getOrientation() {
         return orientation;
     }
@@ -129,7 +128,7 @@ public class LocationData {
      * @return the worldData
      *
      */
-    @PersistField(readonly = true, contained = true)
+    @PersistField(contained = true)
     public WorldData getWorldData() {
         return worldData;
     }
@@ -161,7 +160,7 @@ public class LocationData {
      *
      * @return the location
      */
-    public Location locationFactory(Server server) {
+    public Location toLocation(Server server) {
         if (worldData == null
                 || blockVector == null
                 || orientation == null) {
@@ -175,7 +174,31 @@ public class LocationData {
                 blockVector.getY(),
                 blockVector.getZ(),
                 orientation.getYaw(),
-                orientation.getYaw());
+                orientation.getPitch());
+    }
+
+    /**
+     * returns the provided Location object imprinted with information that has been
+     * persisted. parameters edited in this object will NOT be persisted.
+     *
+     * @return the location
+     */
+    public Location toLocation(Location location) {
+        if (worldData == null
+                || blockVector == null
+                || orientation == null
+                || !location.getWorld().getName().equals(worldData.getName())) {
+            //attempt to use Location on uninitialized LocationData.
+            //or location is from wrong world
+            return null;
+        }
+        location.setX(blockVector.getX());
+        location.setY(blockVector.getY());
+        location.setZ(blockVector.getZ());
+        location.setPitch(orientation.getYaw());
+        location.setYaw(orientation.getPitch());
+
+        return location;
     }
 
     /************ Convenience wrappers ************/
