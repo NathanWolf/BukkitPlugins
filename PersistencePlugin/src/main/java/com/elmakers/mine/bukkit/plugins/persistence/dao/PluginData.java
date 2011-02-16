@@ -178,7 +178,7 @@ public class PluginData
 		this.id = id;
 	}
 	
-	@PersistField(contained=true)
+	@PersistField
 	public List<PluginCommand> getCommands()
 	{
 		return commands;

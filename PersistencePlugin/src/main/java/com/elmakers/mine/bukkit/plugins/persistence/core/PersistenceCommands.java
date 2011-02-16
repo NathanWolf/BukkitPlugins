@@ -55,7 +55,7 @@ public class PersistenceCommands
 		helpCommand = utilities.getGeneralCommand(d.helpCommand[0], d.helpCommand[1], d.helpCommand[2]);
 		
 		// Player commands
-		suCommand = utilities.getPlayerCommand(d.suCommand[0], d.suCommand[1], d.suCommand[2], PermissionType.ADMINS_ONLY);
+		suCommand = utilities.getPlayerCommand(d.suCommand[0], d.suCommand[1], d.suCommand[2], PermissionType.OPS_DEFAULT);
 		
 		for (String usage : d.describeUsage)
 		{

@@ -6,6 +6,7 @@ public enum PermissionType
 	DEFAULT,
 	ALLOW_ALL,
 	OPS_ONLY,
+	OPS_DEFAULT,
 	ADMINS_ONLY,
 	PLAYER_ONLY
 };

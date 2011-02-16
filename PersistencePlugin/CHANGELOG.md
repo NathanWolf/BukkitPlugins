@@ -1,5 +1,12 @@
 # CHANGELOG
 
+# 0.41
+
+ - Fix the "su" command, which I had broken if you weren't using Permissions. It was kind of a circular issue,
+   ops need to be able to use "su", or else they can't use any admin commands by default (including "su"). Oops.
+   I needed to make a whole new permission type to cover this case- OPS_DEFAULT. This specifies that an op may use
+   this command, but unlike OPS_ONLY, Permissions may override the player's op status. 
+
 # 0.40
 
  - Return true from a command handler on Permission fail, to avoid having Bukkit print auto-help.
