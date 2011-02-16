@@ -9,9 +9,10 @@ import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
 
 public class PersistenceListener extends PlayerListener
 {
-	public void initialize(Persistence persistence)
+	public void initialize(Persistence persistence, PersistenceCommands commands)
 	{
 		this.persistence = persistence;
+		this.commands = commands;
 	}
 	
 	@Override
@@ -24,7 +25,7 @@ public class PersistenceListener extends PlayerListener
 		{
 			playerData = new PlayerData(player);
 		}
-		playerData.update(player);
+		playerData.login(player, commands.getSUCommand().checkPermission(player));
 		persistence.put(playerData);
 		persistence.save();
 	}
@@ -44,4 +45,5 @@ public class PersistenceListener extends PlayerListener
 	}
 	
 	private Persistence persistence;
+	private PersistenceCommands commands;
 }

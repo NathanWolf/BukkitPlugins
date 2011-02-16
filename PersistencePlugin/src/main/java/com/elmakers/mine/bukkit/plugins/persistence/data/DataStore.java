@@ -122,7 +122,27 @@ public abstract class DataStore
 		this.schema = schema;
 	}
 	
+	public static void logStoreAccess(String message, int rowCount)
+	{
+		if (logSqlUse)
+		{
+			log.info("Persistence: " + String.format(message, rowCount));
+		}
+	}
+	
+	public static void logStoreAccess(String message)
+	{
+		if (logSqlUse)
+		{
+			log.info("Persistence: " + message);
+		}
+	}
+	
+	protected static boolean logSqlStatements = false;
+	protected static boolean logSqlUse = false;
+	
 	protected Persistence persistence = null;
 	protected String schema;
 	protected static Logger log = PersistencePlugin.getLogger();
+	
 }

@@ -19,6 +19,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.dao.CommandSenderData;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataStore;
 import com.elmakers.mine.bukkit.plugins.persistence.data.sql.SqlLiteStore;
+
 import com.nijikokun.bukkit.Permissions.Permissions;
 
 /** 
@@ -518,6 +519,7 @@ public class Persistence
 	private final HashMap<String, Schema> schemaMap = new HashMap<String, Schema>();
 
 	private static final Logger log = Logger.getLogger("Minecraft");
+	
 	private final HashMap<String, DataStore> schemaStores = new HashMap<String, DataStore>();
 	private final List<DataStore> stores = new ArrayList<DataStore>();
 	

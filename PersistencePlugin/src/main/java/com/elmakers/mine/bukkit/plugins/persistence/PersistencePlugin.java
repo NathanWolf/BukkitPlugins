@@ -147,7 +147,7 @@ public class PersistencePlugin extends JavaPlugin
 		persistence = getPersistence();
 		
 		handler.initialize(this, persistence);
-		listener.initialize(persistence);
+		listener.initialize(persistence, handler);
 		
 		PluginManager pm = getServer().getPluginManager();
 		

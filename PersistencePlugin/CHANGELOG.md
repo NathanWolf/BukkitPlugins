@@ -3,7 +3,9 @@
 # 0.40
 
  - Return true from a command handler on Permission fail, to avoid having Bukkit print auto-help.
- - Marge in latest LocationData class (not really in this commit, but accepted the pull round this time)
+ - Merge in latest LocationData class (not really in this commit, but accepted the pull round this time)
+ - Allow overriding an op's ability to use SU with a pnode- just like sudoers!
+ - Temporarily turn off all the new debug logging (via a flag in Persistence) until I can get a properties file in.
 
 # 0.39
 

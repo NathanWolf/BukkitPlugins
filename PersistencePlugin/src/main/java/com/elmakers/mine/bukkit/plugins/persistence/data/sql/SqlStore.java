@@ -216,7 +216,7 @@ public abstract class SqlStore extends DataStore
 				return false;
 			}
 			
-			log.info("Persistence: Created table " + schema + "." + tableName);
+			logStoreAccess("Persistence: Created table " + schema + "." + tableName);
 			try
 			{
 				PreparedStatement ps = connection.prepareStatement(createStatement);
@@ -264,7 +264,7 @@ public abstract class SqlStore extends DataStore
 				log.info(dropQuery);
 				return false;
 			}
-			log.info("Dropped table " + schema + "." + tableName);
+			logStoreAccess("Dropped table " + schema + "." + tableName);
 		}
 		return true;
 	}
@@ -329,7 +329,7 @@ public abstract class SqlStore extends DataStore
 		String selectQuery = "SELECT * FROM \"" + tableName + "\"";
 		
 		int rowCount = load(table, selectQuery);
-		log.info("Persistence: loaded " + rowCount + " objects from " + schema + "." + tableName);
+		logStoreAccess("Persistence: loaded %d objects from " + schema + "." + tableName, rowCount);
 		
 		return rowCount >= 0;
 	}
@@ -395,7 +395,7 @@ public abstract class SqlStore extends DataStore
 			
         }
 		
-		log.info("Persistence: saved " + rowCount + " objects to " + schema + "." + tableName);
+		logStoreAccess("Persistence: saved %d objects to " + schema + "." + tableName, rowCount);
 		
 		return true;
 	}
@@ -450,7 +450,7 @@ public abstract class SqlStore extends DataStore
 			save(table);
 		}
 	
-		log.info("Persistence: deleted " + rowCount + " objects from " + schema + "." + tableName);
+		logStoreAccess("Persistence: deleted %d objects from " + schema + "." + tableName, rowCount);
 		
 		return true;
 	}

@@ -53,12 +53,9 @@ public class PersistenceCommands
 		resetSubCommand = persistCommand.getSubCommand(d.resetSubCommand[0], d.resetSubCommand[1], d.resetSubCommand[2], PermissionType.ADMINS_ONLY);
 
 		helpCommand = utilities.getGeneralCommand(d.helpCommand[0], d.helpCommand[1], d.helpCommand[2]);
-	
 		
 		// Player commands
-		
-		// SU has no permission node- it can only be used by ops.
-		suCommand = utilities.getPlayerCommand(d.suCommand[0], d.suCommand[1], d.suCommand[2], null, PermissionType.OPS_ONLY);
+		suCommand = utilities.getPlayerCommand(d.suCommand[0], d.suCommand[1], d.suCommand[2], PermissionType.ADMINS_ONLY);
 		
 		for (String usage : d.describeUsage)
 		{
@@ -521,6 +518,11 @@ public class PersistenceCommands
 		
 		resettingEntityMessage.sendTo(messageOutput, schemaName, entityName);
 		persisted.reset();
+	}
+	
+	protected PluginCommand getSUCommand()
+	{
+		return suCommand;
 	}
 	
 	private int maxLineCount = 10;

@@ -1,8 +1,8 @@
 package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
-
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
+
 import org.bukkit.Location;
 import org.bukkit.Server;
 import org.bukkit.World;
