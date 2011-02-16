@@ -278,6 +278,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 * @param sender The CommandSender (e.g. Player) to display help to
 	 * @param prefix A prefix, such as "Use: " to put in front of the first line
 	 * @param showUsage Whether or not to show detailed usage information
+	 * @param showSubCommands Whether or not to also display a tree of sub-command usage
 	 */
 	public void sendHelp(CommandSender sender, String prefix, boolean showUsage, boolean showSubCommands)
 	{
