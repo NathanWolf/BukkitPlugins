@@ -113,6 +113,8 @@ public class NetherGatePlugin extends JavaPlugin
 		scaleWorldCommand = scaleCommand.getSubCommand("world", "Re-scale a world", "<name> <scale>", PermissionType.ADMINS_ONLY); 
 		setSpawnCommand = netherCommand.getSubCommand("setspawn", "Set the current world's spawn point", null, PermissionType.ADMINS_ONLY);
 		nukeCommand = netherCommand.getSubCommand("nuke", "Kill all ghasts (or whatever)", "[all | mobtype] [world]", PermissionType.ADMINS_ONLY);
+		centerCommand = netherCommand.getSubCommand("center", "Re-center an area or world", "<world | area> <name> <X> <Y> <Z>", PermissionType.ADMINS_ONLY); 
+		centerWorldCommand = centerCommand.getSubCommand("world", "Re-center a world", "<name> <X> <Y> <Z>", PermissionType.ADMINS_ONLY); 
 		
 		setHomeCommand = netherCommand.getSubCommand("sethome", "Set your home world and location", null); 
 		goHomeCommand = netherCommand.getSubCommand("home", "Go to your home world and location", null);
@@ -128,6 +130,7 @@ public class NetherGatePlugin extends JavaPlugin
 		setSpawnCommand.bind("onSetSpawn");
 		goHomeCommand.bind("onGoHome");
 		setHomeCommand.bind("onSetHome");
+		centerWorldCommand.bind("onCenterWorld");
 		
 		creationFailedMessage = utilities.getMessage("creationFailed", "Nether creation failed- is there enough room below you?");
 		creationSuccessMessage = utilities.getMessage("creationSuccess", "Created new Nether area");
@@ -153,6 +156,7 @@ public class NetherGatePlugin extends JavaPlugin
 		goHomeFailedMessage = utilities.getMessage("goHomeFailed", "Couldn't go home, sorry!");
 		goHomeSuccessMessage = utilities.getMessage("goHome", "Going home!");
 		noHomeMessage = utilities.getMessage("nohome", "Use sethome to set your home");
+		centeredWorldMessage = utilities.getMessage("centerWorld", "World %s centered around (%d,%d,%d)");
 	}
 	
 	public boolean onDeleteWorld(Player player, String[] parameters)
@@ -244,6 +248,55 @@ public class NetherGatePlugin extends JavaPlugin
 		{
 			scaledWorldMessage.sendTo(player, worldName, scale);
 		}
+		
+		return true;
+	}
+	
+	public boolean onCenterWorld(Player player, String[] parameters)
+	{
+		if (parameters.length < 4)
+		{
+			return false;
+		}
+		
+		NetherWorld worldData = null;
+		String worldName = parameters[0];
+		
+		WorldData world = persistence.get(worldName, WorldData.class);
+		if (world != null)
+		{
+			worldData = manager.getWorldData(world);
+		}
+		
+		if (worldData == null)
+		{
+			noWorldMessage.sendTo(player, worldName);
+			return true;
+		}
+		
+		int x = 0;
+		int y = 0;
+		int z = 0;
+		String currentCheck = parameters[1];
+		try
+		{
+			x = Integer.parseInt(currentCheck);
+			currentCheck = parameters[2];
+			y = Integer.parseInt(currentCheck);
+			currentCheck = parameters[3];
+			z = Integer.parseInt(currentCheck);
+		}
+		catch(Throwable ex)
+		{
+			invalidNumberMessage.sendTo(player, currentCheck);
+			return true;
+		}
+		
+		BlockVector newCenter = new BlockVector(x, y, z);
+		worldData.setCenterOffset(newCenter);
+		persistence.put(worldData);
+	
+		centeredWorldMessage.sendTo(player, worldName, x, y, z);
 		
 		return true;
 	}
@@ -611,6 +664,8 @@ public class NetherGatePlugin extends JavaPlugin
 	protected PluginCommand setSpawnCommand;
 	protected PluginCommand setHomeCommand;
 	protected PluginCommand goHomeCommand;
+	protected PluginCommand centerWorldCommand;
+	protected PluginCommand centerCommand;
 	
 	protected Message creationFailedMessage;
 	protected Message creationSuccessMessage;
@@ -624,6 +679,7 @@ public class NetherGatePlugin extends JavaPlugin
 	protected Message deletedWorldMessage;
 	protected Message noWorldMessage;
 	protected Message scaledWorldMessage;
+	protected Message centeredWorldMessage;
 	protected Message invalidNumberMessage;
 	protected Message disableScaleMessage;
 	protected Message killedEntitiesMessage;

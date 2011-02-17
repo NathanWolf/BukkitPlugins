@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.32
+
+ - Add "center" command for re-centering a world. Needs testing.
+
 # 0.31
 
  - Disable the "return you on death" code, too much trouble.
