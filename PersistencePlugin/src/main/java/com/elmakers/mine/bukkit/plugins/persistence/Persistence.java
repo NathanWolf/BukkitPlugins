@@ -1,12 +1,18 @@
 package com.elmakers.mine.bukkit.plugins.persistence;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
+import org.bukkit.permission.InvalidPermissionProfileException;
+import org.bukkit.permission.PermissionProfile;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BlockVector;
 
@@ -17,10 +23,9 @@ import com.elmakers.mine.bukkit.plugins.persistence.core.PersistedClass;
 import com.elmakers.mine.bukkit.plugins.persistence.core.Schema;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.CommandSenderData;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.ProfileData;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataStore;
 import com.elmakers.mine.bukkit.plugins.persistence.data.sql.SqlLiteStore;
-
-import com.nijikokun.bukkit.Permissions.Permissions;
 
 /** 
  * The main Persistence interface.
@@ -260,7 +265,11 @@ public class Persistence
 			if (instance == null)
 			{
 				instance = new Persistence();
-				instance.initialize(PersistencePlugin.getInstance().getDataFolder());
+				instance.initialize
+				(
+					PersistencePlugin.getInstance().getDataFolder(),
+					PersistencePlugin.getInstance().getServer()
+				);
 			}
 		}
 		return instance;
@@ -403,9 +412,10 @@ public class Persistence
 		return store;
 	}
 	
-	protected void initialize(File dataFolder)
+	protected void initialize(File dataFolder, Server server)
 	{
 		this.dataFolder = dataFolder;
+		this.server = server;
 		dataFolder.mkdirs();
 
 		updateGlobalData();
@@ -448,7 +458,53 @@ public class Persistence
 		
 		persistVector.validate();
 		
+		// Set up player profiles for permissions
+		FileReader loader = null;
+		try
+		{
+			loader = new FileReader(new File(dataFolder, permissionsFile));
+	
+			if (!loadProfiles(loader))
+			{
+				log.info("Persistence: There's an error with permissions.yml - hopefully more info about that above.");
+			}
+		}
+		catch(FileNotFoundException ex)
+		{
+			log.info("Permissions: permission.yml not found, OPS have /su access.");
+			log.info("Permissions:Add a permission.yml to use bukkit.permissions");
+			loader = null;
+			allowOpsSUAccess = true;
+		}
+		
 		// TODO: Materials
+	}
+		
+	protected boolean loadProfiles(Reader reader)
+	{
+		PermissionProfile[] profiles;
+		try
+		{
+			profiles = PermissionProfile.loadProfiles(server, reader);
+			for (PermissionProfile profile : profiles)
+			{
+				ProfileData profileData = get(profile.getName(), ProfileData.class);
+				if (profileData == null)
+				{
+					profileData = new ProfileData(profile.getName());
+					put(profileData);
+				}
+				
+				/// This is setting a transient instance
+				profileData.setProfile(profile);
+			}
+		}
+		catch (InvalidPermissionProfileException e)
+		{
+			return false;
+		}
+		
+		return true;
 	}
 
 	protected CommandSenderData updateCommandSender(String senderId, Class<?> senderClass)
@@ -475,35 +531,20 @@ public class Persistence
 		}
 	}
 	
-	protected void setPermissions(Permissions permissions)
-	{
-		this.permissions = permissions;
-	}
-	
-	public Permissions getPermissions()
-	{
-		return permissions;
-	}
-	
 	public boolean hasPermission(Player player, String node)
 	{
-		return hasPermission(player, node, true);
-	}
-	
-	public boolean hasPermission(Player player, String node, boolean defaultValue)
-	{
-		if (player == null) return defaultValue;
+		if (player == null) return false;
 		
 		// Check for su status- this can be toggled by ops with the /su command
 		PlayerData playerData = get(player.getName(), PlayerData.class);
 		if (playerData != null && playerData.isSuperUser()) return true;
 		
-		if (permissions != null)
-		{
-			return Permissions.Security.permission(player, node);
-		}
-		
-		return defaultValue;
+		return playerData.isSet(node);	
+	}
+	
+	public static boolean allowOpSU()
+	{
+		return allowOpsSUAccess;
 	}
 	
 	/*
@@ -511,7 +552,15 @@ public class Persistence
 	 */
 	
 	private File dataFolder = null;
-	private Permissions permissions = null;
+	
+	// TOOD: Dinnerbone says we need to support multiple Server instances
+	// Not sure what that means yet.
+	private Server server = null;
+	
+	private static boolean allowOpsSUAccess = false;
+	
+	// TOOD : support multiple perm files
+	private static final String permissionsFile = "permissions.yml";
 	
 	private final HashMap<Class<? extends Object>, PersistedClass> persistedClassMap = new HashMap<Class<? extends Object>, PersistedClass>(); 
 	private final List<PersistedClass> persistedClasses = new ArrayList<PersistedClass>(); 

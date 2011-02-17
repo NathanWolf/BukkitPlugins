@@ -13,9 +13,11 @@ import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PermissionType;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerGroup;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginData;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.ProfileData;
 
 public class PersistenceCommands
 {
@@ -43,7 +45,16 @@ public class PersistenceCommands
 		pluginNotFoundMessage = utilities.getMessage("pluginNotFound", d.pluginNotFoundMessage);
 		suEnabledMessage = utilities.getMessage("suEnabled", d.suEnabledMessage);
 		suDisabledMessage = utilities.getMessage("suDisabled", d.suDisabledMessage);
-
+		addedPlayerToGroupMessage = utilities.getMessage("addedPlayerToGroup", d.addedPlayerToGroupMessage);
+		removedPlayerFromGroupMessage = utilities.getMessage("removedPlayerFromGroup", d.removedPlayerFromGroupMessage);
+		createdGroupMessage = utilities.getMessage("createdGroup", d.createdGroupMessage);
+		denyAccessMessage = utilities.getMessage("denyAccess", d.denyAccessMessage);
+		grantAccessMessage = utilities.getMessage("grantAccess", d.grantAccessMessage);
+		groupExistsMessage = utilities.getMessage("groupExistss", d.groupExistsMessage);
+		playerNotFoundMessage = utilities.getMessage("playerNotFound", d.playerNotFoundMessage);
+		groupNotFoundMessage = utilities.getMessage("groupNotFound", d.groupNotFoundMessage);
+		unknownProfileMessage = utilities.getMessage("unknownProfile", d.unknownProfileMessage);
+		
 		// Initialize Commands
 		persistCommand = utilities.getGeneralCommand(d.persistCommand[0], d.persistCommand[1], d.persistCommand[2], PermissionType.ADMINS_ONLY);
 		saveSubCommand = persistCommand.getSubCommand(d.saveSubCommand[0], d.saveSubCommand[1], d.saveSubCommand[2], PermissionType.ADMINS_ONLY);
@@ -51,11 +62,26 @@ public class PersistenceCommands
 		listSubCommand = persistCommand.getSubCommand(d.listSubCommand[0], d.listSubCommand[1], d.listSubCommand[2], PermissionType.ADMINS_ONLY);
 		reloadSubCommand = persistCommand.getSubCommand(d.reloadSubCommand[0], d.reloadSubCommand[1], d.reloadSubCommand[2], PermissionType.ADMINS_ONLY);
 		resetSubCommand = persistCommand.getSubCommand(d.resetSubCommand[0], d.resetSubCommand[1], d.resetSubCommand[2], PermissionType.ADMINS_ONLY);
-
+		
+		groupCommand = utilities.getGeneralCommand(d.groupCommand[0], d.groupCommand[1], d.groupCommand[2], PermissionType.ADMINS_ONLY);
+		groupCreateCommand = groupCommand.getSubCommand(d.groupCreateCommand[0], d.groupCreateCommand[1], d.groupCreateCommand[2], PermissionType.ADMINS_ONLY);
+		groupAddCommand = groupCommand.getSubCommand(d.groupAddCommand[0], d.groupAddCommand[1], d.groupAddCommand[2], PermissionType.ADMINS_ONLY);
+		groupRemoveCommand = groupCommand.getSubCommand(d.groupRemoveCommand[0], d.groupRemoveCommand[1], d.groupRemoveCommand[2], PermissionType.ADMINS_ONLY);
+		
+		denyCommand = utilities.getGeneralCommand(d.denyCommand[0], d.denyCommand[1], d.denyCommand[2], PermissionType.ADMINS_ONLY);
+		denyPlayerCommand = denyCommand.getSubCommand(d.denyPlayerCommand[0], d.denyPlayerCommand[1], d.denyPlayerCommand[2], PermissionType.ADMINS_ONLY);
+		denyGroupCommand = denyCommand.getSubCommand(d.denyGroupCommand[0], d.denyGroupCommand[1], d.denyGroupCommand[2], PermissionType.ADMINS_ONLY);	
+		
+		grantCommand = utilities.getGeneralCommand(d.grantCommand[0], d.grantCommand[1], d.grantCommand[2], PermissionType.ADMINS_ONLY);
+		grantPlayerCommand = grantCommand.getSubCommand(d.grantPlayerCommand[0], d.grantPlayerCommand[1], d.grantPlayerCommand[2], PermissionType.ADMINS_ONLY);
+		grantGroupCommand = grantCommand.getSubCommand(d.grantGroupCommand[0], d.grantGroupCommand[1], d.grantGroupCommand[2], PermissionType.ADMINS_ONLY);
+		
 		helpCommand = utilities.getGeneralCommand(d.helpCommand[0], d.helpCommand[1], d.helpCommand[2]);
 		
 		// Player commands
-		suCommand = utilities.getPlayerCommand(d.suCommand[0], d.suCommand[1], d.suCommand[2], PermissionType.OPS_DEFAULT);
+		// TODO - not sure this is going to work right when switching back and forth between built-in and bukkit permissions .. ?
+		PermissionType suType = Persistence.allowOpSU() ? PermissionType.OPS_ONLY : PermissionType.ADMINS_ONLY;
+		suCommand = utilities.getPlayerCommand(d.suCommand[0], d.suCommand[1], d.suCommand[2], suType);
 		
 		for (String usage : d.describeUsage)
 		{
@@ -74,12 +100,243 @@ public class PersistenceCommands
 		resetSubCommand.bind("onReset");
 		suCommand.bind("onSU");
 		
+		groupCreateCommand.bind("onCreateGroup");
+		groupAddCommand.bind("onAddToGroup");
+		groupRemoveCommand.bind("onRemoveFromGroup");
+		denyPlayerCommand.bind("onDenyPlayer");
+		denyGroupCommand.bind("onGrantPlayer");
+		grantPlayerCommand.bind("onDenyGroup");
+		grantGroupCommand.bind("onGrantGroup");
+		
 		helpCommand.bind("onHelp");
 	}
 	
 	public boolean process(CommandSender messageOutput, Command cmd, String[] parameters)
 	{
 		return utilities.dispatch(this, messageOutput, cmd.getName(), parameters);
+	}
+	
+	public boolean onCreateGroup(CommandSender messageOutput, String[] parameters)
+	{
+		if (parameters.length == 0)
+		{
+			return false;
+		}
+		
+		String groupName = parameters[0];
+		
+		// First check for existing
+		PlayerGroup group = persistence.get(groupName, PlayerGroup.class);
+		if (group != null)
+		{
+			groupExistsMessage.sendTo(messageOutput, groupName);
+			return true;
+		}
+		
+		group = new PlayerGroup(groupName);
+		persistence.put(group);
+		createdGroupMessage.sendTo(messageOutput, groupName);
+		
+		return true;
+	}
+	
+	public boolean onAddToGroup(CommandSender messageOutput, String[] parameters)
+	{
+		if (parameters.length < 2)
+		{
+			return false;
+		}
+		
+		String playerName = parameters[0];
+		String groupName = parameters[1];
+		
+		// First check for group
+		PlayerGroup group = persistence.get(groupName, PlayerGroup.class);
+		if (group == null)
+		{
+			groupNotFoundMessage.sendTo(messageOutput, groupName);
+			return true;
+		}
+		
+		// Check for player
+		PlayerData playerData = persistence.get(playerName, PlayerData.class);
+		if (playerData == null)
+		{
+			playerNotFoundMessage.sendTo(messageOutput, playerName);
+			return true;
+		}
+		
+		playerData.addToGroup(group);
+		persistence.put(playerData);
+		addedPlayerToGroupMessage.sendTo(messageOutput, playerName, groupName);
+		
+		return true;
+	}
+	
+	// TODO: Less copy+paste! In a hurry....
+	public boolean onRemoveFromGroup(CommandSender messageOutput, String[] parameters)
+	{
+		if (parameters.length < 2)
+		{
+			return false;
+		}
+		
+		String playerName = parameters[0];
+		String groupName = parameters[1];
+		
+		// First check for group
+		PlayerGroup group = persistence.get(groupName, PlayerGroup.class);
+		if (group == null)
+		{
+			groupNotFoundMessage.sendTo(messageOutput, group);
+			return true;
+		}
+		
+		// Check for player
+		PlayerData playerData = persistence.get(playerName, PlayerData.class);
+		if (playerData == null)
+		{
+			playerNotFoundMessage.sendTo(messageOutput, group);
+			return true;
+		}
+		
+		playerData.removeFromGroup(group);
+		persistence.put(playerData);
+		removedPlayerFromGroupMessage.sendTo(messageOutput, playerName, groupName);
+		
+		return true;
+	}
+	
+	public boolean onDenyPlayer(CommandSender messageOutput, String[] parameters)
+	{
+		if (parameters.length < 2)
+		{
+			return false;
+		}
+		
+		String playerName = parameters[0];
+		String profileName = parameters[1];
+		
+		// First check for permission profile
+		ProfileData profileData = persistence.get(profileName, ProfileData.class);
+		if (profileData == null)
+		{
+			unknownProfileMessage.sendTo(messageOutput, profileName);
+			return true;
+		}
+		
+		// Check for player
+		PlayerData playerData = persistence.get(playerName, PlayerData.class);
+		if (playerData == null)
+		{
+			playerNotFoundMessage.sendTo(messageOutput, playerName);
+			return true;
+		}
+		
+		playerData.denyPermission(profileData);
+		persistence.put(playerData);
+		denyAccessMessage.sendTo(messageOutput, profileName, "player", playerName);
+		
+		return true;
+	}
+	
+	public boolean onGrantPlayer(CommandSender messageOutput, String[] parameters)
+	{
+		if (parameters.length < 2)
+		{
+			return false;
+		}
+		
+		String playerName = parameters[0];
+		String profileName = parameters[1];
+		
+		// First check for permission profile
+		ProfileData profileData = persistence.get(profileName, ProfileData.class);
+		if (profileData == null)
+		{
+			unknownProfileMessage.sendTo(messageOutput, profileName);
+			return true;
+		}
+		
+		// Check for player
+		PlayerData playerData = persistence.get(playerName, PlayerData.class);
+		if (playerData == null)
+		{
+			playerNotFoundMessage.sendTo(messageOutput, playerName);
+			return true;
+		}
+		
+		playerData.grantPermission(profileData);
+		persistence.put(playerData);
+		grantAccessMessage.sendTo(messageOutput, profileName, "player", playerName);
+		
+		return true;
+	}
+	
+	public boolean onDenyGroup(CommandSender messageOutput, String[] parameters)
+	{
+		if (parameters.length < 2)
+		{
+			return false;
+		}
+		
+		String groupName = parameters[0];
+		String profileName = parameters[1];
+		
+		// First check for permission profile
+		ProfileData profileData = persistence.get(profileName, ProfileData.class);
+		if (profileData == null)
+		{
+			unknownProfileMessage.sendTo(messageOutput, profileName);
+			return true;
+		}
+		
+		// Check for group
+		PlayerGroup group = persistence.get(groupName, PlayerGroup.class);
+		if (group == null)
+		{
+			groupNotFoundMessage.sendTo(messageOutput, groupName);
+			return true;
+		}
+		
+		group.denyPermission(profileData);
+		persistence.put(group);
+		denyAccessMessage.sendTo(messageOutput, profileName, "group", groupName);
+			
+		return true;
+	}
+	
+	public boolean onGrantGroup(CommandSender messageOutput, String[] parameters)
+	{
+		if (parameters.length < 2)
+		{
+			return false;
+		}
+		
+		String groupName = parameters[0];
+		String profileName = parameters[1];
+		
+		// First check for permission profile
+		ProfileData profileData = persistence.get(profileName, ProfileData.class);
+		if (profileData == null)
+		{
+			unknownProfileMessage.sendTo(messageOutput, profileName);
+			return true;
+		}
+		
+		// Check for group
+		PlayerGroup group = persistence.get(groupName, PlayerGroup.class);
+		if (group == null)
+		{
+			groupNotFoundMessage.sendTo(messageOutput, groupName);
+			return true;
+		}
+		
+		group.grantPermission(profileData);
+		persistence.put(group);
+		grantAccessMessage.sendTo(messageOutput, profileName, "group", groupName);
+		
+		return true;
 	}
 
 	public boolean onSU(Player player, String[] parameters)
@@ -538,7 +795,26 @@ public class PersistenceCommands
 	private PluginCommand resetSubCommand;
 	private PluginCommand helpCommand;
 	private PluginCommand suCommand;
+	private PluginCommand groupCommand;
+	private PluginCommand groupCreateCommand;
+	private PluginCommand groupRemoveCommand;
+	private PluginCommand groupAddCommand;
+	private PluginCommand denyCommand;
+	private PluginCommand denyPlayerCommand;
+	private PluginCommand denyGroupCommand;
+	private PluginCommand grantCommand;
+	private PluginCommand grantPlayerCommand;
+	private PluginCommand grantGroupCommand;
 
+	private Message groupExistsMessage;
+	private Message addedPlayerToGroupMessage;
+	private Message removedPlayerFromGroupMessage;
+	private Message createdGroupMessage;
+	private Message denyAccessMessage;
+	private Message grantAccessMessage;
+	private Message playerNotFoundMessage;
+	private Message unknownProfileMessage;
+	private Message groupNotFoundMessage;
 	private Message resettingEntityMessage;
 	private Message reloadingEntityMessage;
 	private Message entityNotFoundMessage;

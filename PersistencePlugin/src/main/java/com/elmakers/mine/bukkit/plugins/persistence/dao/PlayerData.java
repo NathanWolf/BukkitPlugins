@@ -1,6 +1,9 @@
 package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -15,6 +18,9 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
  * You can use this class in your own data objects to reference a player, instead of using playerName.
  * 
  * The player name is used an id, so it is still what will ultimately get persisted to your data table.
+ * 
+ * TOOD: common base class between this in PlayerGroup, once i know that won't 
+ * break persistence of these objects.
  * 
  * @author NathanWolf
  *
@@ -90,6 +96,133 @@ public class PlayerData
 		{
 			superUser = false;
 		}		
+	}
+	
+	public void removeFromGroup(PlayerGroup group)
+	{
+		if (groupMap == null || groups == null) return;
+		
+		PlayerGroup storedGroup = groupMap.get(group.getId());
+		if (group != null)
+		{
+			groups.remove(storedGroup);
+			groupMap.remove(storedGroup.getId());
+		}
+	}
+	
+	public void addToGroup(PlayerGroup group)
+	{
+		if (groupMap == null)
+		{
+			groupMap = new HashMap<String, PlayerGroup>();
+		}
+		if (groups == null)
+		{
+			groups = new ArrayList<PlayerGroup>();
+		}
+		
+		if (groupMap.get(group.getId()) == null)
+		{
+			groupMap.put(group.getId(), group);
+			groups.add(group);
+		}
+	}
+
+	public void grantPermission(ProfileData profile)
+	{
+		if (grantMap == null)
+		{
+			grantMap = new HashMap<String, ProfileData>();
+		}
+		if (grant == null)
+		{
+			grant = new ArrayList<ProfileData>();
+		}
+		
+		if (grantMap.get(profile.getId()) == null)
+		{
+			grantMap.put(profile.getId(), profile);
+			grant.add(profile);
+		}
+		
+		// Now, make sure to remove from the deny map also
+		// This is more for inherited permissions, we don't
+		// want to block ourselves here.
+		if (denyMap != null)
+		{
+			ProfileData denyProfile = denyMap.get(profile.getId());
+			if (denyProfile != null)
+			{
+				denyMap.remove(denyProfile.getId());
+				if (deny != null)
+				{
+					deny.remove(denyProfile);
+				}
+			}
+		}
+	}
+	
+	public void denyPermission(ProfileData profile)
+	{
+		if (denyMap == null)
+		{
+			denyMap = new HashMap<String, ProfileData>();
+		}
+		if (deny == null)
+		{
+			deny = new ArrayList<ProfileData>();
+		}
+		
+		if (denyMap.get(profile.getId()) == null)
+		{
+			denyMap.put(profile.getId(), profile);
+			deny.add(profile);
+		}
+		
+		// Remove from the allow map if present, since we'd block it anyway.
+		if (grantMap != null)
+		{
+			ProfileData allowProfile = grantMap.get(profile.getId());
+			if (allowProfile != null)
+			{
+				grantMap.remove(allowProfile.getId());
+				if (deny != null)
+				{
+					grant.remove(allowProfile);
+				}
+			}
+		}
+	}
+	
+	public boolean isSet(String key)
+	{
+		// Check for deny first
+		for (ProfileData profile : deny)
+		{
+			if (profile.isSet(key))
+			{
+				return false;
+			}
+		}
+		
+		// Check allow
+		for (ProfileData profile : grant)
+		{
+			if (profile.isSet(key))
+			{
+				return true;
+			}
+		}
+		
+		// Check groups
+		for (PlayerGroup group : groups)
+		{
+			if (group.isSet(key))
+			{
+				return true;
+			}
+		}		
+		return false;
 	}
 	
 	/**
@@ -203,15 +336,73 @@ public class PlayerData
 	{
 		return orientation;
 	}
+	
+	@PersistField
+	public List<PlayerGroup> getGroups()
+	{
+		return groups;
+	}
 
-	private String 		name;
-	private String 		id;
-	private boolean 	superUser;
-	private Date		firstLogin;
-	private Date		lastLogin;
-	private	Date		lastDisconnect;
-	private boolean		online;
-	private BlockVector	position;
-	private Orientation orientation;
+	public void setGroups(List<PlayerGroup> groups)
+	{
+		this.groups = groups;
+		
+		groupMap = new HashMap<String, PlayerGroup>();
+		for (PlayerGroup group : groups)
+		{
+			groupMap.put(group.getId(), group);
+		}
+	}
 
+	@PersistField
+	public List<ProfileData> getGrant()
+	{
+		return grant;
+	}
+
+	public void setGrant(List<ProfileData> grant)
+	{
+		this.grant = grant;
+		
+		grantMap = new HashMap<String, ProfileData>();
+		for (ProfileData profile : grant)
+		{
+			grantMap.put(profile.getId(), profile);
+		}
+	}
+
+	@PersistField
+	public List<ProfileData> getDeny()
+	{
+		return deny;
+	}
+
+	public void setDeny(List<ProfileData> deny)
+	{
+		this.deny = deny;
+		
+		denyMap = new HashMap<String, ProfileData>();
+		for (ProfileData profile : deny)
+		{
+			denyMap.put(profile.getId(), profile);
+		}
+	}
+
+	private String				name;
+	private String				id;
+	private boolean				superUser;
+	private Date				firstLogin;
+	private Date				lastLogin;
+	private Date				lastDisconnect;
+	private boolean				online;
+	private BlockVector			position;
+	private Orientation			orientation;
+	private List<PlayerGroup>	groups;
+	private List<ProfileData>	grant;
+	private List<ProfileData>	deny;
+	
+	// Transient
+	private HashMap<String, PlayerGroup> groupMap;
+	private HashMap<String, ProfileData> grantMap;
+	private HashMap<String, ProfileData> denyMap;
 }

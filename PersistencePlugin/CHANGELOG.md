@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.42 (beta)
+
+- First round bukkit.permissions integration
+- Supports some new commands : grant, deny, group
+
 # 0.41
 
  - Fix the "su" command, which I had broken if you weren't using Permissions. It was kind of a circular issue,

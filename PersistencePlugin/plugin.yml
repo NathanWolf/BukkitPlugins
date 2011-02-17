@@ -1,6 +1,6 @@
 name: Persistence
 main: com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin
-version: 0.41
+version: 0.42
 website: http://mine.elmakers.com
 author: NathanWolf
 description : A generalized persistence engine for Bukkit.
@@ -14,3 +14,9 @@ commands:
   su:
     description: Toggle SuperUser status (ops-only)
     usage: Use "phelp" for help
+  group:
+    description: Create and manage player groups
+  grant:
+    description: Grant players and groups access
+  deny:
+    description: Deny players and groups access

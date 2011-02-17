@@ -364,6 +364,12 @@ public class PluginUtilities
 								clientEx.getTargetException().printStackTrace();
 								return false;
 							}
+							catch(Throwable clientEx)
+							{
+								log.severe("Error invoking trying to invoke callback '" + callbackName);
+								clientEx.printStackTrace();
+								return false;
+							}
 						}
 						catch (NoSuchMethodException e)
 						{
