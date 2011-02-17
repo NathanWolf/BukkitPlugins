@@ -69,27 +69,23 @@ public class PlayerData
 	 * 
 	 * @param player The player to use when updating this data.
 	 */
+
 	public void update(Player player)
-	{	
-		update(player, false);
-	}
-	
-	public void login(Player player, boolean allowSU)
-	{
-		lastLogin = new Date();
-		update(player, allowSU);
-	}
-	
-	public void update(Player player, boolean allowSU)
 	{		
 		update(player.getLocation());
 		name = player.getDisplayName();
 		online = player.isOnline();
 		
-		if (!allowSU)
+		if (!player.isOp())
 		{
 			superUser = false;
 		}		
+	}
+	
+	public void login(Player player)
+	{
+		lastLogin = new Date();
+		update(player);
 	}
 	
 	/**

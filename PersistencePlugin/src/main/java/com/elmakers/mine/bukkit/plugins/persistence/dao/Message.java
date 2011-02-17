@@ -138,7 +138,19 @@ public class Message
 		return messageId;
 	}
 
+	@PersistField
+	public void setLevel(MessageLevel level)
+	{
+		this.level = level;
+	}
+
+	public MessageLevel getLevel()
+	{
+		return level;
+	}
+
 	private int id;
+	private MessageLevel level;
 	private String messageId;
 	private String message;
 	private boolean enabled = true;

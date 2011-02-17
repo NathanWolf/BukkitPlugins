@@ -198,7 +198,7 @@ public class PersistenceCommands
 			reloadSubCommand.sendShortHelp(messageOutput);
 			return true;
 		}
-		String[] entityPath = parameters[1].split("\\.");
+		String[] entityPath = parameters[0].split("\\.");
 		if (entityPath.length < 2)
 		{
 			reloadSubCommand.sendShortHelp(messageOutput);
@@ -217,8 +217,8 @@ public class PersistenceCommands
 			resetSubCommand.sendShortHelp(messageOutput);
 			return true;
 		}
-		String[] entityPath = parameters[1].split("\\.");
-		if (entityPath.length < 1)
+		String[] entityPath = parameters[0].split("\\.");
+		if (entityPath.length < 2)
 		{
 			resetSubCommand.sendShortHelp(messageOutput);
 			return true;

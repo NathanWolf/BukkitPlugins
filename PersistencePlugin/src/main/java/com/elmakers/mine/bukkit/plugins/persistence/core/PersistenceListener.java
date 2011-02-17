@@ -25,7 +25,11 @@ public class PersistenceListener extends PlayerListener
 		{
 			playerData = new PlayerData(player);
 		}
-		playerData.login(player, commands.getSUCommand().checkPermission(player));
+		playerData.login(player);
+		if (!commands.getSUCommand().checkPermission(player))
+		{
+			playerData.setSuperUser(false);
+		}
 		persistence.put(playerData);
 		persistence.save();
 	}

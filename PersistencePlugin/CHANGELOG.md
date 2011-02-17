@@ -1,5 +1,15 @@
 # CHANGELOG
 
+# 0.42
+
+ - De-contain Message and CommandData from PluginData. This was a stupid bug, but I think it 
+   may have exposed something Deep and Scary- how was the PK being violated so badly?
+   
+   I need to investigate this more by reproducing this client error in a test case.
+
+ - Fix parameter check in /persist RESET
+ - Fix /su toggling off on each player update() call
+
 # 0.41
 
  - Fix the "su" command, which I had broken if you weren't using Permissions. It was kind of a circular issue,

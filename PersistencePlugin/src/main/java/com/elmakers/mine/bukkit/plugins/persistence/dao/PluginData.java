@@ -189,7 +189,7 @@ public class PluginData
 		this.commands = commands;
 	}
 
-	@PersistField(contained=true)
+	@PersistField
 	public List<Message> getMessages()
 	{
 		return messages;
