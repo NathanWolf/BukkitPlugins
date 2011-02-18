@@ -2,13 +2,13 @@ package com.elmakers.mine.bukkit.plugins.crowd;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Ghast;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityListener;
-import org.bukkit.event.entity.EntityTargetEvent;
 
 public class CrowdEntityListener extends EntityListener
 {
 	@Override
-	public void onEntityTarget(EntityTargetEvent event)
+	public void onCreatureSpawn(CreatureSpawnEvent event)
 	{
 		Entity entity = event.getEntity();
 		if (entity instanceof Ghast)
@@ -17,7 +17,8 @@ public class CrowdEntityListener extends EntityListener
 			
 			// DIE MOFO, DIE!!!
 			ghast.setHealth(0);
+			
+			event.setCancelled(true);
 		}
 	}
-
 }
