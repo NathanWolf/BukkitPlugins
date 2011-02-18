@@ -16,9 +16,34 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
  * @author NathanWolf
  *
  */
+
 @PersistClass(schema="global", name="message")
 public class Message
-{
+{	
+	
+	/**
+	 * The default constructor, used by Persistence to create new instances.
+	 */
+	public Message()
+	{
+	}
+	
+	/**
+	 * Create a new Message with an id and message.
+	 * 
+	 * It is easier to use Messaging.getMessage, rather than create your own instances.
+	 * 
+	 * @param id The id of this message
+	 * @param message The message to display
+	 */
+	public Message(PluginData plugin, String id, String message)
+	{
+		this.plugin = plugin;
+		this.enabled = true;
+		this.messageId = id;
+		this.message = message;
+	}
+	
 	/**
 	 * Send this message to the specfieid player
 	 * 
@@ -62,28 +87,6 @@ public class Message
 			baseMessage = message;
 		}
 		return baseMessage.split("\r");
-	}
-	
-	/**
-	 * The default constructor, used by Persistence to create new instances.
-	 */
-	public Message()
-	{
-		
-	}
-	
-	/**
-	 * Create a new Message with an id and message.
-	 * 
-	 * It is easier to use Messaging.getMessage, rather than create your own instances.
-	 * 
-	 * @param id The id of this message
-	 * @param message The message to display
-	 */
-	public Message(String id, String message)
-	{
-		this.messageId = id;
-		this.message = message;
 	}
 	
 	/* Return the basic message
@@ -149,9 +152,21 @@ public class Message
 		return level;
 	}
 
-	private int id;
-	private MessageLevel level;
-	private String messageId;
-	private String message;
-	private boolean enabled = true;
+	@PersistField
+	public void setPlugin(PluginData plugin)
+	{
+		this.plugin = plugin;
+	}
+
+	public PluginData getPlugin()
+	{
+		return plugin;
+	}
+
+	private int				id;
+	private MessageLevel	level;
+	private PluginData		plugin;
+	private String			messageId;
+	private String			message;
+	private boolean			enabled;
 }

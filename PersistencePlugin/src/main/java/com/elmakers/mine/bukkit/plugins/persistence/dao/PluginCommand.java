@@ -32,9 +32,12 @@ public class PluginCommand implements Comparable<PluginCommand>
 		
 	}
 	
-	protected PluginCommand(PluginData plugin)
+	protected PluginCommand(PluginData plugin, String commandName, String tooltip, PermissionType pType)
 	{
 		this.plugin = plugin;
+		this.command = commandName;
+		this.tooltip = tooltip;
+		this.permissionType = pType;
 	}
 	
 	/**
@@ -139,11 +142,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 		PluginCommand child = childMap.get(subCommandName);
 		if (child == null)
 		{
-			child = new PluginCommand(plugin);
-			
-			child.setPermissionType(pType);
-			child.command = subCommandName;
-			child.tooltip = defaultTooltip;
+			child = new PluginCommand(plugin, subCommandName, defaultTooltip, pType);
 			child.addUsage(defaultUsage);
 			
 			if (pNode == null)

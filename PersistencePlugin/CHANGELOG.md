@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.43 (integration)
+
+ - Some migration work
+ - More fixing message/command DAOs.. yeesh
+ - Pull permissions integration branch back into master
+ 
 # 0.42
 
  - De-contain Message and CommandData from PluginData. This was a stupid bug, but I think it 

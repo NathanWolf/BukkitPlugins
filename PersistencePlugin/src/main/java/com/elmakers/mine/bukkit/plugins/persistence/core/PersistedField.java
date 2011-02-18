@@ -225,7 +225,12 @@ public class PersistedField
 	public void load(DataRow row, Object o)
 	{
 		DataField dataField = row.get(getDataName());
-		set(o, dataField.getValue(getType()));
+		
+		// Skip over data with no field- should get cleaned up by migration eventually, we hope!
+		if (dataField != null && o != null)
+		{
+			set(o, dataField.getValue(getType()));
+		}
 	}
 	
 	public DataType getDataType()

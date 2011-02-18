@@ -178,69 +178,51 @@ public abstract class SqlStore extends DataStore
 	}
 	
 	@Override
-	public boolean validateTable(DataTable table)
-	{	
-	
-		if (!tableExists(table))
+	public boolean createTable(DataTable table)
+	{
+		String tableName = table.getName();
+		String createStatement = "CREATE TABLE \"" + tableName + "\" (";
+		int fieldCount = 0;
+		DataRow header = table.getHeader();
+		for (DataField field : header.getFields())
 		{
-			String tableName = table.getName();
-			String createStatement = "CREATE TABLE \"" + tableName + "\" (";
-			int fieldCount = 0;
-			DataRow header = table.getHeader();
-			for (DataField field : header.getFields())
+			if (fieldCount != 0)
 			{
-				if (fieldCount != 0)
-				{
-					createStatement += ",";
-				}
-				fieldCount++;
-				
-				createStatement += "\"" + field.getName() + "\" " + getTypeName(field.getType());
+				createStatement += ",";
 			}
+			fieldCount++;
 			
-			List<String> idFields = table.getIdFieldNames();
-			createStatement += ", PRIMARY KEY (";
-			boolean firstField = true;
-			for (String id : idFields)
-			{
-				if (!firstField) createStatement += ", ";
-				firstField = false;
-					
-				createStatement += "\"" + id + "\"";
-			}
-			createStatement += "))";
-			
-			if (fieldCount == 0)
-			{
-				log.warning("Persistence: class " + tableName + " has no fields");
-				return false;
-			}
-			
-			logStoreAccess("Persistence: Created table " + schema + "." + tableName);
-			try
-			{
-				PreparedStatement ps = connection.prepareStatement(createStatement);
-				ps.execute();
-			}
-			catch (SQLException ex)
-			{
-				log.severe("Peristence: error creating table: " + ex.getMessage());
-				log.info(createStatement);
-			}
+			createStatement += "\"" + field.getName() + "\" " + getTypeName(field.getType());
 		}
-		else
+		
+		List<String> idFields = table.getIdFieldNames();
+		createStatement += ", PRIMARY KEY (";
+		boolean firstField = true;
+		for (String id : idFields)
 		{
-			// Validate schema- this is going to start to look
-			// pretty database-specific for now.
-			
-			/* TODO
-			DataTable currentTable = getTableSchema(table.getName());
-			DataRow currentHeader = currentTable.getHeader();
-			DataRow tableHeader = table.getHeader();
-			*/
-			// Don't worry about type for now!
-			
-			
+			if (!firstField) createStatement += ", ";
+			firstField = false;
+				
+			createStatement += "\"" + id + "\"";
+		}
+		createStatement += "))";
+		
+		if (fieldCount == 0)
+		{
+			log.warning("Persistence: class " + tableName + " has no fields");
+			return false;
+		}
+		
+		logStoreAccess("Persistence: Created table " + schema + "." + tableName);
+		try
+		{
+			PreparedStatement ps = connection.prepareStatement(createStatement);
+			ps.execute();
+		}
+		catch (SQLException ex)
+		{
+			log.severe("Peristence: error creating table: " + ex.getMessage());
+			log.info(createStatement);
 		}
 		
 		return true;

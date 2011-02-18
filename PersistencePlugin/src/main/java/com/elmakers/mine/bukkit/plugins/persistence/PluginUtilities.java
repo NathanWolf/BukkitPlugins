@@ -53,6 +53,14 @@ public class PluginUtilities
 			persistence.put(plugin);
 		}
 		
+		// Set up cache for messages and commands
+		List<Message> allMessages = new ArrayList<Message>();
+		List<PluginCommand> allCommands = new ArrayList<PluginCommand>();
+		persistence.getAll(allMessages, Message.class);
+		persistence.getAll(allCommands, PluginCommand.class);
+		
+		plugin.initializeCache(allMessages, allCommands);
+		
 		playerSender = persistence.get("player", CommandSenderData.class);
 	}
 	

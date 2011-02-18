@@ -1,6 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.plugin.Plugin;
@@ -45,61 +46,55 @@ public class PluginData
 		website = pdfFile.getWebsite();
 	}
 	
-	public Message getMessage(String messageId, String defaultValue)
+	public void initializeCache(List<Message> allMessages, List<PluginCommand> allCommands)
 	{
-		if (messages == null)
+		for (Message message : allMessages)
 		{
-			messages = new ArrayList<Message>();
-		}
-
-		for (Message  message : messages)
-		{
-			if (message.getMessageId().equalsIgnoreCase(messageId))
+			if (message.getPlugin().getId().equalsIgnoreCase(id))
 			{
-				return message;
+				messageMap.put(message.getMessageId(), message);
+				messages.add(message);
 			}
 		}
 		
-		// Create a new message
-		Message message = new Message(messageId, defaultValue);
+		// Only cache root commands- the rest are in tree form
+		for (PluginCommand command : allCommands)
+		{
+			if (command.getParent() == null && command.getPlugin().getId().equalsIgnoreCase(id))
+			{
+				commandMap.put(command.getCommand(), command);
+				commands.add(command);
+			}
+		}
+	}
+	
+	public Message getMessage(String messageId, String defaultValue)
+	{
+		// First, look up existing message
+		Message message = messageMap.get(messageId);
+		if (message != null) return message;
 		
-		// Add to command and mark dirty
+		// Create a new message
+		message = new Message(this, messageId, defaultValue);
+		messageMap.put(messageId, message);
 		messages.add(message);
 		
 		Persistence persistence = Persistence.getInstance();
 		persistence.put(message);
-		persistence.put(this);
 		
 		return message;
 	}
 	
 	public PluginCommand getCommand(String commandName, String defaultTooltip, String defaultUsage, CommandSenderData sender, String pNode, PermissionType pType)
 	{
-		// First, look for a root command by this name
-		if (commands == null)
-		{
-			commands = new ArrayList<PluginCommand>();
-		}
-		
-		for (PluginCommand command : commands)
-		{
-			if (command.getCommand().equalsIgnoreCase(commandName))
-			{
-				return command;
-			}
-		}
+		// First, look for a root command by this name-
+		// command map only holds root commands!
+		PluginCommand command = commandMap.get(commandName);
+		if (command != null) return command;
 		
 		// Create a new un-parented command
-		Persistence persistence = Persistence.getInstance();
-		PluginCommand command = new PluginCommand(this);
-		
-		command.setPermissionType(pType);
-		command.setCommand(commandName);
-		command.setTooltip(defaultTooltip);
-		if (defaultUsage != null && defaultUsage.length() > 0)
-		{
-			command.addUsage(defaultUsage);
-		}
+		command = new PluginCommand(this, commandName, defaultTooltip, pType);
+		command.addUsage(defaultUsage);
 		
 		if (pNode == null)
 		{
@@ -114,11 +109,11 @@ public class PluginData
 		{
 			command.addSender(sender);
 		}
-		
-		commands.add(command);
 
+		Persistence persistence = Persistence.getInstance();
 		persistence.put(command);
-		persistence.put(this);
+		commandMap.put(commandName, command);
+		commands.add(command);
 		
 		return command;
 	}
@@ -178,26 +173,16 @@ public class PluginData
 		this.id = id;
 	}
 	
-	@PersistField
+	
+	// Transient accessors for cache map
 	public List<PluginCommand> getCommands()
 	{
 		return commands;
 	}
 
-	public void setCommands(List<PluginCommand> commands)
-	{
-		this.commands = commands;
-	}
-
-	@PersistField
 	public List<Message> getMessages()
 	{
 		return messages;
-	}
-
-	public void setMessages(List<Message> messages)
-	{
-		this.messages = messages;
 	}
 
 	protected String			id;
@@ -206,7 +191,9 @@ public class PluginData
 	protected List<String>		authors;
 	protected String			website;
 	
-	// TODO: cache these in a hashmap
-	protected List<PluginCommand>	commands;
-	protected List<Message>		messages;
+	// Command / message cache- transient
+	protected HashMap<String, Message> messageMap = new HashMap<String, Message>();
+	protected HashMap<String, PluginCommand> commandMap = new HashMap<String, PluginCommand>();
+	protected List<PluginCommand>	commands = new ArrayList<PluginCommand>();
+	protected List<Message>			messages = new ArrayList<Message>();
 }

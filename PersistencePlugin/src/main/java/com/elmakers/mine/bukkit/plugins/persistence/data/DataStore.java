@@ -27,16 +27,32 @@ public abstract class DataStore
 	public abstract void disconnect();
 	
 	/**
-	 * Validate the table structure for a given table.
-	 * 
-	 * Will create the table if it does not exist.
-	 * 
-	 * It should also migrate table data and modify table structures as needed.
+	 * Will attempt to create a table- check to see if the table exists before
+	 * calling this.
 	 * 
 	 * @param table The table definition
 	 * @return true if success
+	 * @see #tableExists(DataTable)
+	 * @see #validateTable(DataTable)
+	 * 
 	 */
-	public abstract boolean validateTable(DataTable table);
+	public abstract boolean createTable(DataTable table);
+	
+	/**
+	 * Will create a table if it does not exist.
+	 * 
+	 * Does not do data migration- that is handled by PersistedClass directly.
+	 * 
+	 * @param table The table definition
+	 * @return true if success
+	 * @see #tableExists(DataTable)
+	 */
+	public boolean validateTable(DataTable table)
+	{
+		if (tableExists(table)) return true;
+		
+		return createTable(table);
+	}
 	
 	/**
 	 * Clear a table of data for the specified ids, keeping the data included in "table".
@@ -139,7 +155,7 @@ public abstract class DataStore
 	}
 	
 	protected static boolean logSqlStatements = false;
-	protected static boolean logSqlUse = false;
+	protected static boolean logSqlUse = true;
 	
 	protected Persistence persistence = null;
 	protected String schema;
