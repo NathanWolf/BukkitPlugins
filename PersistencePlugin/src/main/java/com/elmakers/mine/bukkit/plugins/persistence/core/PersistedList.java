@@ -74,7 +74,7 @@ public class PersistedList extends PersistedField implements PersistedReference
     		}
     		else
     		{
-    			if (referenceType.isContained())
+    			if (referenceType.isContainedClass())
     			{
     				log.warning("Persistence: " + owningType.getTableName() + "." + getDataName() + ", entity " + referenceType.getTableName() + " must be contained");
     				referenceType = null;

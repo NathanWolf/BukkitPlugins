@@ -134,7 +134,7 @@ public abstract class SqlStore extends DataStore
 		catch(SQLException e)
 		{
 			connection = null;
-			log.severe("Permissions: error connecting to sqllite db: " + e.getMessage());
+			log.severe("Persistence: error connecting to sqllite db: " + e.getMessage());
 		}
 		
 		return isConnected() && onConnect();
@@ -164,6 +164,7 @@ public abstract class SqlStore extends DataStore
 		try
 		{
 			PreparedStatement ps = connection.prepareStatement(checkQuery);
+			logSqlStatement(checkQuery);
 			ResultSet rs = ps.executeQuery();
 			tableExists = rs.next();
 			rs.close();
@@ -220,6 +221,7 @@ public abstract class SqlStore extends DataStore
 			try
 			{
 				PreparedStatement ps = connection.prepareStatement(createStatement);
+				logSqlStatement(createStatement);
 				ps.execute();
 			}
 			catch (SQLException ex)
@@ -256,6 +258,7 @@ public abstract class SqlStore extends DataStore
 			try
 			{
 				PreparedStatement ps = connection.prepareStatement(dropQuery);
+				logSqlStatement(dropQuery);
 				ps.execute();
 			}
 			catch (SQLException ex)
@@ -277,6 +280,7 @@ public abstract class SqlStore extends DataStore
 		try
 		{
 			PreparedStatement deleteStatement = connection.prepareStatement(deleteSql);
+			logSqlStatement(deleteSql);
 			deleteStatement.execute();
 		}
 		catch (SQLException ex)
@@ -300,6 +304,7 @@ public abstract class SqlStore extends DataStore
 		try
 		{
 			PreparedStatement ps = connection.prepareStatement(sqlQuery);
+			logSqlStatement(sqlQuery);
 			ResultSet rs = ps.executeQuery();
 		
 			while (rs.next())
@@ -384,6 +389,7 @@ public abstract class SqlStore extends DataStore
 				}
            
 				rowCount++;
+				logSqlStatement(updateSql);
 				updateStatement.execute();
 			}
 			catch (SQLException ex)
@@ -436,6 +442,7 @@ public abstract class SqlStore extends DataStore
 				index++;
 			}
 			
+			logSqlStatement(deleteSql);
 			deleteStatement.execute();
 		}
 		catch (SQLException ex)
@@ -473,6 +480,16 @@ public abstract class SqlStore extends DataStore
 	{
 		this.dataFolder = dataFolder;
 	}
+
+	public static void logSqlStatement(String statement)
+	{
+		if (logSqlStatements)
+		{
+			log.info("Persistence: SQL: " + statement);
+		}
+	}
+	
+	protected static boolean logSqlStatements = true;
 	
 	protected File dataFolder = null;
 	protected Connection connection = null;

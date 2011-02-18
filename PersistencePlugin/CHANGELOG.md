@@ -9,6 +9,7 @@
  - Fix some pretty stupid "in a hurry" bugs.
  - Fix List<Object> loading, which was broken.
  - Just a little infinite recursion (again).. NBD :\
+ - Merge in master changes.... by hand... bleh. Really should have been more diligent about that.
 
 # 0.41
 

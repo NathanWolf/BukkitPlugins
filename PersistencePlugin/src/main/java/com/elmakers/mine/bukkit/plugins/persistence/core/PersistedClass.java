@@ -51,8 +51,9 @@ public class PersistedClass
 		for (PersistedField field : copy.fields)
 		{
 			// If a field is an id field, we don't care about it in the container, unless the container is also the id field
-			// TODO: Consider this logic for validity
-			if (!field.isIdField() || container.isIdField())
+			// Or, if the container is a list, we have to store the id.
+			// TODO: Consider this logic for validity (already faulty, feeling too complex now)
+			if (!field.isIdField() || container.isIdField() || container instanceof PersistedList)
 			{
 				addField(field.clone(), field.getFieldInfo());
 			}
@@ -246,7 +247,7 @@ public class PersistedClass
 	
 	public boolean validate()
 	{
-		if (idField == null && !isContained())
+		if (idField == null && !isContainedClass())
 		{
 			log.warning("Persistence: class " + persistClass.getName() + ": must specify one id field. Use an auto int if you need.");
 			return false;
@@ -270,9 +271,14 @@ public class PersistedClass
 		return true;
 	}
 	
-	public boolean isContained()
+	public boolean isContainedClass()
 	{
 		return entityInfo.isContained();
+	}
+	
+	public boolean hasContainer()
+	{
+		return container != null;
 	}
 	
 	public void put(Object o)
