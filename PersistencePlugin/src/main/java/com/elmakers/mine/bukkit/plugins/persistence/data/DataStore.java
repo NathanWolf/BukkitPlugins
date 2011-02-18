@@ -139,7 +139,7 @@ public abstract class DataStore
 	}
 	
 	protected static boolean logSqlStatements = false;
-	protected static boolean logSqlUse = false;
+	protected static boolean logSqlUse = true;
 	
 	protected Persistence persistence = null;
 	protected String schema;

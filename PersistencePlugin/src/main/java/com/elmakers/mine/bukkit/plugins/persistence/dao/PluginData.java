@@ -52,7 +52,7 @@ public class PluginData
 			messages = new ArrayList<Message>();
 		}
 
-		for (Message  message : messages)
+		for (Message message : messages)
 		{
 			if (message.getMessageId().equalsIgnoreCase(messageId))
 			{
@@ -63,11 +63,10 @@ public class PluginData
 		// Create a new message
 		Message message = new Message(messageId, defaultValue);
 		
-		// Add to command and mark dirty
+		// Add to plugin and mark dirty
 		messages.add(message);
 		
 		Persistence persistence = Persistence.getInstance();
-		persistence.put(message);
 		persistence.put(this);
 		
 		return message;
@@ -83,7 +82,7 @@ public class PluginData
 		
 		for (PluginCommand command : commands)
 		{
-			if (command.getCommand().equalsIgnoreCase(commandName))
+			if (command != null && command.getCommand().equalsIgnoreCase(commandName))
 			{
 				return command;
 			}
@@ -116,8 +115,6 @@ public class PluginData
 		}
 		
 		commands.add(command);
-
-		persistence.put(command);
 		persistence.put(this);
 		
 		return command;
@@ -178,7 +175,7 @@ public class PluginData
 		this.id = id;
 	}
 	
-	@PersistField
+	@PersistField(contained=true)
 	public List<PluginCommand> getCommands()
 	{
 		return commands;

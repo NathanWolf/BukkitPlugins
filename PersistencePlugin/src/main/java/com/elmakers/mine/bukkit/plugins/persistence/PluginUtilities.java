@@ -297,7 +297,7 @@ public class PluginUtilities
 	
 	protected boolean dispatch(Object listener, CommandSender sender, PluginCommand command, String commandString, String[] parameters)
 	{		
-		if (command.checkCommand(sender, commandString))
+		if (command != null && command.checkCommand(sender, commandString))
 		{
 			if (!command.checkPermission(sender))
 			{

@@ -104,8 +104,8 @@ public class PersistenceCommands
 		groupAddCommand.bind("onAddToGroup");
 		groupRemoveCommand.bind("onRemoveFromGroup");
 		denyPlayerCommand.bind("onDenyPlayer");
-		denyGroupCommand.bind("onGrantPlayer");
-		grantPlayerCommand.bind("onDenyGroup");
+		denyGroupCommand.bind("onDenyGroupr");
+		grantPlayerCommand.bind("onGrantPlayer");
 		grantGroupCommand.bind("onGrantGroup");
 		
 		helpCommand.bind("onHelp");

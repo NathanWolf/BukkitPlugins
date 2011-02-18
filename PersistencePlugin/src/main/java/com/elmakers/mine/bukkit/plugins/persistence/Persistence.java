@@ -471,8 +471,8 @@ public class Persistence
 		}
 		catch(FileNotFoundException ex)
 		{
-			log.info("Permissions: permission.yml not found, OPS have /su access.");
-			log.info("Permissions:Add a permission.yml to use bukkit.permissions");
+			log.info("Persistence: " + permissionsFile + " not found, ops have /su access.");
+			log.info("Persistence: Create a plugins/Persistence/" + permissionsFile + " to use bukkit.permissions");
 			loader = null;
 			allowOpsSUAccess = true;
 		}
@@ -503,6 +503,8 @@ public class Persistence
 		{
 			return false;
 		}
+		
+		log.info("Persistence: Loaded permission profiles from " + permissionsFile);
 		
 		return true;
 	}
@@ -537,7 +539,10 @@ public class Persistence
 		
 		// Check for su status- this can be toggled by ops with the /su command
 		PlayerData playerData = get(player.getName(), PlayerData.class);
-		if (playerData != null && playerData.isSuperUser()) return true;
+		
+		if (playerData == null) return false;
+		
+		if (playerData.isSuperUser()) return true;
 		
 		return playerData.isSet(node);	
 	}

@@ -116,7 +116,7 @@ public abstract class SqlStore extends DataStore
 				catch(SQLException e)
 				{
 					connection = null;
-					log.severe("Permissions: SQL errors loading sqllite drivers: " + e.getMessage());
+					log.severe("Persistence: SQL errors loading sqllite drivers: " + e.getMessage());
 					return false;
 				}
 			}

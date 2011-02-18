@@ -40,7 +40,7 @@ public class ProfileData
 			return false;
 		}
 
-		return this.isSet(key);
+		return profile.isSet(key);
 	}
 	
 	

@@ -1,9 +1,14 @@
 # CHANGELOG
 
-# 0.42 (beta)
+# 0.42 (beta2)
 
-- First round bukkit.permissions integration
-- Supports some new commands : grant, deny, group
+ - First round bukkit.permissions integration
+ - Supports some new commands : grant, deny, group
+ - Implement proper config.yml for internal Persistence commands
+ - Fix some bad log statements...
+ - Fix some pretty stupid "in a hurry" bugs.
+ - Fix List<Object> loading, which was broken.
+ - Just a little infinite recursion (again).. NBD :\
 
 # 0.41
 

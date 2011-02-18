@@ -197,31 +197,40 @@ public class PlayerData
 	public boolean isSet(String key)
 	{
 		// Check for deny first
-		for (ProfileData profile : deny)
+		if (deny != null)
 		{
-			if (profile.isSet(key))
+			for (ProfileData profile : deny)
 			{
-				return false;
+				if (profile.isSet(key))
+				{
+					return false;
+				}
 			}
 		}
-		
-		// Check allow
-		for (ProfileData profile : grant)
+			
+		// Check grant
+		if (grant != null)
 		{
-			if (profile.isSet(key))
+			for (ProfileData profile : grant)
 			{
-				return true;
+				if (profile.isSet(key))
+				{
+					return true;
+				}
 			}
 		}
 		
 		// Check groups
-		for (PlayerGroup group : groups)
+		if (groups != null)
 		{
-			if (group.isSet(key))
+			for (PlayerGroup group : groups)
 			{
-				return true;
-			}
-		}		
+				if (group.isSet(key))
+				{
+					return true;
+				}
+			}		
+		}
 		return false;
 	}
 	
