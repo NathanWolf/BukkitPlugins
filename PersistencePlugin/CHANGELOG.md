@@ -13,6 +13,7 @@
  - Fix List<Object> loading, which was broken.
  - Just a little infinite recursion (again).. NBD :\
  - Merge in permission-branch changes.... by hand... bleh. Really should have been more diligent about that.
+ - bukkit.permissions is working!!! Still have some data duplicate errors going on...
  
 # 0.42
 

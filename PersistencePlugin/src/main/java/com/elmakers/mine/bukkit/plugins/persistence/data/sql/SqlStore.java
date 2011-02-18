@@ -164,6 +164,7 @@ public abstract class SqlStore extends DataStore
 		try
 		{
 			PreparedStatement ps = connection.prepareStatement(checkQuery);
+			logSqlStatement(checkQuery);
 			ResultSet rs = ps.executeQuery();
 			tableExists = rs.next();
 			rs.close();
@@ -217,6 +218,7 @@ public abstract class SqlStore extends DataStore
 		try
 		{
 			PreparedStatement ps = connection.prepareStatement(createStatement);
+			logSqlStatement(createStatement);
 			ps.execute();
 		}
 		catch (SQLException ex)
@@ -238,6 +240,7 @@ public abstract class SqlStore extends DataStore
 			try
 			{
 				PreparedStatement ps = connection.prepareStatement(dropQuery);
+				logSqlStatement(dropQuery);
 				ps.execute();
 			}
 			catch (SQLException ex)
@@ -259,6 +262,7 @@ public abstract class SqlStore extends DataStore
 		try
 		{
 			PreparedStatement deleteStatement = connection.prepareStatement(deleteSql);
+			logSqlStatement(deleteSql);
 			deleteStatement.execute();
 		}
 		catch (SQLException ex)
@@ -282,6 +286,7 @@ public abstract class SqlStore extends DataStore
 		try
 		{
 			PreparedStatement ps = connection.prepareStatement(sqlQuery);
+			logSqlStatement(sqlQuery);
 			ResultSet rs = ps.executeQuery();
 		
 			while (rs.next())
@@ -366,6 +371,7 @@ public abstract class SqlStore extends DataStore
 				}
            
 				rowCount++;
+				logSqlStatement(updateSql);
 				updateStatement.execute();
 			}
 			catch (SQLException ex)
@@ -417,7 +423,7 @@ public abstract class SqlStore extends DataStore
 				deleteStatement.setObject(index, id);
 				index++;
 			}
-			
+			logSqlStatement(deleteSql);
 			deleteStatement.execute();
 		}
 		catch (SQLException ex)
@@ -455,6 +461,16 @@ public abstract class SqlStore extends DataStore
 	{
 		this.dataFolder = dataFolder;
 	}
+
+	public static void logSqlStatement(String statement)
+	{
+		if (logSqlStatements)
+		{
+			log.info("Persistence: SQL: " + statement);
+		}
+	}
+	
+	protected static boolean logSqlStatements = true;
 	
 	protected File dataFolder = null;
 	protected Connection connection = null;
