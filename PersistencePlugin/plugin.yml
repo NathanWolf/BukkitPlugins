@@ -14,3 +14,38 @@ commands:
   su:
     description: Toggle SuperUser status (ops-only)
     usage: Use "phelp" for help
+  group:
+    description: Create and manage player groups
+  grant:
+    description: Grant players and groups access
+  deny:
+    description: Deny players and groups access
+permissions:
+  Persistence:
+    description: Persistence permissions
+    type: map
+    map:
+      commands:
+        description: Internal Persistence console commands
+        type: map
+        map:
+          persist:
+            description: If true, they can use the persist command
+            type: boolean
+            default: false
+          su:
+            description: Whether a user has SU access
+            type: boolean
+            default: false
+          group:
+            description: Whether a user may use the group command
+            type: boolean
+            default: false
+          grant:
+            description: Whether a user may use the grant command
+            type: boolean
+            default: false
+          deny:
+            description: Whether a user may use the deny command
+            type: boolean
+            default: false

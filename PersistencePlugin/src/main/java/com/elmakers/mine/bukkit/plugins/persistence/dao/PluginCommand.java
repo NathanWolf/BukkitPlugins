@@ -218,13 +218,6 @@ public class PluginCommand implements Comparable<PluginCommand>
 		switch (permissionType)
 		{
 			case ALLOW_ALL: return true;
-			case OPS_DEFAULT:
-				if (permissionNode != null && permissionNode.length() > 0)
-				{
-					// isOp used as default, Permissions can override.
-					return persistence.hasPermission(player, permissionNode, player.isOp());
-				}
-				break;
 			case OPS_ONLY:
 				if (player == null) return false;
 				return player.isOp();
@@ -237,7 +230,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 			case ADMINS_ONLY:
 				if (permissionNode != null && permissionNode.length() > 0)
 				{
-					return persistence.hasPermission(player, permissionNode, false);
+					return persistence.hasPermission(player, permissionNode);
 				}
 				break;
 		}

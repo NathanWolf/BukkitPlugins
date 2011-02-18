@@ -48,7 +48,7 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 			return;
 		}
 		
-		if (isContained())
+		if (isContained() || referenceType.hasContainer())
 		{
 			// Create a sub-class of the reference class
 			referenceType = new PersistedClass(referenceType, this);
@@ -56,7 +56,7 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 		}
 		else
 		{
-			if (referenceType.isContained())
+			if (referenceType.isContainedClass())
 			{
 				log.warning("Persistence: Field: " + getDataName() + ", Class " + referenceType.getTableName() + " must be contained");
 				referenceType = null;
@@ -118,7 +118,7 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 	{
 		if (referenceType == null) return;	
 		
-		if (isContained())
+		if (referenceType.hasContainer())
 		{
 			Object containedData = get(o);
 			referenceType.populate(row, containedData);

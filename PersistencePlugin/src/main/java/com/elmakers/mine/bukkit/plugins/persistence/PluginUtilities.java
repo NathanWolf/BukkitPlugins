@@ -53,14 +53,6 @@ public class PluginUtilities
 			persistence.put(plugin);
 		}
 		
-		// Set up cache for messages and commands
-		List<Message> allMessages = new ArrayList<Message>();
-		List<PluginCommand> allCommands = new ArrayList<PluginCommand>();
-		persistence.getAll(allMessages, Message.class);
-		persistence.getAll(allCommands, PluginCommand.class);
-		
-		plugin.initializeCache(allMessages, allCommands);
-		
 		playerSender = persistence.get("player", CommandSenderData.class);
 	}
 	
@@ -305,7 +297,7 @@ public class PluginUtilities
 	
 	protected boolean dispatch(Object listener, CommandSender sender, PluginCommand command, String commandString, String[] parameters)
 	{		
-		if (command.checkCommand(sender, commandString))
+		if (command != null && command.checkCommand(sender, commandString))
 		{
 			if (!command.checkPermission(sender))
 			{
@@ -370,6 +362,12 @@ public class PluginUtilities
 							{
 								log.severe("Error invoking callback '" + callbackName);
 								clientEx.getTargetException().printStackTrace();
+								return false;
+							}
+							catch(Throwable clientEx)
+							{
+								log.severe("Error invoking trying to invoke callback '" + callbackName);
+								clientEx.printStackTrace();
 								return false;
 							}
 						}

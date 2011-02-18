@@ -74,7 +74,7 @@ public class PersistedList extends PersistedField implements PersistedReference
     		}
     		else
     		{
-    			if (referenceType.isContained())
+    			if (referenceType.isContainedClass())
     			{
     				log.warning("Persistence: " + owningType.getTableName() + "." + getDataName() + ", entity " + referenceType.getTableName() + " must be contained");
     				referenceType = null;
@@ -88,64 +88,6 @@ public class PersistedList extends PersistedField implements PersistedReference
 		load(subTable, instances, null);
 	}
 	
-	public void load(DataTable subTable, List<Object> instances, PersistedField container)
-	{
-		// Load data for all lists in all instances at once, mapping to
-		// correct instances based on the id column.
-		
-		HashMap<Object, Object> objectIdMap = new HashMap<Object, Object>();
-		HashMap<Object, List<Object> > objectLists = new HashMap<Object, List<Object> >();
-		for (Object instance : instances)
-		{
-			Object instanceId = owningType.getId(instance);
-			objectIdMap.put(instanceId, instance);
-			List<Object> listData = new ArrayList<Object>();
-			objectLists.put(instanceId, listData);
-		}
-		
-		String idName = owningType.getContainedIdName(this);
-		
-		for (DataRow row : subTable.getRows())
-		{
-			Object id = row.get(idName);
-			List<Object> list = objectLists.get(id);
-			if (list != null)
-			{
-				if (isContained() && referenceType != null)
-				{
-					Object newInstance = referenceType.createInstance(row);
-					list.add(newInstance);
-				}
-				else
-				{
-					Object data = row.get(getReferenceIdName());
-					list.add(data);
-				}
-			}
-		}
-		
-		// Assign lists to instance fields, or defer until later
-		for (Object objectId : objectLists.keySet())
-		{
-			List<Object> listData = objectLists.get(objectId);
-			Object instance = objectIdMap.get(objectId);
-			
-			if (referenceType == null || isContained())
-			{
-				set(instance, listData);
-			}
-			else
-			{
-				DeferredReferenceList list = deferListMap.get(instance);
-				if (list == null)
-				{
-					list = new DeferredReferenceList(this);
-					deferListMap.put(instance, list);
-				}
-				list.idList = listData;
-			}
-		}
-	}
 	
 	public String getReferenceIdName()
 	{
@@ -291,15 +233,120 @@ public class PersistedList extends PersistedField implements PersistedReference
 		deferStackDepth++;
 	}
 	
+	public void load(DataTable subTable, List<Object> instances, PersistedField container)
+	{
+		// Load data for all lists in all instances at once, mapping to
+		// correct instances based on the id column.
+		
+		// Map ids to their objects
+		HashMap<Object, Object> objectIdMap = new HashMap<Object, Object>();
+		
+		// Maintain a list of object ids to their lists of object instances
+		HashMap<Object, List<Object> > objectLists = new HashMap<Object, List<Object> >();
+		for (Object instance : instances)
+		{
+			Object instanceId = owningType.getId(instance);
+			objectIdMap.put(instanceId, instance);
+			List<Object> listData = new ArrayList<Object>();
+			objectLists.put(instanceId, listData);
+		}
+		
+		// Determine column names
+		String entityIdName = owningType.getContainedIdName();
+		String dataIdName = "";
+		
+		if (referenceType == null)
+		{
+			dataIdName = getDataName();
+		}
+		else if (isContained())
+		{
+			dataIdName = owningType.getContainedIdName(this);
+		}
+		else
+		{	
+			dataIdName = getReferenceIdName();
+		}	
+		
+		// Load each row of list data, one row at a time
+		// Add the data from each row to the proper instances' list
+		for (DataRow row : subTable.getRows())
+		{
+			DataField entityIdField = row.get(entityIdName);
+			Object entityId = entityIdField.getValue();
+			List<Object> list = objectLists.get(entityId);
+			if (list != null)
+			{
+				if (referenceType == null)
+				{
+					DataField dataField = row.get(dataIdName);
+					Object data = dataField.getValue();
+					list.add(data);
+				}
+				else if (isContained())
+				{
+					Object newInstance = referenceType.createInstance(row);
+					list.add(newInstance);
+				}
+				else
+				{
+					DataField dataIdField = row.get(dataIdName);
+					Object dataId = dataIdField.getValue();
+					list.add(dataId);
+				}
+			}
+		}
+		
+		// Assign lists to instance fields, or defer until later
+		for (Object objectId : objectLists.keySet())
+		{
+			List<Object> listData = objectLists.get(objectId);
+			Object instance = objectIdMap.get(objectId);
+			
+			if (referenceType == null || isContained())
+			{
+				set(instance, listData);
+			}
+			else
+			{
+				DeferredReferenceList list = deferredInstanceMap.get(instance);
+				if (list == null)
+				{
+					list = new DeferredReferenceList(this);
+					deferredInstanceMap.put(instance, list);
+				}
+				list.idList = listData;
+				
+				// Make sure this list gets touched next deferred load
+				if (!deferredLists.contains(this))
+				{
+					deferredLists.add(this);
+				}
+			}
+		}
+	}
+	
 	public static void endDefer()
 	{
 		deferStackDepth--;
 		if (deferStackDepth > 0) return;
+	
+		List<PersistedList> lists = new ArrayList<PersistedList>();
+		lists.addAll(deferredLists);
+		deferredLists.clear();
+		for (PersistedList list : lists)
+		{
+			list.bindDeferredInstances();
+		}
+	}
+	
+	public void bindDeferredInstances()
+	{
 		
-		for (Object instance : deferListMap.keySet())
+		for (Object instance : deferredInstanceMap.keySet())
 		{
 			List<Object> references = new ArrayList<Object>();
-			DeferredReferenceList ref = deferListMap.get(instance);
+			DeferredReferenceList ref = deferredInstanceMap.get(instance);
 			for (Object id : ref.idList)
 			{
 				if (id == null) 
@@ -315,7 +362,7 @@ public class PersistedList extends PersistedField implements PersistedReference
 			
 			ref.referenceList.set(instance, references);
 		}
-		deferListMap.clear();
+		deferredInstanceMap.clear();
 	}
 	
 	class DeferredReferenceList
@@ -330,7 +377,8 @@ public class PersistedList extends PersistedField implements PersistedReference
 	}
 
 	private static int deferStackDepth = 0;
-	private final static HashMap<Object, DeferredReferenceList> deferListMap = new HashMap<Object, DeferredReferenceList>();
+	private final HashMap<Object, DeferredReferenceList> deferredInstanceMap = new HashMap<Object, DeferredReferenceList>();
+	private static final List<PersistedList> deferredLists = new ArrayList<PersistedList>();
 
 	protected final PersistedClass owningType;
 	protected String tableName;
