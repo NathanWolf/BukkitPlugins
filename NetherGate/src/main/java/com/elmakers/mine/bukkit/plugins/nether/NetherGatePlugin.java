@@ -702,5 +702,5 @@ public class NetherGatePlugin extends JavaPlugin
 	protected Persistence persistence = null;
 	protected PluginUtilities utilities = null;
 
-	protected static final Logger log = Logger.getLogger("Minecraft");
+	protected static final Logger log = Persistence.getLogger();
 }

@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.40
+
+ - Version jump for Persistence/permissions integration.
+ - Maven re-org.
+
 # 0.32
 
  - Add "center" command for re-centering a world. Needs testing.

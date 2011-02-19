@@ -41,6 +41,12 @@
     	<type>jar</type>
     	<scope>compile</scope>
     </dependency>
+    <dependency>
+    	<groupId>com.elmakers.mine.bukkit.plugins.persistence</groupId>
+    	<artifactId>Persistence</artifactId>
+    	<version>0.0.1-SNAPSHOT</version>
+    	<scope>import</scope>
+    </dependency>
   </dependencies>
   <!-- This builds a completely 'ready to start' jar with all dependencies inside -->
   <build>
@@ -56,6 +62,11 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+             <archive>
+	            <manifest>
+	              <addClasspath>true</addClasspath>
+	            </manifest>
+	          </archive>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <manifestEntries>
