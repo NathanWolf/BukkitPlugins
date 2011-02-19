@@ -1,9 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.persistence;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,8 +8,6 @@ import java.util.logging.Logger;
 
 import org.bukkit.Server;
 import org.bukkit.entity.Player;
-import org.bukkit.permission.InvalidPermissionProfileException;
-import org.bukkit.permission.PermissionProfile;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BlockVector;
 
@@ -23,7 +18,6 @@ import com.elmakers.mine.bukkit.plugins.persistence.core.PersistedClass;
 import com.elmakers.mine.bukkit.plugins.persistence.core.Schema;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.CommandSenderData;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.ProfileData;
 import com.elmakers.mine.bukkit.plugins.persistence.data.DataStore;
 import com.elmakers.mine.bukkit.plugins.persistence.data.sql.SqlLiteStore;
 
@@ -458,59 +452,9 @@ public class Persistence
 		
 		persistVector.validate();
 		
-		// Set up player profiles for permissions
-		// I considered moving this to Groups, but I'd like to manage it internally, just
-		// like the rest of the global DAOs.
-		FileReader loader = null;
-		try
-		{
-			loader = new FileReader(new File(dataFolder, permissionsFile));
-
-			if (!loadProfiles(loader))
-			{
-				log.info("Persistence: There's an error with permissions.yml - hopefully more info about that above.");
-			}
-		}
-		catch(FileNotFoundException ex)
-		{
-			log.info("Persistence: " + permissionsFile + " not found, ops have /su access.");
-			log.info("Persistence: Create a plugins/Persistence/" + permissionsFile + " to use bukkit.permissions");
-			loader = null;
-			allowOpsSUAccess = true;
-		}
-		
 		// TODO: Materials
 	}
-		
-	protected boolean loadProfiles(Reader reader)
-	{
-		PermissionProfile[] profiles;
-		try
-		{
-			profiles = PermissionProfile.loadProfiles(server, reader);
-			for (PermissionProfile profile : profiles)
-			{
-				ProfileData profileData = get(profile.getName(), ProfileData.class);
-				if (profileData == null)
-				{
-					profileData = new ProfileData(profile.getName());
-					put(profileData);
-				}
-				
-				/// This is setting a transient instance
-				profileData.setProfile(profile);
-			}
-		}
-		catch (InvalidPermissionProfileException e)
-		{
-			return false;
-		}
-		
-		log.info("Persistence: Loaded permission profiles from " + permissionsFile);
-		
-		return true;
-	}
-
+	
 	protected CommandSenderData updateCommandSender(String senderId, Class<?> senderClass)
 	{
 		CommandSenderData sender = get(senderId, CommandSenderData.class);

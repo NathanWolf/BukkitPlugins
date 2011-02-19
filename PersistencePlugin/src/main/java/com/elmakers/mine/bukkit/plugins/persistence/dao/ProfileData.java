@@ -1,10 +1,17 @@
 package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
-import org.bukkit.permission.PermissionProfile;
-
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 
+/**
+ * 
+ * DOA???
+ * 
+ * We'll see....
+ * 
+ * @author nathan
+ *
+ */
 @PersistClass(schema="global", name="profile")
 public class ProfileData 
 {
@@ -18,10 +25,12 @@ public class ProfileData
 		this.id = id;
 	}
 
+	/*
 	public void setProfile(PermissionProfile profile)
 	{
 		this.profile = profile;
 	}
+	*/
 
 	/*
 	 * Hrm.. this compiles... but Maven doesn't like it.... ???
@@ -44,14 +53,20 @@ public class ProfileData
 	}
 	*/
 
+	
 	public boolean isSet(final String key)
 	{
+		/*
 		if (this.profile == null)
 		{
 			return false;
 		}
 
 		return profile.isSet(key);
+		*/
+		
+		// PERMISSIONS ARE OFF!
+		return true;
 	}
 	
 	
@@ -69,5 +84,5 @@ public class ProfileData
 	String id;
 	
 	// transient
-	PermissionProfile profile;
+	// PermissionProfile profile;
 }

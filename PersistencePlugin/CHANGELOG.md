@@ -1,9 +1,11 @@
 # CHANGELOG
 
-# 0.50
+# 0.44
 
- - Just going to call this next release 0.50
+ - Just going to call this next release 0.50 (however, I guess I'm not there yet!)
  - Use the sqlite jdbc jar provided by the bukkit Maven repo.
+ - Rip out permissions integration so I can actually release all the below fixes.. jumped the gun,
+   on that one, it seems :(
 
 # 0.43 (integration)
 
