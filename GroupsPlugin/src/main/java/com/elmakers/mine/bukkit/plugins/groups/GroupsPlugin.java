@@ -48,8 +48,18 @@ public class GroupsPlugin extends JavaPlugin
 
 	public void onEnable()
 	{
-		// TODO Auto-generated method stub
-
+		try
+		{
+			initialize();
+			PluginDescriptionFile pdfFile = this.getDescription();
+	        log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled");
+		}
+		catch(Throwable e)
+		{
+			PluginDescriptionFile pdfFile = this.getDescription();
+	        log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " failed to initialize");	
+	        e.printStackTrace();
+		}	
 	}
 	
 	public void initialize()
@@ -104,8 +114,6 @@ public class GroupsPlugin extends JavaPlugin
 		denyGroupCommand.bind("onDenyGroupr");
 		grantPlayerCommand.bind("onGrantPlayer");
 		grantGroupCommand.bind("onGrantGroup");
-		
-		
 	}
 
 
