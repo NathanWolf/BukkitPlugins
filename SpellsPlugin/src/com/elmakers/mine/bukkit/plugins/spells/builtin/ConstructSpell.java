@@ -23,16 +23,16 @@ public class ConstructSpell extends Spell
 	
 	public ConstructSpell()
 	{
-		addVariant("shell", Material.BOWL, getCategory(), "Create a large shell using your selected material", "shell 12");
-		addVariant("superblob", Material.CLAY_BRICK, getCategory(), "Create a large sphere at your target", "sphere 11");
-		addVariant("sandblast", Material.SANDSTONE, getCategory(), "Create a blob of sand to drop on an enemy", "sphere 4 with sand");
+		addVariant("shell", Material.BOWL, getCategory(), "Create a large shell using your selected material", "sphere hollow 10");
+		addVariant("box", Material.WOODEN_DOOR, getCategory(), "Create a large box using your selected material", "cuboid hollow 6");
+		addVariant("superblob", Material.CLAY_BRICK, getCategory(), "Create a large sphere at your target", "sphere 8");
+		addVariant("sandblast", Material.SANDSTONE, getCategory(), "Create a blob of sand to drop on an enemy", "cuboid 4 with sand");
 	}
 	
 	enum ConstructionType
 	{
 		SPHERE,
 		CUBOID,
-		SHELL,
 		UNKNOWN;
 		
 		public static ConstructionType parseString(String s, ConstructionType defaultType)
@@ -80,9 +80,18 @@ public class ConstructSpell extends Spell
 
 		ConstructionType conType = defaultConstructionType;
 		int radius = defaultRadius;
+		boolean hollow = false;
+		
 		for (int i = 0; i < parameters.length; i++)
 		{
 			String parameter = parameters[i];
+
+			if (parameter.equalsIgnoreCase("hollow"))
+			{
+				hollow = true;
+				continue;
+			}
+			
 			if (parameter.equalsIgnoreCase("with") && i < parameters.length - 1)
 			{
 				String materialName = parameters[i + 1];
@@ -95,7 +104,7 @@ public class ConstructSpell extends Spell
 			// try radius
 			try
 			{
-				radius = Integer.parseInt(parameters[1]);
+				radius = Integer.parseInt(parameter);
 				if (radius > maxRadius && maxRadius > 0)
 				{
 					radius = maxRadius;
@@ -106,35 +115,39 @@ public class ConstructSpell extends Spell
 			} 
 			catch(NumberFormatException ex)
 			{
-				radius = defaultRadius;
 			}
 
 			// Try con type
-			conType = ConstructionType.parseString(parameters[0], conType);
+			{
+				ConstructionType testType = ConstructionType.parseString(parameter, ConstructionType.UNKNOWN);
+				if (testType != ConstructionType.UNKNOWN)
+				{
+					conType = testType;
+				}
+			}
 		}
 		
 		switch (conType)
 		{
-			case SPHERE: constructSphere(target, radius, material, data); break;
-			case SHELL: constructShell(target, radius, material, data); break;
+			case SPHERE: constructSphere(target, radius, material, data, !hollow); break;
+			case CUBOID: constructCuboid(target, radius, material, data, !hollow); break;
 			default : return false;
 		}
-		
 		
 		return true;
 	}
 	
-	public void constructSphere(Block target, int radius, Material material, byte data)
+	public void constructCuboid(Block target, int radius, Material material, byte data, boolean fill)
 	{
-		fillSphere(target, radius, material, data, true);
+		fillArea(target, radius, material, data, fill, false);
 	}
 	
-	public void constructShell(Block target, int radius, Material material, byte data)
+	public void constructSphere(Block target, int radius, Material material, byte data, boolean fill)
 	{
-		fillSphere(target, radius, material, data, false);
+		fillArea(target, radius, material, data, fill, true);
 	}
 	
-	public void fillSphere(Block target, int radius, Material material, byte data, boolean fill)
+	public void fillArea(Block target, int radius, Material material, byte data, boolean fill, boolean sphere)
 	{
 		BlockList constructedBlocks = new BlockList();
 		int diameter = radius * 2;
@@ -149,12 +162,22 @@ public class ConstructSpell extends Spell
 			{
 				for (int z = 0; z < radius; ++z)
 				{
-					int position = checkSpherePosition(x - midX, y - midY, z - midZ, radius);
-					if 
-					(
-						(fill && position <= 0)
-					||	(!fill && position <= 0 && getDistance(x - midX, y - midY, z - midZ) >= radius - 2)
-					)
+					boolean fillBlock = false;
+					
+					if (sphere)
+					{
+						int distance = getDistance(x - midX, y - midY, z - midZ);
+						fillBlock = distance <= radius;
+						if (!fill)
+						{
+							fillBlock = fillBlock && distance >= radius - 1;
+						}
+					}
+					else
+					{
+						fillBlock = fill ? true : (x == 0 || y == 0 || z == 0);
+					}
+					if (fillBlock)
 					{
 						constructBlock(x, y, z, target, radius, material, data, constructedBlocks);
 						constructBlock(diameterOffset - x, y, z, target, radius, material, data, constructedBlocks);
@@ -176,11 +199,6 @@ public class ConstructSpell extends Spell
 	public int getDistance(int x, int y, int z)
 	{
 		return (int)(Math.sqrt(x * x + y * y + z * z) + 0.5);
-	}
-	
-	public int checkSpherePosition(int x, int y, int z, int R)
-	{
-		return (x * x) + (y * y) + (z * z) - (R * R);
 	}
 
 	public void constructBlock(int dx, int dy, int dz, Block centerPoint, int radius, Material material, byte data, BlockList constructedBlocks)

@@ -23,13 +23,10 @@ import com.elmakers.mine.bukkit.plugins.nether.NetherManager;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.*;
-import com.elmakers.mine.bukkit.plugins.spells.dynmap.MapSpell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoQueue;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
-
-import org.dynmap.DynmapPlugin;
 
 public class Spells
 {
@@ -414,7 +411,11 @@ public class Spells
 	
 	public boolean isAffectedByGravity(Material mat)
 	{
-		return (mat == Material.GRAVEL || mat == Material.SAND);
+		// DOORS are on this list, it's a bit of a hack, but if you consider them
+		// as two separate blocks, the top one of which "breaks" when the bottom one does,
+		// it applies- but only really in the context of the auto-undo system,
+		// so this should probably be its own mat list, ultimately.
+		return (mat == Material.GRAVEL || mat == Material.SAND || mat == Material.WOOD_DOOR || mat == Material.IRON_DOOR);
 	}
 	
 	/*
@@ -428,20 +429,6 @@ public class Spells
 	public SpellsPlugin getPlugin()
 	{
 		return plugin;
-	}
-	
-	/*
-	 * dynmap access functions
-	 */
-	
-	public boolean isDynmapBound()
-	{
-		return dynmap != null;
-	}
-	
-	public DynmapPlugin getDynmapPlugin()
-	{
-		return dynmap;
 	}
 	
 	/*
@@ -501,11 +488,6 @@ public class Spells
 		wandTypeId = properties.getInteger("wand-type-id", wandTypeId);
 		
 		// Don't save the wand properties!!
-	}
-	
-	public void setDynmap(DynmapPlugin dynmap)
-	{
-		this.dynmap = dynmap;
 	}
 	
 	public void clear()
@@ -654,12 +636,6 @@ public class Spells
 		// addSpell(new StairsSpell());
 		// addSpell(new TunnelSpell());
 		
-		// dynmap spells
-		if (isDynmapBound())
-		{
-			addSpell(new MapSpell());
-		}
-		
 		// NetherGate spells
 		if (nether != null)
 		{
@@ -678,8 +654,8 @@ public class Spells
 	private final String wandPropertiesFile = "wand.properties";
 	private int wandTypeId = 280;
 	
-	static final String		DEFAULT_BUILDING_MATERIALS	= "1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,24,25,35,41,42,43,45,46,47,48,49,56,57,60,65,66,73,74,79,80,81,82,83,85,86,87,88,89,91";
-	static final String		STICKY_MATERIALS = "37,38,39,50,51,55,59,63,65,66,68,70,72,75,76,77,78,83";
+	static final String		DEFAULT_BUILDING_MATERIALS	= "1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,24,25,35,41,42,43,45,46,47,48,49,56,57,60,65,66,73,74,79,80,81,82,83,85,86,87,88,89,90,91";
+	static final String		STICKY_MATERIALS = "37,38,39,50,51,55,59,63,64,65,66,68,70,71,72,75,76,77,78,83";
 	static final String		STICKY_MATERIALS_DOUBLE_HEIGHT = "64,71,";
 	
 	private List<Material>	buildingMaterials	= new ArrayList<Material>();
@@ -711,7 +687,6 @@ public class Spells
 	private final List<Spell> deathListeners = new ArrayList<Spell>();
 	
 	private SpellsPlugin plugin = null;
-	private DynmapPlugin dynmap = null;
 	private NetherManager nether = null;
 	
 	protected Persistence persistence = null;

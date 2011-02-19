@@ -18,7 +18,6 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.dynmap.DynmapPlugin;
 
 import com.elmakers.mine.bukkit.plugins.nether.NetherGatePlugin;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
@@ -91,7 +90,6 @@ public class SpellsPlugin extends JavaPlugin
 	{
 		utilities = persistence.getUtilities(this);
 
-		bindDynmapPlugin();
 		bindNetherGatePlugin();
 
 		spells.initialize(this, persistence, utilities);
@@ -258,27 +256,6 @@ public class SpellsPlugin extends JavaPlugin
 	public void onDisable() 
 	{
 		spells.clear();
-	}
-	
-	protected void bindDynmapPlugin() 
-	{
-		Plugin checkForMap = this.getServer().getPluginManager().getPlugin("dynmap");
-
-	    if (checkForMap != null) 
-	    {
-	    	try
-	    	{
-	    		if (checkForMap.getClass().getMethod("getMapManager") != null)
-	    		{
-	    			spells.setDynmap((DynmapPlugin)checkForMap);
-	    			log.info("Spells: Found dynmap plugin, binding to it");
-	    		}
-	    	}
-	    	catch(NoSuchMethodException ex)
-	    	{
-	    		log.info("Spells: Found dynmap, but need a newer version");
-	    	}
-	    }
 	}
 	
 	protected void bindNetherGatePlugin() 

@@ -895,6 +895,29 @@ public abstract class Spell implements Comparable<Spell>
 		return material;
 	}
 	
+	protected boolean giveMaterial(Material materialType, int amount, short damage, byte data)
+	{
+		ItemStack itemStack = new ItemStack(materialType, amount, damage, data);
+		boolean active = false;
+		for (int i = 8; i >= 0; i--)
+		{
+			ItemStack current = player.getInventory().getItem(i);
+			if (current == null || current.getType() == Material.AIR)
+			{
+				player.getInventory().setItem(i, itemStack);
+				active = true;
+				break;
+			}
+		}
+		
+		if (!active)
+		{
+			player.getInventory().addItem(itemStack);
+		}
+
+		return true;
+	}
+	
 	/*
 	 * private data
 	 */

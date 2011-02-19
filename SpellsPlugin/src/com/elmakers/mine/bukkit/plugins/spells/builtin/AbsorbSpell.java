@@ -2,7 +2,6 @@ package com.elmakers.mine.bukkit.plugins.spells.builtin;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.inventory.ItemStack;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
@@ -25,27 +24,10 @@ public class AbsorbSpell extends Spell
 			return false;
 		}
 		int amount = 1;
-		
+			
 		castMessage(player, "Absorbing some " + target.getType().name().toLowerCase());
-		ItemStack itemStack = new ItemStack(target.getType(), amount, (short)0 , target.getData());
-		boolean active = false;
-		for (int i = 8; i >= 0; i--)
-		{
-			ItemStack current = player.getInventory().getItem(i);
-			if (current == null || current.getType() == Material.AIR)
-			{
-				player.getInventory().setItem(i, itemStack);
-				active = true;
-				break;
-			}
-		}
-		
-		if (!active)
-		{
-			player.getInventory().addItem(itemStack);
-		}
-		
-		return true;
+			
+		return giveMaterial(target.getType(), amount, (short)0 , target.getData());
 	}
 
 	@Override

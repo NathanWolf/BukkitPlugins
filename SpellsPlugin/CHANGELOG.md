@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.92
+
+ - Fix "shell", add "box"
+ - Remove non-sticky materials like doors, torches, etc from the buildable list
+ - Move material-giving code to common library
+
 ## 0.91
 
  - Make spell permission node names consistent

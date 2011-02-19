@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Material;
-import org.bukkit.inventory.ItemStack;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
@@ -43,13 +42,7 @@ public class ManifestSpell extends Spell
 		int amount = defaultAmount;
 		byte data = 0;
 		castMessage(player, "Manifesting some " + material.name().toLowerCase());
-		for (int i = 0; i < amount; i++)
-		{
-			ItemStack itemStack = new ItemStack(material, 1, (short)0 , data);
-			player.getInventory().addItem(itemStack);
-		}
-
-		return true;
+		return giveMaterial(material, amount, (short)0 , data);
 	}
 
 	@Override
