@@ -465,7 +465,7 @@ public class Persistence
 		try
 		{
 			loader = new FileReader(new File(dataFolder, permissionsFile));
-	
+
 			if (!loadProfiles(loader))
 			{
 				log.info("Persistence: There's an error with permissions.yml - hopefully more info about that above.");

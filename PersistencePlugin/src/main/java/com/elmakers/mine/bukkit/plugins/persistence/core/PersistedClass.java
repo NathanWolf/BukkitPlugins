@@ -852,6 +852,8 @@ public class PersistedClass
 			// TODO: This is not the place for this- find a better place to set up the auto id!
 			// Addendum: maybe? I don't like the magic number thing, but cache add _is_ kind
 			// of the place for this..
+			
+			id = getId(o);
 			Long intValue = null;
 			
 			// Think I'm going to recommend, but not _enforce_ using a Long for an auto int id...

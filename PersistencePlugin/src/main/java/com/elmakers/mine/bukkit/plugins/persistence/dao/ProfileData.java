@@ -23,6 +23,16 @@ public class ProfileData
 		this.profile = profile;
 	}
 
+	/*
+	 * Hrm.. this compiles... but Maven doesn't like it.... ???
+	 * 
+	 * [ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:2.0.2:compile (default-compile) on project Persistence: Compilation failure
+	 * [ERROR] /Users/nathan/Documents/Code/Eclipse/Bukkit/BukkitPlugins/PersistencePlugin/src/main/java/com/elmakers/mine/bukkit/plugins/persistence/dao/ProfileData.java:[33,25] type parameters of <T>T cannot be determined; no unique maximal instance exists for type variable T with upper bounds T,java.lang.Object
+	 * [ERROR] -> [Help 1]
+     *
+     * Disabling for now, not working yet anyway (at an API level)
+	 */
+	/*
 	public <T> T get(final String key)
 	{
 		if (this.profile == null)
@@ -32,6 +42,7 @@ public class ProfileData
 
 		return this.profile.get(key);
 	}
+	*/
 
 	public boolean isSet(final String key)
 	{
