@@ -1,6 +1,9 @@
 package com.elmakers.mine.bukkit.plugins.groups;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.Reader;
 import java.util.logging.Logger;
 
 import org.bukkit.Server;
@@ -11,15 +14,16 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.elmakers.mine.bukkit.plugins.groups.dao.Group;
+import com.elmakers.mine.bukkit.plugins.groups.dao.ProfileData;
+import com.elmakers.mine.bukkit.plugins.groups.dao.User;
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PermissionType;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerGroup;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.ProfileData;
 
 public class GroupsPlugin extends JavaPlugin
 {
@@ -127,18 +131,32 @@ public class GroupsPlugin extends JavaPlugin
 		String groupName = parameters[0];
 		
 		// First check for existing
-		PlayerGroup group = persistence.get(groupName, PlayerGroup.class);
+		Group group = persistence.get(groupName, Group.class);
 		if (group != null)
 		{
 			groupExistsMessage.sendTo(messageOutput, groupName);
 			return true;
 		}
 		
-		group = new PlayerGroup(groupName);
+		group = new Group(groupName);
 		persistence.put(group);
 		createdGroupMessage.sendTo(messageOutput, groupName);
 		
 		return true;
+	}
+	
+	public User createUser(String playerName)
+	{
+		User user = null;
+		
+		// Check for playerData
+		PlayerData playerData = persistence.get(playerName, PlayerData.class);
+		if (playerData == null)
+		{
+			return null;
+		}
+		
+		return user;
 	}
 	
 	public boolean onAddToGroup(CommandSender messageOutput, String[] parameters)
@@ -152,23 +170,23 @@ public class GroupsPlugin extends JavaPlugin
 		String groupName = parameters[1];
 		
 		// First check for group
-		PlayerGroup group = persistence.get(groupName, PlayerGroup.class);
+		Group group = persistence.get(groupName, Group.class);
 		if (group == null)
 		{
 			groupNotFoundMessage.sendTo(messageOutput, groupName);
 			return true;
 		}
 		
-		// Check for player
-		PlayerData playerData = persistence.get(playerName, PlayerData.class);
-		if (playerData == null)
+		// Check for player data, create user if a player exists
+		User user = createUser(playerName);
+		if (user == null)
 		{
 			playerNotFoundMessage.sendTo(messageOutput, playerName);
 			return true;
 		}
 		
-		playerData.addToGroup(group);
-		persistence.put(playerData);
+		user.addToGroup(group);
+		persistence.put(user);
 		addedPlayerToGroupMessage.sendTo(messageOutput, playerName, groupName);
 		
 		return true;
@@ -186,23 +204,23 @@ public class GroupsPlugin extends JavaPlugin
 		String groupName = parameters[1];
 		
 		// First check for group
-		PlayerGroup group = persistence.get(groupName, PlayerGroup.class);
+		Group group = persistence.get(groupName, Group.class);
 		if (group == null)
 		{
 			groupNotFoundMessage.sendTo(messageOutput, group);
 			return true;
 		}
 		
-		// Check for player
-		PlayerData playerData = persistence.get(playerName, PlayerData.class);
-		if (playerData == null)
+		// Check for player data, create user if a player exists
+		User user = createUser(playerName);
+		if (user == null)
 		{
-			playerNotFoundMessage.sendTo(messageOutput, group);
+			playerNotFoundMessage.sendTo(messageOutput, playerName);
 			return true;
 		}
 		
-		playerData.removeFromGroup(group);
-		persistence.put(playerData);
+		user.removeFromGroup(group);
+		persistence.put(user);
 		removedPlayerFromGroupMessage.sendTo(messageOutput, playerName, groupName);
 		
 		return true;
@@ -227,15 +245,16 @@ public class GroupsPlugin extends JavaPlugin
 		}
 		
 		// Check for player
-		PlayerData playerData = persistence.get(playerName, PlayerData.class);
-		if (playerData == null)
+		// Check for player data, create user if a player exists
+		User user = createUser(playerName);
+		if (user == null)
 		{
 			playerNotFoundMessage.sendTo(messageOutput, playerName);
 			return true;
 		}
 		
-		playerData.denyPermission(profileData);
-		persistence.put(playerData);
+		user.denyPermission(profileData);
+		persistence.put(user);
 		denyAccessMessage.sendTo(messageOutput, profileName, "player", playerName);
 		
 		return true;
@@ -260,15 +279,16 @@ public class GroupsPlugin extends JavaPlugin
 		}
 		
 		// Check for player
-		PlayerData playerData = persistence.get(playerName, PlayerData.class);
-		if (playerData == null)
+		// Check for player data, create user if a player exists
+		User user = createUser(playerName);
+		if (user == null)
 		{
 			playerNotFoundMessage.sendTo(messageOutput, playerName);
 			return true;
 		}
 		
-		playerData.grantPermission(profileData);
-		persistence.put(playerData);
+		user.grantPermission(profileData);
+		persistence.put(user);
 		grantAccessMessage.sendTo(messageOutput, profileName, "player", playerName);
 		
 		return true;
@@ -293,7 +313,7 @@ public class GroupsPlugin extends JavaPlugin
 		}
 		
 		// Check for group
-		PlayerGroup group = persistence.get(groupName, PlayerGroup.class);
+		Group group = persistence.get(groupName, Group.class);
 		if (group == null)
 		{
 			groupNotFoundMessage.sendTo(messageOutput, groupName);
@@ -326,7 +346,7 @@ public class GroupsPlugin extends JavaPlugin
 		}
 		
 		// Check for group
-		PlayerGroup group = persistence.get(groupName, PlayerGroup.class);
+		Group group = persistence.get(groupName, Group.class);
 		if (group == null)
 		{
 			groupNotFoundMessage.sendTo(messageOutput, groupName);
@@ -336,6 +356,61 @@ public class GroupsPlugin extends JavaPlugin
 		group.grantPermission(profileData);
 		persistence.put(group);
 		grantAccessMessage.sendTo(messageOutput, profileName, "group", groupName);
+		
+		return true;
+	}
+	
+	protected boolean loadProfiles(Reader reader)
+	{
+		/* waiting for bukkit.permissions...
+		 * 
+		PermissionProfile[] profiles;
+		try
+		{
+			profiles = PermissionProfile.loadProfiles(server, reader);
+			for (PermissionProfile profile : profiles)
+			{
+				ProfileData profileData = get(profile.getName(), ProfileData.class);
+				if (profileData == null)
+				{
+					profileData = new ProfileData(profile.getName());
+					put(profileData);
+				}
+				
+				/// This is setting a transient instance
+				profileData.setProfile(profile);
+			}
+		}
+		catch (InvalidPermissionProfileException e)
+		{
+			return false;
+		}
+		
+		log.info("Persistence: Loaded permission profiles from " + permissionsFile);
+		*/
+		
+		// Set up player profiles for permissions
+		FileReader loader = null;
+		try
+		{
+			loader = new FileReader(new File(getDataFolder(), permissionsFile));
+
+			if (!loadProfiles(loader))
+			{
+				log.info("Persistence: There's an error with permissions.yml - hopefully more info about that above.");
+			}
+			else
+			{
+				Persistence.setOpsCanSU(false);
+			}
+		}
+		catch(FileNotFoundException ex)
+		{
+			log.info("Persistence: " + permissionsFile + " not found, ops have /su access.");
+			log.info("Persistence: Create a plugins/Persistence/" + permissionsFile + " to use bukkit.permissions");
+			loader = null;
+			Persistence.setOpsCanSU(true);
+		}
 		
 		return true;
 	}
@@ -365,4 +440,8 @@ public class GroupsPlugin extends JavaPlugin
 	private Message groupNotFoundMessage;
 
 	protected static final Logger log = Persistence.getLogger();
+	
+	// TOOD : support multiple perm files
+	private static final String permissionsFile = "permissions.yml";
+
 }

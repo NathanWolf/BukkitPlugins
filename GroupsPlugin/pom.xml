@@ -11,7 +11,7 @@
   	</dependencies>
   </dependencyManagement>
   <properties>
-  	<build.version>0.10</build.version>
+  	<build.version>0.11</build.version>
   </properties>
   <repositories>
     <repository>
@@ -40,11 +40,6 @@
     	<version>0.0.1-SNAPSHOT</version>
     	<type>jar</type>
     	<scope>compile</scope>
-    </dependency>
-    <dependency>
-    	<groupId>com.elmakers.mine.bukkit.plugins.persistence</groupId>
-    	<artifactId>persistence</artifactId>
-    	<version>0.0.1-SNAPSHOT</version>
     </dependency>
   </dependencies>
   <!-- This builds a completely 'ready to start' jar with all dependencies inside -->
