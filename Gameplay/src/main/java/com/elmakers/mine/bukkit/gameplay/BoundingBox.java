@@ -1,4 +1,4 @@
-package com.elmakers.mine.bukkit.plugins.gameplay;
+package com.elmakers.mine.bukkit.gameplay;
 
 import java.util.HashMap;
 import java.util.List;
