@@ -56,7 +56,7 @@ public class PersistenceCommands
 		
 		// Player commands
 		// TODO - not sure this is going to work right when switching back and forth between built-in and bukkit permissions .. ?
-		PermissionType suType = Persistence.allowOpSU() ? PermissionType.OPS_ONLY : PermissionType.ADMINS_ONLY;
+		PermissionType suType = Persistence.getOpsCanSU() ? PermissionType.OPS_ONLY : PermissionType.ADMINS_ONLY;
 		suCommand = utilities.getPlayerCommand(d.suCommand[0], d.suCommand[1], d.suCommand[2], suType);
 		
 		for (String usage : d.describeUsage)

@@ -409,7 +409,6 @@ public class Persistence
 	protected void initialize(File dataFolder, Server server)
 	{
 		this.dataFolder = dataFolder;
-		this.server = server;
 		dataFolder.mkdirs();
 
 		updateGlobalData();
@@ -451,10 +450,11 @@ public class Persistence
 		persistVector.persistField("z", fieldZ);
 		
 		persistVector.validate();
-		
+			
 		// TODO: Materials
 	}
-	
+		
+
 	protected CommandSenderData updateCommandSender(String senderId, Class<?> senderClass)
 	{
 		CommandSenderData sender = get(senderId, CommandSenderData.class);
@@ -493,9 +493,14 @@ public class Persistence
 		return playerData.isSet(node);	
 	}
 	
-	public static boolean allowOpSU()
+	public static boolean getOpsCanSU()
 	{
 		return allowOpsSUAccess;
+	}
+
+	public static void setOpsCanSU(boolean allow)
+	{
+		allowOpsSUAccess = allow;
 	}
 	
 	/*
@@ -504,14 +509,7 @@ public class Persistence
 	
 	private File dataFolder = null;
 	
-	// TOOD: Dinnerbone says we need to support multiple Server instances
-	// Not sure what that means yet.
-	private Server server = null;
-	
-	private static boolean allowOpsSUAccess = false;
-	
-	// TOOD : support multiple perm files
-	private static final String permissionsFile = "permissions.yml";
+	private static boolean allowOpsSUAccess = true;
 	
 	private final HashMap<Class<? extends Object>, PersistedClass> persistedClassMap = new HashMap<Class<? extends Object>, PersistedClass>(); 
 	private final List<PersistedClass> persistedClasses = new ArrayList<PersistedClass>(); 
