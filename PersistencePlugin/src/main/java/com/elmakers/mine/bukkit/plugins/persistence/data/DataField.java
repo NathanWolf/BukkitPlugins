@@ -1,6 +1,5 @@
 package com.elmakers.mine.bukkit.plugins.persistence.data;
 
-import java.util.Date;
 import java.util.logging.Logger;
 
 import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
@@ -61,70 +60,7 @@ public class DataField
 	
 	public Object getValue(Class<?> targetClass)
 	{
-		return convertValue(value, targetClass);
-	}
-	
-	public static Object convertValue(Object value, Class<?> targetClass)
-	{
-		if (value == null) 
-		{
-			return null;
-		}
-		
-		Class<?> valueClass = value.getClass();
-		
-		if (targetClass.isAssignableFrom(valueClass))
-		{
-			return value;
-		}
-		
-		if (targetClass.isEnum() && (int.class.isAssignableFrom(valueClass) || Integer.class.isAssignableFrom(valueClass)))
-		{
-			int ordinal = (Integer)value;
-			return targetClass.getEnumConstants()[ordinal];
-		}
-		
-		if (Date.class.isAssignableFrom(targetClass))
-		{
-			if (Integer.class.isAssignableFrom(valueClass) || int.class.isAssignableFrom(valueClass))
-			{
-				Integer intDate = (Integer)value;
-				Date d = new Date(intDate * 1000);
-				return d;
-			}
-		}
-		
-		if (boolean.class.isAssignableFrom(targetClass) || Boolean.class.isAssignableFrom(targetClass))
-		{
-			if (Boolean.class.isAssignableFrom(valueClass) || boolean.class.isAssignableFrom(valueClass))
-			{
-				return targetClass.cast((Boolean)value);	
-			}
-			if (Integer.class.isAssignableFrom(valueClass) || int.class.isAssignableFrom(valueClass))
-			{
-				Integer intBoolean = (Integer)value;
-				Boolean b = intBoolean != 0;
-				return b;	
-			}
-		}
-		
-		if (float.class.isAssignableFrom(targetClass) || Float.class.isAssignableFrom(targetClass))
-		{
-			if (Float.class.isAssignableFrom(valueClass) || float.class.isAssignableFrom(valueClass))
-			{
-				return targetClass.cast((Float)value);	
-			}
-			if (Integer.class.isAssignableFrom(valueClass) || int.class.isAssignableFrom(valueClass))
-			{
-				return (Float)(float)(Integer)value;	
-			}
-			if (Double.class.isAssignableFrom(valueClass) || double.class.isAssignableFrom(valueClass))
-			{
-				return (Float)(float)(double)(Double)value;	
-			}
-		}
-		
-		return value;
+		return DataType.convertValue(value, targetClass);
 	}
 	
 	public void setName(String name)

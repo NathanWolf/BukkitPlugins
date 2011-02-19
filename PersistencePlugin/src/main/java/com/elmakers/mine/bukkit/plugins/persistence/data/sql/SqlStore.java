@@ -76,16 +76,16 @@ public abstract class SqlStore extends DataStore
 			}
 			if (!driversLoaded)
 			{
-				log.info("Persistence: Loading sqlite drivers from lib folder");
+				log.info("Persistence: Loading sqlite drivers from Persistence folder");
 				String fileName = getDriverFileName();
 				
 				File dataPath = dataFolder.getAbsoluteFile();
 				File pluginsPath = new File(dataPath.getParent());
 				File cbPath = new File(pluginsPath.getParent());
-				File sqlLiteFile = new File(cbPath, "lib/" + fileName + ".jar");
+				File sqlLiteFile = new File(cbPath, "Persistence/" + fileName + ".jar");
 	            if (!sqlLiteFile.exists()) 
 	            {
-	                log.severe("Persistence: Failed to find sql driver: " + fileName + ".jar");
+	                log.severe("Persistence: Failed to find sql driver: plugins/Persistence/" + fileName + ".jar");
 	                return false;
 	            }
 	            
@@ -470,7 +470,7 @@ public abstract class SqlStore extends DataStore
 		}
 	}
 	
-	protected static boolean logSqlStatements = true;
+	protected static boolean logSqlStatements = false;
 	
 	protected File dataFolder = null;
 	protected Connection connection = null;

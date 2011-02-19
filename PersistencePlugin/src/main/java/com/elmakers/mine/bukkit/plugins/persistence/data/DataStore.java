@@ -140,7 +140,7 @@ public abstract class DataStore
 	
 	public static void logStoreAccess(String message, int rowCount)
 	{
-		if (logSqlUse)
+		if (logStoreAccess)
 		{
 			log.info("Persistence: " + String.format(message, rowCount));
 		}
@@ -148,13 +148,13 @@ public abstract class DataStore
 	
 	public static void logStoreAccess(String message)
 	{
-		if (logSqlUse)
+		if (logStoreAccess)
 		{
 			log.info("Persistence: " + message);
 		}
 	}
 	
-	protected static boolean logSqlUse = true;
+	protected static boolean logStoreAccess = false;
 	
 	protected Persistence persistence = null;
 	protected String schema;

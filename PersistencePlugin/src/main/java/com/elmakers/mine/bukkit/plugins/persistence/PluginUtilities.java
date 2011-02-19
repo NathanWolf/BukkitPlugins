@@ -53,6 +53,13 @@ public class PluginUtilities
 			persistence.put(plugin);
 		}
 		
+		// Let the plugin bind its transient command and message instances
+		List<Message> allMessages = new ArrayList<Message>();
+		List<PluginCommand> allCommands = new ArrayList<PluginCommand>();
+		persistence.getAll(allMessages, Message.class);
+		persistence.getAll(allCommands, PluginCommand.class);
+		plugin.initializeCache(allMessages, allCommands);
+		
 		playerSender = persistence.get("player", CommandSenderData.class);
 	}
 	

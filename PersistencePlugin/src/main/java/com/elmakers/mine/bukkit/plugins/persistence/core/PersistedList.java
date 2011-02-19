@@ -245,7 +245,7 @@ public class PersistedList extends PersistedField implements PersistedReference
 		HashMap<Object, List<Object> > objectLists = new HashMap<Object, List<Object> >();
 		for (Object instance : instances)
 		{
-			Object instanceId = owningType.getId(instance);
+			Object instanceId = owningType.getIdData(instance);
 			objectIdMap.put(instanceId, instance);
 			List<Object> listData = new ArrayList<Object>();
 			objectLists.put(instanceId, listData);

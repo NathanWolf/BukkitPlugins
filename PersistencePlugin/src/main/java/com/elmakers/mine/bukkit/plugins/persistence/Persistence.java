@@ -459,6 +459,8 @@ public class Persistence
 		persistVector.validate();
 		
 		// Set up player profiles for permissions
+		// I considered moving this to Groups, but I'd like to manage it internally, just
+		// like the rest of the global DAOs.
 		FileReader loader = null;
 		try
 		{

@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.50
+
+ - Just going to call this next release 0.50
+ - Use the sqlite jdbc jar provided by the bukkit Maven repo.
+
 # 0.43 (integration)
 
  - Some migration work
@@ -14,6 +19,9 @@
  - Just a little infinite recursion (again).. NBD :\
  - Merge in permission-branch changes.... by hand... bleh. Really should have been more diligent about that.
  - bukkit.permissions is working!!! Still have some data duplicate errors going on...
+ - Fix autogen'd ints
+ - Break out Groups into its own plugin
+ - Add better double/long support in ConvertType, move that to DataType
  
 # 0.42
 
