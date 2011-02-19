@@ -1,6 +1,0 @@
-name: Gameplay
-main: com.elmakers.mine.bukkit.plugins.gameplay.GameplayPlugin
-version: 0.10
-website: http://mine.elmakers.com
-author: NathanWolf
-description : Some handy gameplay-oriented utility functions (API)
