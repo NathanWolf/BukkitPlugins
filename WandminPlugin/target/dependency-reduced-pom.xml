@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.elmakers.mine.bukkit.plugins.wandmin</groupId>
+  <artifactId>Wandmin</artifactId>
+  <name>elMakers - Bukkit Plugins : Wandmin</name>
+  <version>0.0.1-SNAPSHOT</version>
+  <url>http://mine.elmakers.com</url>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>1.4</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <archive>
+                <manifest>
+                  <addClasspath>true</addClasspath>
+                </manifest>
+              </archive>
+              <transformers>
+                <transformer>
+                  <manifestEntries>
+                    <Main-Class>org.bukkit.craftbukkit.Main</Main-Class>
+                    <Build-Version>${build.version}</Build-Version>
+                  </manifestEntries>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.0.2</version>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <repositories>
+    <repository>
+      <id>bukkut-repo</id>
+      <url>http://artifacts.lukegb.com/artifactory/repo</url>
+    </repository>
+  </repositories>
+  <dependencies>
+    <dependency>
+      <groupId>com.elmakers.mine.bukkit.plugins.persistence</groupId>
+      <artifactId>Persistence</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+  <dependencyManagement />
+  <properties>
+    <build.version>0.29</build.version>
+  </properties>
+</project>
+

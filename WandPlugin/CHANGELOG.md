@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.63
+
+ - HOORAY! Default constructors!
+ - Mavenize
+ - Remove CB dependency, now that the inventory seems to update properly
+
 ## 0.62
 
  - Add properties file option for turning off the item help

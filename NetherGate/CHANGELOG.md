@@ -1,9 +1,13 @@
 # CHANGELOG
 
+# 0.42
+
+ - First-round of data migration happens here, with Persistence 0.45
+
 # 0.41
 
  - Integrate with Gameplay library
- - First-round of data migration happens here, with Persistence 0.45
+ - Default constructor!
 
 # 0.40
 

@@ -1,0 +1,10 @@
+name: Wand
+main: com.elmakers.mine.bukkit.plugins.wand.WandPlugin
+version: 0.63
+website: http://mine.elmakers.com
+author: NathanWolf
+description : A Magic Wand for casting Spells
+commands:
+  wand:
+    description: Get wand help, spawn wand/magic items
+    usage: /wand [spellname]

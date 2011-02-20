@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.29
+
+ - HOORAY! Default constructors!
+
 ## 0.28
 
  - Changed to work with the new Command interface. Wandmin will try the "new way" first, 

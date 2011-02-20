@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.13
+ 
+ - Get rid of default constructor! Hooray for beer!
+
 # 0.12
 
  - Implement Permissions support.

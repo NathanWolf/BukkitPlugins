@@ -18,6 +18,11 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+              <archive>
+                <manifest>
+                  <addClasspath>true</addClasspath>
+                </manifest>
+              </archive>
               <transformers>
                 <transformer>
                   <manifestEntries>
@@ -46,9 +51,8 @@
       <url>http://artifacts.lukegb.com/artifactory/repo</url>
     </repository>
   </repositories>
-  <dependencyManagement />
   <properties>
-    <build.version>0.11</build.version>
+    <build.version>0.13</build.version>
   </properties>
 </project>
 

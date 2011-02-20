@@ -1,0 +1,13 @@
+name: Spells
+main: com.elmakers.mine.bukkit.plugins.spells.SpellsPlugin
+version: 0.93
+website: http://mine.elmakers.com
+author: NathanWolf
+description : Mmmmmmaaaaagic!
+commands:
+  cast:
+    description: Cast a spell
+    usage: cast <spellname>
+  spells:
+    description: List all the spells you know
+    usage: spells [category]

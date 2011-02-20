@@ -4,6 +4,7 @@
 
  - Rename IUser to IProfile, add an additional function signature to support Permissions
    backwards compatibility.
+ - Yay! Constructor!
 
 # 0.45
 

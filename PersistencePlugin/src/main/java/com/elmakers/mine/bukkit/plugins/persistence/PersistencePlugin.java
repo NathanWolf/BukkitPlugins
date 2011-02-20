@@ -1,15 +1,12 @@
 package com.elmakers.mine.bukkit.plugins.persistence;
 
-import java.io.File;
 import java.util.logging.Logger;
 
-import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -27,6 +24,14 @@ public class PersistencePlugin extends JavaPlugin
 	/*
 	 * Public API
 	 */
+	
+	/**
+	 * Default constructor! Hooray!
+	 */
+	public PersistencePlugin()
+	{
+		pluginInstance = this;
+	}
 	
 	/* Process player quit and join messages.
 	 * 
@@ -56,24 +61,6 @@ public class PersistencePlugin extends JavaPlugin
 	/*
 	 * Plugin interface
 	 */
-	
-	/**
-	 * The default JavaPlugin constructor
-	 * 
-	 * @param pluginLoader The plugin loader instance
-	 * @param instance The server instance
-	 * @param desc The plugin description file
-	 * @param folder The folder to use for data storage
-	 * @param plugin The plugin file
-	 * @param cLoader The class loader
-	 */
-	public PersistencePlugin(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder,
-			File plugin, ClassLoader cLoader)
-	{
-		super(pluginLoader, instance, desc, folder, plugin, cLoader);
-		
-		pluginInstance = this;
-	}
 
 	/* Shut down Persistence, save data, clear cache
 	 * 

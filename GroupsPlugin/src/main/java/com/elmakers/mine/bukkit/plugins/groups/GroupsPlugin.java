@@ -6,12 +6,10 @@ import java.io.FileReader;
 import java.io.Reader;
 import java.util.logging.Logger;
 
-import org.bukkit.Server;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.elmakers.mine.bukkit.plugins.groups.dao.Group;
@@ -37,12 +35,6 @@ public class GroupsPlugin extends JavaPlugin
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args)
 	{
 		return utilities.dispatch(this, sender, cmd.getName(), args);
-	}
-	
-	public GroupsPlugin(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder,
-			File plugin, ClassLoader cLoader)
-	{
-		super(pluginLoader, instance, desc, folder, plugin, cLoader);
 	}
 
 	public void onDisable()

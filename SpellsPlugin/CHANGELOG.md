@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.93
+
+ - Mmmm... default constructor good!
+ - Also, Mavenize!
+
 ## 0.92
 
  - Fix "shell", add "box"

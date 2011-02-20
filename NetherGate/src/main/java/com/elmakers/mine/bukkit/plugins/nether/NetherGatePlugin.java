@@ -1,13 +1,11 @@
 package com.elmakers.mine.bukkit.plugins.nether;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.command.Command;
@@ -20,7 +18,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.PluginLoader;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BlockVector;
@@ -39,13 +36,6 @@ import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
 
 public class NetherGatePlugin extends JavaPlugin
 {
-
-	public NetherGatePlugin(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder,
-			File plugin, ClassLoader cLoader)
-	{
-		super(pluginLoader, instance, desc, folder, plugin, cLoader);
-	}
-	
 	public NetherManager getManager()
 	{
 		return manager;
