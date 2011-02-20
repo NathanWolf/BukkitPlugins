@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.46
+
+ - Rename IUser to IProfile, add an additional function signature to support Permissions
+   backwards compatibility.
+
 # 0.45
 
  - Move BoundingBox to Gameplay library

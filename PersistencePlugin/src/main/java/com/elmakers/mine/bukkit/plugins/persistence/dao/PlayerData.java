@@ -71,6 +71,7 @@ public class PlayerData
 
 	public void update(Player player)
 	{		
+		this.player = player;
 		update(player.getLocation());
 		name = player.getDisplayName();
 		online = player.isOnline();
@@ -85,6 +86,11 @@ public class PlayerData
 	{
 		lastLogin = new Date();
 		update(player);
+	}
+	
+	public Player getPlayer()
+	{
+		return player;
 	}
 	
 	/**
@@ -102,9 +108,10 @@ public class PlayerData
 
 	public boolean isSet(String key)
 	{
-		if (user != null)
+		if (profile != null)
 		{
-			return user.isSet(key);
+			// Checks both bukkit permissions and Permissions, for now....
+			return profile.isSet(key) && profile.isSet(key, player);
 		}
 		return true;
 	}
@@ -196,6 +203,16 @@ public class PlayerData
 	{
 		return location;
 	}
+	
+	public IProfile getProfile()
+	{
+		return profile;
+	}
+
+	public void setProfile(IProfile profile)
+	{
+		this.profile = profile;
+	}
 
 	private String				name;
 	private String				id;
@@ -207,5 +224,6 @@ public class PlayerData
 	private LocationData		location;
 	
 	// Transient - will be set up by the groups manager
-	private IUser				user;
+	private IProfile				profile;
+	private Player					player;
 }
