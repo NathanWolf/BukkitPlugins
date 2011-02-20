@@ -223,7 +223,13 @@ public class PersistedField
 	public void load(DataRow row, Object o)
 	{
 		DataField dataField = row.get(getDataName());
-		set(o, dataField.getValue(getType()));
+		
+		// Silently drop missing data...
+		// TODO: Log print here?
+		if (dataField != null)
+		{
+			set(o, dataField.getValue(getType()));
+		}
 	}
 	
 	public DataType getDataType()

@@ -4,8 +4,8 @@ import java.util.Date;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.util.BlockVector;
 
+import com.elmakers.mine.bukkit.plugins.persistence.annotation.Migrate;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
@@ -22,6 +22,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
  * @author NathanWolf
  *
  */
+@Migrate(autoReset = true)
 @PersistClass(name = "player", schema = "global") 
 public class PlayerData
 {
@@ -57,8 +58,7 @@ public class PlayerData
 	
 	public void update(Location location)
 	{
-		position = new BlockVector(location.getBlockX(), location.getBlockY(), location.getBlockX());
-		orientation = new Orientation(location);
+		this.location = new LocationData(location);
 	}
 	
 	/**
@@ -185,27 +185,16 @@ public class PlayerData
 	{
 		this.online = online;
 	}
-	
-	@PersistField(contained=true)
-	public void setPosition(BlockVector position)
-	{
-		this.position = position;
-	}
-
-	public BlockVector getPosition()
-	{
-		return position;
-	}
 
 	@PersistField(contained=true)
-	public void setOrientation(Orientation orientation)
+	public void setLocation(LocationData location)
 	{
-		this.orientation = orientation;
+		this.location = location;
 	}
 
-	public Orientation getOrientation()
+	public LocationData getLocation()
 	{
-		return orientation;
+		return location;
 	}
 
 	private String				name;
@@ -215,8 +204,7 @@ public class PlayerData
 	private Date				lastLogin;
 	private Date				lastDisconnect;
 	private boolean				online;
-	private BlockVector			position;
-	private Orientation			orientation;
+	private LocationData		location;
 	
 	// Transient - will be set up by the groups manager
 	private IUser				user;

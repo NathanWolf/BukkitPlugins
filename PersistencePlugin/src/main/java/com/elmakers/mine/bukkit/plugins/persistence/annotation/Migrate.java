@@ -22,5 +22,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Migrate
 {
-	MigrateStep[] steps();
+	boolean autoReset() default false;
+	
+	MigrateStep[] steps() default {};
 }

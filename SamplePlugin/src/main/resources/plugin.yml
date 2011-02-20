@@ -1,0 +1,22 @@
+name: SamplePlugin
+main: com.sample.bukkit.plugins.SamplePlugin
+version: 0.01
+website: http://forums.bukkit.org
+author: NathanWolf
+description : A sample plugin for quick plugin dev bootstrapping, using Gameplay and Persistence
+commands:
+  mycommand:
+    description: Does cool stuff!
+permissions:
+  SamplePlugin:
+    description: SamplePlugin permissions
+    type: map
+    map:
+      commands:
+        description: Some fun commands
+        type: map
+        map:
+          mycommand:
+            description: Allows access to "mycommand"
+            type: boolean
+            default: false

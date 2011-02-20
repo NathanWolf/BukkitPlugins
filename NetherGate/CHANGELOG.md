@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.41
+
+ - Integrate with Gameplay library
+ - First-round of data migration happens here, with Persistence 0.45
+
 # 0.40
 
  - Version jump for Persistence/permissions integration.

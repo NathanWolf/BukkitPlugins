@@ -2,9 +2,9 @@ package com.elmakers.mine.bukkit.plugins.nether.dao;
 
 import java.util.Date;
 
+import com.elmakers.mine.bukkit.gameplay.BoundingBox;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.BoundingBox;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
 
 @PersistClass(schema="nether", name="portal")

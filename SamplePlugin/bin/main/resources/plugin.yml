@@ -1,0 +1,34 @@
+name: Groups
+main: com.elmakers.mine.bukkit.plugins.groups.GroupsPlugin
+version: 0.11
+website: http://mine.elmakers.com
+author: NathanWolf
+description : A simple console-based UI for permissions
+commands:
+  group:
+    description: Create and manage player groups
+  grant:
+    description: Grant players and groups access
+  deny:
+    description: Deny players and groups access
+permissions:
+  Groups:
+    description: Groups permissions
+    type: map
+    map:
+      commands:
+        description: Console-based group management
+        type: map
+        map:
+          group:
+            description: Allows access to group management
+            type: boolean
+            default: false
+          grant:
+            description: May grant permissions
+            type: boolean
+            default: false
+          deny:
+            description: May deny permissions
+            type: boolean
+            default: false

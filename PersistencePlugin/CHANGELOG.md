@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.45
+
+ - Move BoundingBox to Gameplay library
+ - Use LocationData in global DAO's as appropriate
+ - First round auto migration on PlayerData, to handle above case
+
 # 0.44
 
  - Just going to call this next release 0.50 (however, I guess I'm not there yet!)

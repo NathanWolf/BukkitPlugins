@@ -1,17 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.elmakers.mine.bukkit.plugins.nether</groupId>
+  <groupId>com.sample.bukkit.plugins</groupId>
+  <artifactId>SamplePlugin</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <artifactId>nethergate</artifactId>
-  <name>elMakers - Bukkit Plugins : NetherGate</name>
-  <url>http://mine.elmakers.com</url>
+  <name>Sample -Bukkit Plugins : SamplePlugin</name>
   <dependencyManagement>
   	<dependencies>
   	</dependencies>
   </dependencyManagement>
   <properties>
-  	<build.version>0.41</build.version>
+  	<build.version>0.01</build.version>
   </properties>
   <repositories>
     <repository>
@@ -70,11 +69,6 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-             <archive>
-	            <manifest>
-	              <addClasspath>true</addClasspath>
-	            </manifest>
-	          </archive>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <manifestEntries>
