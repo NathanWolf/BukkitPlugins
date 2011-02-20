@@ -54,7 +54,8 @@ public class SamplePlugin extends JavaPlugin
 		return utilities.dispatch(this, sender, cmd.getName(), args);
 	}
 
-	/* Called when you plugin is disabled
+	/* Called when your plugin is disabled. You may not need to do anything here.
+	 * 
 	 * @see org.bukkit.plugin.Plugin#onDisable()
 	 */
 	public void onDisable()
@@ -62,7 +63,8 @@ public class SamplePlugin extends JavaPlugin
 		// TODO Auto-generated method stub
 	}
 
-	/* Called when your plugin is enabled
+	/* Called when your plugin is enabled. This is a good time to initialize.
+	 * 
 	 * @see org.bukkit.plugin.Plugin#onEnable()
 	 */
 	public void onEnable()
