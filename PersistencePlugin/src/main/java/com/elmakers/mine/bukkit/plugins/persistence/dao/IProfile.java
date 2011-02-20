@@ -1,7 +1,5 @@
 package com.elmakers.mine.bukkit.plugins.persistence.dao;
 
-import org.bukkit.entity.Player;
-
 /**
  * This should be temporary, I'm hoping once I get persisted inheretence
  * working, this won't be needed.
@@ -23,15 +21,4 @@ public interface IProfile
 	 * @return True if this profile has this permissions
 	 */
 	public boolean isSet(String key);
-	
-	
-	/**
-	 * This is for backwards compatibility with Permissions,
-	 * and will assigne each use a single "virtual" profile.
-	 * 
-	 * @param key The key to check for
-	 * @param player The player requesting permissions
-	 * @return True if this player has this permissions
-	 */
-	public boolean isSet(String key, Player player);
 }

@@ -110,8 +110,7 @@ public class PlayerData
 	{
 		if (profile != null)
 		{
-			// Checks both bukkit permissions and Permissions, for now....
-			return profile.isSet(key) && profile.isSet(key, player);
+			return profile.isSet(key);
 		}
 		return true;
 	}
