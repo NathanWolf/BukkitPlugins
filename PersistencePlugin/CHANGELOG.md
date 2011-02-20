@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.48
+
+ - Bit o' refactoring for a little splitup that may just happen :)
+
 # 0.47
 
  - Fix a list saving bug with lists of objects- need the concrete id when deleting missing items.

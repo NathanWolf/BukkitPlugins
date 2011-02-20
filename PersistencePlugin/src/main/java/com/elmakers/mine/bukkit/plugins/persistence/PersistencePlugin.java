@@ -10,8 +10,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.elmakers.mine.bukkit.plugins.persistence.core.PersistenceCommands;
-import com.elmakers.mine.bukkit.plugins.persistence.core.PersistenceListener;
+import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 /** 
  * The JavaPlugin interface for Persistence- binds Persistence to Bukkit.
@@ -48,7 +47,7 @@ public class PersistencePlugin extends JavaPlugin
 	 * 
 	 * Use this function to get a reference to Persistence, which you can use to access the Persistence API.
 	 * 
-	 * @see com.elmakers.mine.bukkit.plugins.persistence.Persistence
+	 * @see com.elmakers.mine.craftbukkit.persistence.Persistence
 	 * 
 	 * @return The singleton instance of Persistence
 	 */
