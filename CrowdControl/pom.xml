@@ -11,7 +11,7 @@
 		</dependencies>
 	</dependencyManagement>
 	<properties>
-		<build.version>0.12</build.version>
+		<build.version>0.13</build.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -28,15 +28,17 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.elmakers.mine.bukkit.plugins.gameplay</groupId>
-			<artifactId>Gameplay</artifactId>
+			<groupId>org.bukkit</groupId>
+			<artifactId>craftbukkit</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-			<scope>compile</scope>
+			<type>jar</type>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.elmakers.mine.bukkit.plugins.persistence</groupId>
 			<artifactId>Persistence</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
+			<type>jar</type>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
@@ -55,6 +57,31 @@
 					<source>1.5</source>
 					<target>1.5</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<manifestEntries>
+										<Main-Class>org.bukkit.craftbukkit.Main</Main-Class>
+										<Build-Version>${build.version}</Build-Version>
+										<Class-Path>Persistence.jar</Class-Path>
+									</manifestEntries>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

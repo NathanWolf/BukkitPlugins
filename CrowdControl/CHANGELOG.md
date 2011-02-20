@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.13
+
+ - Integrate with Bukkit creature code
+ - Add functionality to control mobs by world and type
+ - Add replacement rules
+
 # 0.12
 
  - Mavenize!
