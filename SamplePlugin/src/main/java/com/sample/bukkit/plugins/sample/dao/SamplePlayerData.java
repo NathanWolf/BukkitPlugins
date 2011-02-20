@@ -1,4 +1,4 @@
-package com.sample.bukkits.plugins.sample.dao;
+package com.sample.bukkit.plugins.sample.dao;
 
 import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
