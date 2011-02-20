@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.94
+
+ - Torch now casts "night" when pointing down. Don't know why I didn't do that earlier... (yes I do)
+
 ## 0.93
 
  - Mmmm... default constructor good!

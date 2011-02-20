@@ -20,13 +20,13 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 
 import com.elmakers.mine.bukkit.plugins.nether.NetherManager;
-import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
-import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.*;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoQueue;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
+import com.elmakers.mine.bukkit.utilities.PluginUtilities;
+import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 public class Spells
 {

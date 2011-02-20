@@ -16,15 +16,15 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.elmakers.mine.bukkit.persistence.dao.Message;
+import com.elmakers.mine.bukkit.persistence.dao.PermissionType;
+import com.elmakers.mine.bukkit.persistence.dao.PluginCommand;
+import com.elmakers.mine.bukkit.persistence.dao.WorldData;
 import com.elmakers.mine.bukkit.plugins.crowd.dao.ControlRule;
 import com.elmakers.mine.bukkit.plugins.crowd.dao.ControlledWorld;
-import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
-import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.PermissionType;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
+import com.elmakers.mine.bukkit.utilities.PluginUtilities;
+import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 public class CrowdControlPlugin extends JavaPlugin
 {
@@ -78,6 +78,7 @@ public class CrowdControlPlugin extends JavaPlugin
 	    CrowdControlDefaults d = new CrowdControlDefaults();
 	    utilities = persistence.getUtilities(this);
 	    listener.initialize(persistence, controller);
+	    controller.initialize(getServer());
 	    
 	    crowdCommand = utilities.getPlayerCommand(d.crowdCommand[0], d.crowdCommand[1], d.crowdCommand[2], PermissionType.ADMINS_ONLY);
 	    crowdControlCommand = crowdCommand.getSubCommand(d.crowdControlCommand[0], d.crowdControlCommand[1], d.crowdControlCommand[2], PermissionType.ADMINS_ONLY);

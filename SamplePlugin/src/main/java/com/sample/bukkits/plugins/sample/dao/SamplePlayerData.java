@@ -1,8 +1,8 @@
 package com.sample.bukkits.plugins.sample.dao;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
+import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 
 /**
  * Encapsulate a User that can be part of a Group

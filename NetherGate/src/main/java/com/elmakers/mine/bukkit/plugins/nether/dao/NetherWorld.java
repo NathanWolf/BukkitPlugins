@@ -2,11 +2,11 @@ package com.elmakers.mine.bukkit.plugins.nether.dao;
 
 import org.bukkit.util.BlockVector;
 
+import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
+import com.elmakers.mine.bukkit.persistence.dao.WorldData;
 import com.elmakers.mine.bukkit.plugins.nether.NetherManager;
-import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
+import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 @PersistClass(schema="nether", name="world")
 public class NetherWorld

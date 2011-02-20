@@ -10,6 +10,7 @@ import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 public class TorchSpell extends Spell 
 {
 	private boolean allowDay = true;
+	private boolean allowNight = true;
 	private boolean allowLightstone = true;
 
 	public TorchSpell()
@@ -54,6 +55,15 @@ public class TorchSpell extends Spell
 			setRelativeTime(0);
 			return true;
 		}
+		
+		
+		if (getYRotation() < -80 && allowNight)
+		{
+			castMessage(player, "FLAME OFF!");
+			setRelativeTime(13000);
+			return true;
+		}
+		
 		
 		Block target = getTargetBlock();	
 		Block face = getLastBlock();
@@ -126,6 +136,7 @@ public class TorchSpell extends Spell
 	@Override
 	public void onLoad(PluginProperties properties)
 	{
+		allowNight = properties.getBoolean("spells-torch-allow-night", allowNight);
 		allowDay = properties.getBoolean("spells-torch-allow-day", allowDay);
 		allowLightstone = properties.getBoolean("spells-torch-allow-lightstone", allowLightstone);
 	}

@@ -17,9 +17,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.bukkit.World;
 
-import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
-import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
+import com.elmakers.mine.bukkit.utilities.PluginUtilities;
+import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 /**
  * 

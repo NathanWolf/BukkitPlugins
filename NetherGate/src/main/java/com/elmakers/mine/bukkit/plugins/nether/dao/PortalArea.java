@@ -11,8 +11,8 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.util.BlockVector;
 
 import com.elmakers.mine.bukkit.gameplay.BoundingBox;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 
 @PersistClass(schema="nether", name="area")
 public class PortalArea

@@ -22,17 +22,17 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BlockVector;
 
+import com.elmakers.mine.bukkit.persistence.dao.Message;
+import com.elmakers.mine.bukkit.persistence.dao.PermissionType;
+import com.elmakers.mine.bukkit.persistence.dao.PluginCommand;
+import com.elmakers.mine.bukkit.persistence.dao.WorldData;
 import com.elmakers.mine.bukkit.plugins.gameplay.EntityType;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherPlayer;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherWorld;
 import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
-import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
-import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.PermissionType;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
+import com.elmakers.mine.bukkit.utilities.PluginUtilities;
+import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 public class NetherGatePlugin extends JavaPlugin
 {

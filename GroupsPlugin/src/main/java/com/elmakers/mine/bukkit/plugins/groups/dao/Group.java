@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 
 /**
  * 

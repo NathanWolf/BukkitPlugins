@@ -3,9 +3,9 @@ package com.elmakers.mine.bukkit.plugins.nether.dao;
 import java.util.Date;
 
 import com.elmakers.mine.bukkit.gameplay.BoundingBox;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
+import com.elmakers.mine.bukkit.persistence.dao.WorldData;
 
 @PersistClass(schema="nether", name="portal")
 public class Portal

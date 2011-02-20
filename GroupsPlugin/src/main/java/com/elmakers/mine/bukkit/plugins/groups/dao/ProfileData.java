@@ -1,8 +1,8 @@
 package com.elmakers.mine.bukkit.plugins.groups.dao;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.IProfile;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
+import com.elmakers.mine.bukkit.persistence.dao.IProfile;
 
 /**
  * 

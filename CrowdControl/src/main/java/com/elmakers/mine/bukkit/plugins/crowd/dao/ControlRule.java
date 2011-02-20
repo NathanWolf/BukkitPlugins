@@ -2,8 +2,8 @@ package com.elmakers.mine.bukkit.plugins.crowd.dao;
 
 import org.bukkit.entity.CreatureType;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 
 @PersistClass(schema="crowd", name="rule")
 public class ControlRule

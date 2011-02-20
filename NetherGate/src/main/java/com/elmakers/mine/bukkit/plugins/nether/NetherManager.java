@@ -19,17 +19,17 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;
 
+import com.elmakers.mine.bukkit.gameplay.BlockRequestListener;
 import com.elmakers.mine.bukkit.gameplay.BoundingBox;
+import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
+import com.elmakers.mine.bukkit.persistence.dao.WorldData;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherWorld;
 import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherPlayer;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherPlayer.TeleportState;
 
-import com.elmakers.mine.bukkit.plugins.persistence.BlockRequestListener;
-import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
-import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.WorldData;
+import com.elmakers.mine.bukkit.utilities.PluginUtilities;
+import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 public class NetherManager
 {

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.15
+
+ - Giant zombies, CB integration
+
 # 0.14
 
  - Add giants (requires CB update - commented out for now)

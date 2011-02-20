@@ -16,11 +16,11 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.elmakers.mine.bukkit.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.plugins.nether.NetherGatePlugin;
-import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
-import com.elmakers.mine.bukkit.plugins.persistence.PluginUtilities;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
+import com.elmakers.mine.bukkit.utilities.PluginUtilities;
+import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 public class SpellsPlugin extends JavaPlugin
 {	

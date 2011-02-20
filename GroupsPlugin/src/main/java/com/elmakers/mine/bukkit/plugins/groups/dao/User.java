@@ -6,11 +6,11 @@ import java.util.List;
 
 import org.bukkit.entity.Player;
 
+import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
+import com.elmakers.mine.bukkit.persistence.dao.IProfile;
+import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.plugins.groups.dao.Group;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.IProfile;
-import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
 import com.nijikokun.bukkit.Permissions.Permissions;
 
 /**

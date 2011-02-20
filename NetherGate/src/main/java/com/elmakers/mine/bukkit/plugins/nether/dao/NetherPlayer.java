@@ -4,10 +4,10 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.util.BlockVector;
 
-import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
+import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
+import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
-import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 
 @PersistClass(schema="nether", name="player")
 public class NetherPlayer

@@ -7,8 +7,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.util.BlockVector;
 
+import com.elmakers.mine.bukkit.gameplay.BlockRequestListener;
 import com.elmakers.mine.bukkit.plugins.nether.NetherManager;
-import com.elmakers.mine.bukkit.plugins.persistence.BlockRequestListener;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;

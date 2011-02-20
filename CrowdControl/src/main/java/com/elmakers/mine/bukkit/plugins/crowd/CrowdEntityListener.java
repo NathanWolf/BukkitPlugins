@@ -4,7 +4,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityListener;
 
 import com.elmakers.mine.bukkit.plugins.crowd.dao.ControlledWorld;
-import com.elmakers.mine.bukkit.plugins.persistence.Persistence;
+import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 public class CrowdEntityListener extends EntityListener
 {
