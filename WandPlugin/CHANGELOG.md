@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.64
+
+ - Call the new player.updateInventory method (er, guess they removed it? Oh, well)
+
 ## 0.63
 
  - HOORAY! Default constructors!

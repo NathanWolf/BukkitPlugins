@@ -3,6 +3,7 @@ package com.elmakers.mine.bukkit.plugins.wand;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
@@ -118,6 +119,9 @@ class WandPlayerListener extends PlayerListener
 		contents[firstMaterialSlot] = lastSlot;
 
 		inventory.setContents(contents);
+		CraftPlayer cPlayer = ((CraftPlayer)player);
+		cPlayer.getHandle().l();
+		
 		return true;
 	}
 	
@@ -183,6 +187,8 @@ class WandPlayerListener extends PlayerListener
 		}
 		
 		inventory.setContents(contents);
+		CraftPlayer cPlayer = ((CraftPlayer)player);
+		cPlayer.getHandle().l();
 	}
 	
 	public void spellHelp(Player player)

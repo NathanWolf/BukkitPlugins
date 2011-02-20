@@ -70,14 +70,30 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.elmakers.mine.bukkit.plugins.persistence</groupId>
-      <artifactId>Persistence</artifactId>
+      <groupId>com.elmakers.mine.bukkit.plugins</groupId>
+      <artifactId>Spells</artifactId>
       <version>0.0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.elmakers.mine.bukkit.plugins</groupId>
-      <artifactId>Spells</artifactId>
+      <groupId>org.bukkit</groupId>
+      <artifactId>craftbukkit</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>minecraft-server</artifactId>
+          <groupId>org.bukkit</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jopt-simple</artifactId>
+          <groupId>net.sf.jopt-simple</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.elmakers.mine.bukkit.plugins.persistence</groupId>
+      <artifactId>Persistence</artifactId>
       <version>0.0.1-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
