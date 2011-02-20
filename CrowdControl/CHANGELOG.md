@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.14
+
+ - Add giants (requires CB update - commented out for now)
+ - Fix some messages
+ - Fix the nuke command
+
 # 0.13
 
  - Integrate with Bukkit creature code

@@ -82,15 +82,18 @@ public class CrowdControlPlugin extends JavaPlugin
 	    crowdCommand = utilities.getPlayerCommand(d.crowdCommand[0], d.crowdCommand[1], d.crowdCommand[2], PermissionType.ADMINS_ONLY);
 	    crowdControlCommand = crowdCommand.getSubCommand(d.crowdControlCommand[0], d.crowdControlCommand[1], d.crowdControlCommand[2], PermissionType.ADMINS_ONLY);
 	    crowdReleaseCommand = crowdCommand.getSubCommand(d.crowdReleaseCommand[0], d.crowdReleaseCommand[1], d.crowdReleaseCommand[2], PermissionType.ADMINS_ONLY);
-	    nukeCommand = crowdCommand.getSubCommand(d.crowdCommand[0], d.crowdCommand[1], d.crowdCommand[2], PermissionType.ADMINS_ONLY);
+	    nukeCommand = crowdCommand.getSubCommand(d.nukeCommand[0], d.nukeCommand[1], d.nukeCommand[2], PermissionType.ADMINS_ONLY);
 		
 	    crowdControlCommand.bind("onControlCrowd");
 	    crowdReleaseCommand.bind("onReleaseCrowd");
 	    nukeCommand.bind("onNuke");
 		
 	    notControllingMessage = utilities.getMessage("notControlling", d.notControllingMessage);
-		crowdReplacedMessage = utilities.getMessage("crowdEnabled", d.crowdReplaceMessage);
-		crowdControlMessage = utilities.getMessage("crowdDisable", d.crowdControlMessage);
+	   
+	    crowdChanceDisableMessage = utilities.getMessage("crowdChangeDisable", d.crowdChanceDisableMessage);
+		crowdChanceReplaceMessage = utilities.getMessage("crowdChanceReplace", d.crowdChanceReplaceMessage);
+		crowdDisableMessage = utilities.getMessage("crowdDisable", d.crowdDisableMessage);
+		crowdReplaceMessage = utilities.getMessage("crowdReplace", d.crowdReplaceMessage);
 		crowdReleasedMessage = utilities.getMessage("crowdDisable", d.crowdReleasedMessage);
 		noWorldMessage = utilities.getMessage("noWorld", d.noWorldMessage);
 		killedEntitiesMessage = utilities.getMessage("killedEntities", d.killedEntitiesMessage);
@@ -188,13 +191,27 @@ public class CrowdControlPlugin extends JavaPlugin
 		rules.add(newRule);
 		world.setRules(rules);
 		persistence.put(world);
-		if (percent == 0 || targetType == null)
+		if (targetType == null)
 		{
-			crowdControlMessage.sendTo(player, mobType.getName());
+			if (percent >= 1)
+			{
+				crowdDisableMessage.sendTo(player, mobType.getName());
+			}
+			else
+			{
+				crowdChanceDisableMessage.sendTo(player, mobType.getName(), (int)(percent * 100));
+			}
 		}
 		else
 		{
-			crowdReplacedMessage.sendTo(player, mobType.getName(), targetType.getName(), (int)(percent * 100));
+			if (percent >= 1)
+			{
+				crowdReplaceMessage.sendTo(player, mobType.getName(), targetType.getName());
+			}
+			else
+			{
+				crowdChanceReplaceMessage.sendTo(player, mobType.getName(), targetType.getName(), (int)(percent * 100));
+			}
 		}
 		
 		return true;
@@ -269,7 +286,7 @@ public class CrowdControlPlugin extends JavaPlugin
 			}
 			else
 			{
-				targetType = CreatureType.fromName(parameters[0]);
+				targetType = getCreatureType(parameters[0]);
 			}
 		}
 		
@@ -329,8 +346,11 @@ public class CrowdControlPlugin extends JavaPlugin
 	protected Message killFailedMessage;
 	protected Message noEntityMessage;
 	protected Message unknownEntityMessage;
-	protected Message crowdReplacedMessage;
-	protected Message crowdControlMessage;
+	
+	protected Message crowdChanceDisableMessage;
+	protected Message crowdChanceReplaceMessage;
+	protected Message crowdDisableMessage;
+	protected Message crowdReplaceMessage;
 	protected Message crowdReleasedMessage;
 	protected Message noWorldMessage;
 	protected Message notControllingMessage;
