@@ -22,18 +22,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
 import com.sample.bukkits.plugins.sample.dao.SamplePlayerData;
 
 public class SamplePlugin extends JavaPlugin
-{
-
-	/* Process player quit and join messages.
-	 * 
-	 * @see org.bukkit.plugin.java.JavaPlugin#onCommand(org.bukkit.command.CommandSender, org.bukkit.command.Command, java.lang.String, java.lang.String[])
-	 */
-	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args)
-	{
-		return utilities.dispatch(this, sender, cmd.getName(), args);
-	}
-	
+{	
 	/**
 	 * Default constructor as required by JavaPlugin.
 	 * 
@@ -51,6 +40,18 @@ public class SamplePlugin extends JavaPlugin
 	public SamplePlugin(PluginLoader pluginLoader, Server instance, PluginDescriptionFile desc, File folder, File plugin, ClassLoader cLoader)
 	{
 		super(pluginLoader, instance, desc, folder, plugin, cLoader);
+	}
+	
+
+
+	/* Process commands via the Persistence dispatch system
+	 * 
+	 * @see org.bukkit.plugin.java.JavaPlugin#onCommand(org.bukkit.command.CommandSender, org.bukkit.command.Command, java.lang.String, java.lang.String[])
+	 */
+	@Override
+	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args)
+	{
+		return utilities.dispatch(this, sender, cmd.getName(), args);
 	}
 
 	/* Called when you plugin is disabled
