@@ -24,6 +24,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.dao.Message;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PermissionType;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PluginCommand;
+import com.nijikokun.bukkit.Permissions.Permissions;
 
 public class GroupsPlugin extends JavaPlugin
 {
@@ -81,6 +82,9 @@ public class GroupsPlugin extends JavaPlugin
 	    	return;
 	    }
 	    
+	    // Permissions backward compatibility
+	    bindToPermissions();
+	    
 	    GroupsDefaults d = new GroupsDefaults();
 	    utilities = persistence.getUtilities(this);
 	    
@@ -118,6 +122,16 @@ public class GroupsPlugin extends JavaPlugin
 		denyGroupCommand.bind("onDenyGroupr");
 		grantPlayerCommand.bind("onGrantPlayer");
 		grantGroupCommand.bind("onGrantGroup");
+	}
+	
+	public void bindToPermissions()
+	{
+		Plugin checkForPermissions = this.getServer().getPluginManager().getPlugin("Permissions");
+	    if (checkForPermissions != null) 
+	    {
+	    	User.setPermissions((Permissions)checkForPermissions);
+	    	log.info("Groups: Found Permissions, using it for permissions.");
+	    }
 	}
 
 

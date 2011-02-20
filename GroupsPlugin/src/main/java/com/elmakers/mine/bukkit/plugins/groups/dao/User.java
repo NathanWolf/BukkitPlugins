@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.bukkit.entity.Player;
+
 import com.elmakers.mine.bukkit.plugins.groups.dao.Group;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.IProfile;
 import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
+import com.nijikokun.bukkit.Permissions.Permissions;
 
 /**
  * Encapsulate a User that can be part of a Group
@@ -16,7 +20,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.dao.PlayerData;
  *
  */
 @PersistClass(name = "user", schema = "groups") 
-public class User
+public class User implements IProfile
 {
 	/**
 	 * The default constructor, used by Persistence to create new instances.
@@ -168,6 +172,16 @@ public class User
 				}
 			}		
 		}
+		
+		// Permissions backwards compatibility
+		if (permissions != null)
+		{
+			Player player = id.getPlayer();
+			if (player == null) return false;
+			
+			return Permissions.Security.has(player, key);
+		}
+		
 		return false;
 	}
 	
@@ -242,4 +256,13 @@ public class User
 	private HashMap<String, Group> groupMap;
 	private HashMap<String, ProfileData> grantMap;
 	private HashMap<String, ProfileData> denyMap;
+	
+	
+	// Permissions backwards-compatibility
+	public static void setPermissions(Permissions permissions)
+	{
+		User.permissions = permissions;
+	}
+	
+	protected static Permissions permissions = null;
 }

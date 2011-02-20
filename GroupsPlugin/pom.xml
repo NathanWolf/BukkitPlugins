@@ -48,6 +48,12 @@
     	<type>jar</type>
     	<scope>import</scope>
     </dependency>
+    <dependency>
+    	<groupId>com.nijikokun.bukkit.Permissions</groupId>
+    	<artifactId>Permissions</artifactId>
+    	<version>0.0.1-SNAPSHOT</version>
+    	<scope>provided</scope>
+    </dependency>
   </dependencies>
   <!-- This builds a completely 'ready to start' jar with all dependencies inside -->
   <build>

@@ -2,6 +2,7 @@ package com.elmakers.mine.bukkit.plugins.groups.dao;
 
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
+import com.elmakers.mine.bukkit.plugins.persistence.dao.IProfile;
 
 /**
  * 
@@ -13,7 +14,7 @@ import com.elmakers.mine.bukkit.plugins.persistence.annotation.PersistField;
  *
  */
 @PersistClass(schema="global", name="profile")
-public class ProfileData 
+public class ProfileData implements IProfile
 {
 	public ProfileData()
 	{
@@ -52,7 +53,6 @@ public class ProfileData
 		return this.profile.get(key);
 	}
 	*/
-
 	
 	public boolean isSet(final String key)
 	{
@@ -65,10 +65,8 @@ public class ProfileData
 		return profile.isSet(key);
 		*/
 		
-		// PERMISSIONS ARE OFF!
 		return true;
 	}
-	
 	
 	@PersistField(id=true)
 	public String getId() 
