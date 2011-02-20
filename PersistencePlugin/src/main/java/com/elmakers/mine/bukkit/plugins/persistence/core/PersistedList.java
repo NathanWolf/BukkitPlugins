@@ -121,7 +121,7 @@ public class PersistedList extends PersistedField implements PersistedReference
 		Object id = null;
 		if (instance != null)
 		{
-			id = owningType.getId(instance);
+			id = owningType.getIdData(instance);
 		}
 		String idName = owningType.getContainedIdName();
 		DataField idData = new DataField(idName, idField.getDataType(), id);

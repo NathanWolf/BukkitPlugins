@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.47
+
+ - Fix a list saving bug with lists of objects- need the concrete id when deleting missing items.
+
 # 0.46
 
  - Rename IUser to IProfile, add an additional function signature to support Permissions

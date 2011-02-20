@@ -530,7 +530,7 @@ public class PersistedClass
 			
 			for (CachedObject instance : instances)
 			{
-				Object id = getId(instance.getObject());
+				Object id = getIdData(instance.getObject());
 				instanceIds.add(id);			
 				list.save(listTable, instance.getObject());
 			}
