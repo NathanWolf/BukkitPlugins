@@ -2,7 +2,7 @@
 
 # 0.42
 
- - First-round of data migration happens here, with Persistence 0.45
+ - Updated to work with latest Persistence refactor
 
 # 0.41
 

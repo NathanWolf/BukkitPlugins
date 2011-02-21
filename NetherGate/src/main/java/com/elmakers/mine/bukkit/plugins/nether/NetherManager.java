@@ -394,7 +394,7 @@ public class NetherManager
 		NetherPlayer tpPlayer = getPlayerData(player);
 		if (tpPlayer == null) return false;
 		
-		if (!persistence.hasPermission(player, "NetherGate.portal.use")) 
+		if (!utilities.getSecurity().hasPermission(player, "NetherGate.portal.use")) 
 		{
 			cancelTeleport(tpPlayer);
 			return false;
@@ -615,10 +615,10 @@ public class NetherManager
 		Block standingBlock = location.getWorld().getBlockAt(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
 		standingBlock = standingBlock.getFace(BlockFace.DOWN);
 		
-		if (persistence.hasPermission(player, "NetherGate.portal.create"))
+		if (utilities.getSecurity().hasPermission(player, "NetherGate.portal.create"))
 		{
-			boolean buildPortal = persistence.hasPermission(player, "NetherGate.portal.create.portal");
-			boolean buildPlatform = persistence.hasPermission(player, "NetherGate.portal.create.platform");
+			boolean buildPortal = utilities.getSecurity().hasPermission(player, "NetherGate.portal.create.portal");
+			boolean buildPlatform = utilities.getSecurity().hasPermission(player, "NetherGate.portal.create.platform");
 			
 			if (buildPortal)
 			{
