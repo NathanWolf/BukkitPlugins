@@ -165,6 +165,6 @@ public class Controller
 	
 	private Server server;
 	private final Random rand = new Random();
-	private static boolean debugLog = true;
+	private static boolean debugLog = false;
 	private static final Logger log = Persistence.getLogger();
 }
