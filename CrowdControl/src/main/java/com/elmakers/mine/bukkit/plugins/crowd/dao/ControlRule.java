@@ -1,7 +1,6 @@
 package com.elmakers.mine.bukkit.plugins.crowd.dao;
 
-import org.bukkit.entity.CreatureType;
-
+import com.elmakers.mine.bukkit.borrowed.CreatureType;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 

@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.CreatureType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
@@ -16,6 +16,7 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.elmakers.mine.bukkit.borrowed.CreatureType;
 import com.elmakers.mine.bukkit.persistence.dao.Message;
 import com.elmakers.mine.bukkit.persistence.dao.PermissionType;
 import com.elmakers.mine.bukkit.persistence.dao.PluginCommand;
@@ -80,14 +81,19 @@ public class CrowdControlPlugin extends JavaPlugin
 	    listener.initialize(persistence, controller);
 	    controller.initialize(getServer());
 	    
-	    crowdCommand = utilities.getPlayerCommand(d.crowdCommand[0], d.crowdCommand[1], d.crowdCommand[2], PermissionType.ADMINS_ONLY);
+	    crowdCommand = utilities.getGeneralCommand(d.crowdCommand[0], d.crowdCommand[1], d.crowdCommand[2], PermissionType.ADMINS_ONLY);
 	    crowdControlCommand = crowdCommand.getSubCommand(d.crowdControlCommand[0], d.crowdControlCommand[1], d.crowdControlCommand[2], PermissionType.ADMINS_ONLY);
 	    crowdReleaseCommand = crowdCommand.getSubCommand(d.crowdReleaseCommand[0], d.crowdReleaseCommand[1], d.crowdReleaseCommand[2], PermissionType.ADMINS_ONLY);
 	    nukeCommand = crowdCommand.getSubCommand(d.nukeCommand[0], d.nukeCommand[1], d.nukeCommand[2], PermissionType.ADMINS_ONLY);
+	    listCommand = crowdCommand.getSubCommand(d.listCommand[0], d.listCommand[1], d.listCommand[2], PermissionType.ADMINS_ONLY);
+		listRulesCommand = listCommand.getSubCommand(d.listRulesCommand[0], d.listRulesCommand[1], d.listRulesCommand[2], PermissionType.ADMINS_ONLY);
+	    listPopulationCommand = listCommand.getSubCommand(d.listPopulationCommand[0], d.listPopulationCommand[1], d.listPopulationCommand[2], PermissionType.ADMINS_ONLY);
 		
 	    crowdControlCommand.bind("onControlCrowd");
 	    crowdReleaseCommand.bind("onReleaseCrowd");
 	    nukeCommand.bind("onNuke");
+	    listRulesCommand.bind("onListRules");
+	    listPopulationCommand.bind("onListPopulation");
 		
 	    notControllingMessage = utilities.getMessage("notControlling", d.notControllingMessage);
 	   
@@ -99,17 +105,57 @@ public class CrowdControlPlugin extends JavaPlugin
 		noWorldMessage = utilities.getMessage("noWorld", d.noWorldMessage);
 		killedEntitiesMessage = utilities.getMessage("killedEntities", d.killedEntitiesMessage);
 		noEntityMessage = utilities.getMessage("noEntities", d.noEntityMessage);
+		unknownEntityMessage = utilities.getMessage("unknownEntity", d.unknownEntityMessage);
 		killFailedMessage = utilities.getMessage("killFailed", d.killFailedMessage);
+		listMobRulesMessage = utilities.getMessage("listMobRules", d.listMobRulesMessage);
+		listWorldRulesMessage = utilities.getMessage("listWorldRules", d.listWorldRulesMessage);
+		listPopulationMessage = utilities.getMessage("listPopulation", d.listPopulationMessage);
+		listMobPopulationMessage = utilities.getMessage("listMobPopulation", d.listMobPopulationMessage);
+		populationMessage = utilities.getMessage("population", d.populationMessage);
+		rulesMessage = utilities.getMessage("rules", d.rulesMessage);
 	}
 	
-	public ControlledWorld getWorldData(World world)
+	/**
+	 * Yeah, this is just going to be whatever shows up in the list first...
+	 * 
+	 * @return the default world, as best as I can tell, or null if there are no registered worlds (shouldn't happen....)
+	 */
+	public ControlledWorld getDefaultWorld()
+	{
+		List<WorldData> allWorlds = new ArrayList<WorldData>();
+		persistence.getAll(allWorlds, WorldData.class);
+		if (allWorlds.size() == 0) return null;
+		WorldData defaultWorldData = allWorlds.get(0);
+		
+		return getWorldData(defaultWorldData);
+	}
+	
+	public ControlledWorld getWorldData(String worldName)
+	{
+		WorldData existingWorld = persistence.get(worldName, WorldData.class);
+		if (existingWorld == null) return null;
+		
+		return getWorldData(existingWorld);
+	}
+	
+	public WorldData getGlobalWorldData(World world)
 	{
 		if (world == null) return null;
 		WorldData worldData = utilities.getWorld(getServer(), world);
 		
+		return worldData;
+	}
+	
+	public ControlledWorld getWorldData(World world)
+	{
+		return getWorldData(getGlobalWorldData(world));
+	}
+	
+	public ControlledWorld getWorldData(WorldData worldData)
+	{
 		if (worldData == null) return null;
 		
-		ControlledWorld controlled = persistence.get(world, ControlledWorld.class);
+		ControlledWorld controlled = persistence.get(worldData, ControlledWorld.class);
 		if (controlled == null)
 		{
 			controlled = new ControlledWorld(worldData);
@@ -129,25 +175,67 @@ public class CrowdControlPlugin extends JavaPlugin
 		return CreatureType.fromName(name);
 	}
 	
-	public boolean onControlCrowd(Player player, String[] parameters)
+	class WorldSearchResults
+	{
+		public ControlledWorld world;
+		public String worldName;
+		
+		public WorldSearchResults(ControlledWorld world, String worldName)
+		{
+			this.world = world;
+			this.worldName = worldName;
+		}
+	}
+	
+	protected WorldSearchResults findWorld(CommandSender sender, String[] parameters, int worldParamIndex)
+	{
+		ControlledWorld world = null;
+		String worldName = "unknown";
+		if (parameters.length > worldParamIndex)
+		{
+			worldName = parameters[worldParamIndex];
+			world = getWorldData(worldName);
+		}
+		else if (sender instanceof Player)
+		{
+			Player player = ((Player)sender);
+			World playerWorld = player.getWorld();
+			world = getWorldData(playerWorld);
+			worldName = playerWorld.getName();
+		}
+		else
+		{
+			world = getDefaultWorld();
+			if (world != null && world.getId() != null)
+			{
+				worldName = world.getId().getName();
+			}
+		}
+		
+		return new WorldSearchResults(world, worldName);
+	}
+	
+	// <type> [percent] [replace] [world]
+	public boolean onControlCrowd(CommandSender sender, String[] parameters)
 	{
 		if (parameters.length < 1)
 		{
 			return false;
 		}
 		
-		CreatureType mobType = getCreatureType(parameters[0]);
-		
+		String mobName = parameters[0];
+		CreatureType mobType = getCreatureType(mobName);
 		if (mobType == null)
 		{
-			unknownEntityMessage.sendTo(player, parameters[0]);
+			unknownEntityMessage.sendTo(sender, mobName);
 			return true;
 		}
 		
-		ControlledWorld world = getWorldData(player.getWorld());
+		WorldSearchResults search = findWorld(sender, parameters, 3);
+		ControlledWorld world = search.world;
 		if (world == null)
 		{
-			noWorldMessage.sendTo(player, player.getWorld().getName());
+			noWorldMessage.sendTo(sender, search.worldName);
 			return true;
 		}
 		
@@ -172,7 +260,10 @@ public class CrowdControlPlugin extends JavaPlugin
 		
 		if (parameters.length > 2)
 		{
-			targetType = getCreatureType(parameters[2]);
+			if (!parameters[2].equalsIgnoreCase("none"))
+			{
+				targetType = getCreatureType(parameters[2]);
+			}
 		}
 		
 		List<ControlRule> rules = world.getRules();
@@ -196,29 +287,30 @@ public class CrowdControlPlugin extends JavaPlugin
 		{
 			if (percent >= 1)
 			{
-				crowdDisableMessage.sendTo(player, mobType.getName());
+				crowdDisableMessage.sendTo(sender, mobType.getName(), search.worldName);
 			}
 			else
 			{
-				crowdChanceDisableMessage.sendTo(player, mobType.getName(), (int)(percent * 100));
+				crowdChanceDisableMessage.sendTo(sender, mobType.getName(), (int)(percent * 100), search.worldName);
 			}
 		}
 		else
 		{
 			if (percent >= 1)
 			{
-				crowdReplaceMessage.sendTo(player, mobType.getName(), targetType.getName());
+				crowdReplaceMessage.sendTo(sender, mobType.getName(), targetType.getName(), search.worldName);
 			}
 			else
 			{
-				crowdChanceReplaceMessage.sendTo(player, mobType.getName(), targetType.getName(), (int)(percent * 100));
+				crowdChanceReplaceMessage.sendTo(sender, mobType.getName(), targetType.getName(), (int)(percent * 100), search.worldName);
 			}
 		}
 		
 		return true;
 	}
 
-	public boolean onReleaseCrowd(Player player, String[] parameters)
+	// <mob> <world>
+	public boolean onReleaseCrowd(CommandSender sender, String[] parameters)
 	{
 		if (parameters.length < 1)
 		{
@@ -229,14 +321,15 @@ public class CrowdControlPlugin extends JavaPlugin
 		
 		if (mobType == null)
 		{
-			unknownEntityMessage.sendTo(player, parameters[0]);
+			unknownEntityMessage.sendTo(sender, parameters[0]);
 			return true;
 		}
 		
-		ControlledWorld world = getWorldData(player.getWorld());
+		WorldSearchResults search = findWorld(sender, parameters, 1);
+		ControlledWorld world = search.world;
 		if (world == null)
 		{
-			noWorldMessage.sendTo(player, player.getWorld().getName());
+			noWorldMessage.sendTo(sender, search.worldName);
 			return true;
 		}
 		
@@ -262,20 +355,130 @@ public class CrowdControlPlugin extends JavaPlugin
 		{
 			world.setRules(newRules);
 			persistence.put(world);
-			crowdReleasedMessage.sendTo(player, mobType.getName());
+			crowdReleasedMessage.sendTo(sender, mobType.getName(), search.worldName);
 		}
 		else
 		{
-			notControllingMessage.sendTo(player, mobType.getName());
+			notControllingMessage.sendTo(sender, mobType.getName(), search.worldName);
 		}
 		
 		return true;
 	}
 	
-	public boolean onNuke(Player player, String[] parameters)
+	protected void listRules(CommandSender sender, ControlledWorld world, CreatureType mobType)
 	{
-		String worldName = null;
-		WorldData targetWorld = null;
+		if (world == null) return;
+		
+		List<ControlRule> rules = world.getRules();
+		if (rules != null)
+		{
+			for (ControlRule rule : rules)
+			{
+				if (rule != null && (mobType == null || rule.getCreatureType() == mobType))
+				{
+					String replaceType = "Nothing";
+					if (rule.getReplaceWith() != null)
+					{
+						replaceType = rule.getReplaceWith().getName();
+					}
+					rulesMessage.sendTo(sender, rule.getCreatureType().getName(), replaceType, (int)(100 * rule.getPercentChance()), world.getId().getName());
+				}
+			}
+		}
+	}
+	
+	// <type> <world>
+	public boolean onListRules(CommandSender sender, String[] parameters)
+	{
+		CreatureType mobType = null;
+		if (parameters.length > 0)
+		{
+			mobType = getCreatureType(parameters[0]);
+		}
+		WorldSearchResults search = findWorld(sender, parameters, 1);
+		ControlledWorld world = search.world;
+		
+		if (world == null)
+		{
+			noWorldMessage.sendTo(sender, search.worldName);
+			return true;
+		}
+		
+		if (mobType == null)
+		{
+			listWorldRulesMessage.sendTo(sender, search.worldName);
+		}
+		else
+		{
+			listMobRulesMessage.sendTo(sender, mobType.getName(), search.worldName);
+		}
+		listRules(sender, world, mobType);
+		
+		return true;
+	}
+	
+	protected void listPopulation(CommandSender sender, ControlledWorld worldData, CreatureType mobType, boolean alwaysPrint)
+	{
+		if (worldData == null || worldData.getId() == null) return;
+		
+		World world = worldData.getId().getWorld(getServer());
+		int entityCount = 0;
+		List<LivingEntity> entities = world.getLivingEntities();
+		for (LivingEntity entity : entities)
+		{
+			if (Controller.isEntityType(mobType, entity))
+			{
+				entityCount++;
+			}
+		}
+		if (entityCount > 0)
+		{
+			populationMessage.sendTo(sender, entityCount, mobType.getName(), world.getName());
+		}
+		else if (alwaysPrint)
+		{
+			noEntityMessage.sendTo(sender, mobType.getName());
+		}
+	}
+	
+	// <type> <world>
+	public boolean onListPopulation(CommandSender sender, String[] parameters)
+	{
+		CreatureType mobType = null;
+		
+		if (parameters.length > 0)
+		{
+			mobType = getCreatureType(parameters[0]);
+		}
+		WorldSearchResults search = findWorld(sender, parameters, 1);
+		ControlledWorld world = search.world;
+		
+		if (world == null)
+		{
+			noWorldMessage.sendTo(sender, search.worldName);
+			return true;
+		}
+		
+		if (mobType == null)
+		{
+			listPopulationMessage.sendTo(sender, search.worldName);
+			for (CreatureType creatureType : CreatureType.values())
+			{
+				listPopulation(sender, world, creatureType, false);
+			}
+		}
+		else
+		{
+			listMobPopulationMessage.sendTo(sender, mobType.getName(), search.worldName);
+			listPopulation(sender, world, mobType, true);
+		}
+		
+		return true;
+	}
+	
+	// <type> <world>
+	public boolean onNuke(CommandSender sender, String[] parameters)
+	{
 		CreatureType targetType = CreatureType.GHAST;
 		boolean nukeAll = false;
 		
@@ -291,45 +494,23 @@ public class CrowdControlPlugin extends JavaPlugin
 			}
 		}
 		
-		if (parameters.length > 1)
-		{
-			worldName = parameters[0];
-			targetWorld = persistence.get(worldName, WorldData.class);
-		}
-		else
-		{
-			targetWorld = utilities.getWorld(getServer(), player.getWorld());
-		}
-		
+		WorldSearchResults search = findWorld(sender, parameters, 1);
+		ControlledWorld targetWorld = search.world;
 		if (targetWorld == null)
 		{
-			if (worldName != null)
-			{
-				noWorldMessage.sendTo(player, worldName);	
-			}
-			else
-			{
-				killFailedMessage.sendTo(player, targetType.getName());
-				return true;
-			}
-		}
-		
-		World world = targetWorld.getWorld(getServer());
-		if (world == null)
-		{
-			killFailedMessage.sendTo(player, targetType.getName());
+			noWorldMessage.sendTo(sender, search.worldName);
 			return true;
 		}
-		
-		int killCount = controller.nuke(world, targetType, nukeAll);
+	
+		int killCount = controller.nuke(targetWorld, targetType, nukeAll);
 		
 		if (killCount > 0)
 		{
-			killedEntitiesMessage.sendTo(player, killCount, targetType.getName());
+			killedEntitiesMessage.sendTo(sender, killCount, targetType.getName(), search.worldName);
 		}
 		else
 		{
-			noEntityMessage.sendTo(player, targetType.getName());
+			noEntityMessage.sendTo(sender, targetType.getName(), search.worldName);
 		}
 		
 		return true;
@@ -342,12 +523,14 @@ public class CrowdControlPlugin extends JavaPlugin
 	protected PluginCommand crowdControlCommand;
 	protected PluginCommand crowdReleaseCommand;
 	protected PluginCommand nukeCommand;
+	protected PluginCommand listRulesCommand;
+	protected PluginCommand listCommand;
+	protected PluginCommand listPopulationCommand;
 
 	protected Message killedEntitiesMessage;
 	protected Message killFailedMessage;
 	protected Message noEntityMessage;
 	protected Message unknownEntityMessage;
-	
 	protected Message crowdChanceDisableMessage;
 	protected Message crowdChanceReplaceMessage;
 	protected Message crowdDisableMessage;
@@ -355,6 +538,12 @@ public class CrowdControlPlugin extends JavaPlugin
 	protected Message crowdReleasedMessage;
 	protected Message noWorldMessage;
 	protected Message notControllingMessage;
+	protected Message listMobRulesMessage;
+	protected Message listWorldRulesMessage;
+	protected Message listPopulationMessage;
+	protected Message listMobPopulationMessage;
+	protected Message populationMessage;
+	protected Message rulesMessage;
 	
 	protected Persistence persistence = null;
 	protected PluginUtilities utilities = null;

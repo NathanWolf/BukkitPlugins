@@ -1,8 +1,14 @@
 # CHANGELOG
 
+# 0.16
+
+ - Add "list" command, allow world parameters to all commands
+ - Make all commands general commands, so you can admin from the server console!
+ - Some bugfixes
+
 # 0.15
 
- - Giant zombies, CB integration
+ - Giant zombies, integrate with core Bukkit spawning functions
 
 # 0.14
 
