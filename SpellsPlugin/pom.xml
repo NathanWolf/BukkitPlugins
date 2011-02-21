@@ -11,7 +11,7 @@
 		</dependencies>
 	</dependencyManagement>
 	<properties>
-		<build.version>0.94</build.version>
+		<build.version>0.95</build.version>
 	</properties>
 	<repositories>
 		<repository>
@@ -57,6 +57,7 @@
 			<groupId>com.elmakers.mine.bukkit.plugins.gameplay</groupId>
 			<artifactId>Gameplay</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
+			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>

@@ -19,7 +19,6 @@ import org.bukkit.World;
 
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 import com.elmakers.mine.bukkit.utilities.PluginUtilities;
-import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 /**
  * 
@@ -753,9 +752,8 @@ public abstract class Spell implements Comparable<Spell>
 	 * 
 	 * @param instance The spells instance
 	 */
-	public void initialize(Spells instance, Persistence persistence, PluginUtilities utilities)
+	public void initialize(Spells instance, PluginUtilities utilities)
 	{
-		this.persistence = persistence;
 		this.utilities = utilities;
 		this.spells = instance;
 	}
@@ -853,7 +851,7 @@ public abstract class Spell implements Comparable<Spell>
 	
 	public boolean hasSpellPermission(Player player)
 	{
-		return persistence.hasPermission(player, getPermissionNode());
+		return utilities.getSecurity().hasPermission(player, getPermissionNode());
 	}
 	
 	public boolean otherSpellHasPermission(String spellName)
@@ -939,6 +937,5 @@ public abstract class Spell implements Comparable<Spell>
 	private boolean								reverseTargeting		= false;
 	private final List<SpellVariant>			variants				= new ArrayList<SpellVariant>();
 
-	protected Persistence						persistence				= null;
 	protected PluginUtilities					utilities				= null;
 }

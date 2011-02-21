@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.95
+
+ - Refactor to work with Persistence 0.49
+
 ## 0.94
 
  - Torch now casts "night" when pointing down. Don't know why I didn't do that earlier... (yes I do)

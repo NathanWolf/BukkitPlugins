@@ -103,7 +103,7 @@ public class Spells
 		}
 		
 		spells.add(spell);
-		spell.initialize(this, persistence, utilities);
+		spell.initialize(this, utilities);
 	}
 	
 	/*

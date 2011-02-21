@@ -102,6 +102,6 @@ public class SpellVariant implements Comparable<SpellVariant>
 	{
 		if (spell == null) return false;
 		
-		return spell.persistence.hasPermission(player, getPermissionNode());
+		return spell.utilities.getSecurity().hasPermission(player, getPermissionNode());
 	}
 }
