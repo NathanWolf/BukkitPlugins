@@ -21,6 +21,7 @@ import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.persistence.dao.PluginData;
 import com.elmakers.mine.bukkit.persistence.dao.WorldData;
+import com.elmakers.mine.craftbukkit.permissions.Security;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 /** 
@@ -414,7 +415,28 @@ public class PluginUtilities
 		
 		return false;
 	}
+	
+	// TODO : These should go in Server!
+	public Persistence getPersistence()
+	{
+		if (persistence == null)
+		{
+			persistence = Persistence.getInstance();
+		}
+		return persistence;
+	}
+	
+	// TODO : These should go in Server!
+	public Security getSecurity()
+	{
+		if (security == null)
+		{
+			security = new Security();
+		}
+		return security;
+	}
 
+	private Security security;
 	private Persistence persistence;
 	private Plugin owner;
 	private PluginData plugin;

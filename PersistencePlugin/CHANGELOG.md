@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.49
+
+ - Allow access to Persistence and Security (where hasPermission now lives) via PluginUtilities
+
 # 0.48
 
  - Bit o' refactoring for a little splitup that may just happen :)
