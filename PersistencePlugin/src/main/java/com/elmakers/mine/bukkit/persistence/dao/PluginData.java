@@ -19,7 +19,7 @@ import com.elmakers.mine.craftbukkit.persistence.Persistence;
  *
  */
 @PersistClass(schema="global", name="plugin")
-public class PluginData
+public class PluginData extends Persisted
 {
 
 	public PluginData()

@@ -12,7 +12,7 @@ import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 
 @PersistClass(schema="global", name="world")
-public class WorldData
+public class WorldData extends Persisted
 {
 	public WorldData()
 	{
@@ -27,6 +27,8 @@ public class WorldData
 	
 	public void update(World world)
 	{
+		this.world = world;
+		
 		name = world.getName();
 		id = world.getId();
 		Location location = world.getSpawnLocation();
@@ -34,9 +36,13 @@ public class WorldData
 		setEnvironmentType(world.getEnvironment());
 	}
 	
-	public World getWorld(Server server)
+	public World getWorld()
 	{
 		if (world != null) return world;
+		if (persistedClass == null) return null;
+		
+		Server server = persistedClass.getServer();
+		if (server == null) return null;
 		
 		List<World> worlds = server.getWorlds();
 		for (World checkWorld : worlds)

@@ -3,8 +3,10 @@ package com.elmakers.mine.craftbukkit.persistence.data;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.elmakers.mine.bukkit.persistence.MigrationInfo;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
+import com.elmakers.mine.craftbukkit.persistence.core.PersistedClass;
 
 /**
  * An abstract class representing a data store.
@@ -36,22 +38,68 @@ public abstract class DataStore
 	 * @see #validateTable(DataTable)
 	 * 
 	 */
-	public abstract boolean createTable(DataTable table);
+	public abstract boolean create(DataTable table);
 	
 	/**
-	 * Will create a table if it does not exist.
+	 * Will create a table if it does not exist, and migrate data as
+	 * necessary if it does exist.
 	 * 
-	 * Does not do data migration- that is handled by PersistedClass directly.
-	 * 
-	 * @param table The table definition
+	 * @param table The table definition. If this differs from the stored definition, data migration will occur.
 	 * @return true if success
 	 * @see #tableExists(DataTable)
 	 */
-	public boolean validateTable(DataTable table)
+	public boolean migrateEntity(DataTable table, PersistedClass entity)
 	{
-		if (tableExists(table)) return true;
+		if (!tableExists(table.getName())) 
+		{
+			create(table);
+			return true;
+		}
 		
-		return createTable(table);
+		// Migrate data
+		DataTable currentTable = getTableHeader(table.getName());
+		DataRow tableHeader = table.getHeader();
+		DataRow currentHeader = currentTable.getHeader();
+		if (tableHeader.isMigrationRequired(currentHeader))
+		{
+			MigrationInfo migrateInfo = entity.getMigrationInfo();
+			
+			// TODO: Support types other than auto reset
+			if (migrateInfo == null)
+			{
+				log.info("Persistence: Auto-migrating entity " + entity.getSchema() + "." + entity.getName());
+				
+				/* TODO!
+				String autoBackupTable = table.getName() + "_autoBackup";
+				if (tableExists(autoBackupTable))
+				{
+					drop(autoBackupTable);
+				}
+				currentTable.setName(autoBackupTable);
+				create(currentTable);
+				*/
+				drop(currentTable.getName());
+				create(table);
+			}
+			else
+			{
+				// Custom migration not supported- just dump error.
+				logMigrateError(entity.getSchema(), entity.getName());
+			}
+		}
+		
+		return true;
+	}
+	
+	protected void logMigrateError(String schema, String table)
+	{
+		log.warning("Persistence: Can't migrate entity " + schema + "." + table);
+		log.warning("             If you continue to have issues, please delete the table " +table + " in the " + schema + " database");		
+	}
+	
+	public void copyTable(String sourceTable, String destinationTable)
+	{
+		
 	}
 	
 	/**
@@ -81,10 +129,10 @@ public abstract class DataStore
 	/**
 	 * Completely drop a table, allowing it to be re-created.
 	 * 
-	 * @param table The table to drop.
+	 * @param tableName the naem of the table to drop
 	 * @return true on success
 	 */
-	public abstract boolean reset(DataTable table);
+	public abstract boolean drop(String tableName);
 	
 	/**
 	 * Load a table into memory.
@@ -109,10 +157,10 @@ public abstract class DataStore
 	/**
 	 * Check to see if the specified table exists.
 	 * 
-	 * @param table The table to check
+	 * @param tableName The name of the table to check
 	 * @return true if the table exists
 	 */
-	public abstract boolean tableExists(DataTable table);
+	public abstract boolean tableExists(String tableName);
 	
 	/**
 	 * Check to see if this is a read-only data store
@@ -123,6 +171,15 @@ public abstract class DataStore
 	{
 		return false;
 	}
+
+	/**
+	 * Return the table header (column definitions) without
+	 * querying the table for data.
+	 * 
+	 * @param tableName The table to get the header of
+	 * @return a DataTable containing one DataRow, representing this table's columns
+	 */
+	public abstract DataTable getTableHeader(String tableName);
 	
 	/**
 	 * Initialize this data store.

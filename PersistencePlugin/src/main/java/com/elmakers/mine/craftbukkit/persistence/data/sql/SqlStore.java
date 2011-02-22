@@ -28,7 +28,6 @@ public abstract class SqlStore extends DataStore
 	public abstract String getMasterTableName();
 	public abstract String getConnectionString(String schema, String user, String password);
 	public abstract String getTypeName(DataType dataType);
-	public abstract DataTable getTableSchema(String tableName);
 	
 	/**
 	 * Called on connect- override to perform special actions on connect.
@@ -157,9 +156,9 @@ public abstract class SqlStore extends DataStore
 		connection = null;
 	}
 
-	public boolean tableExists(DataTable table)
+	public boolean tableExists(String tableName)
 	{
-		String checkQuery = "SELECT name FROM \"" + getMasterTableName() + "\" WHERE type='table' AND name='" + table.getName() + "'";
+		String checkQuery = "SELECT name FROM \"" + getMasterTableName() + "\" WHERE type='table' AND name='" + tableName + "'";
 		boolean tableExists = false;
 		try
 		{
@@ -179,7 +178,7 @@ public abstract class SqlStore extends DataStore
 	}
 	
 	@Override
-	public boolean createTable(DataTable table)
+	public boolean create(DataTable table)
 	{
 		String tableName = table.getName();
 		String createStatement = "CREATE TABLE \"" + tableName + "\" (";
@@ -231,11 +230,10 @@ public abstract class SqlStore extends DataStore
 	}
 
 	@Override
-	public boolean reset(DataTable table)
+	public boolean drop(String tableName)
 	{
-		if (tableExists(table))
+		if (tableExists(tableName))
 		{
-			String tableName = table.getName();
 			String dropQuery = "DROP TABLE \"" + tableName + "\"";
 			try
 			{

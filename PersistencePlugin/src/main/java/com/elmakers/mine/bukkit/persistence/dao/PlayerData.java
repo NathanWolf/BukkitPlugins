@@ -5,7 +5,6 @@ import java.util.Date;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import com.elmakers.mine.bukkit.persistence.annotation.Migrate;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 
@@ -22,9 +21,9 @@ import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
  * @author NathanWolf
  *
  */
-@Migrate(autoReset = true)
+
 @PersistClass(name = "player", schema = "global") 
-public class PlayerData
+public class PlayerData extends Persisted
 {
 	/**
 	 * The default constructor, used by Persistence to create new instances.

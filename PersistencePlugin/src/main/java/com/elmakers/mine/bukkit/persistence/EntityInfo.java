@@ -1,4 +1,6 @@
-package com.elmakers.mine.bukkit.persistence.annotation;
+package com.elmakers.mine.bukkit.persistence;
+
+import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 
 
 public class EntityInfo

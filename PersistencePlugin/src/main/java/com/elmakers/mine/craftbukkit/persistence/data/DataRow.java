@@ -85,6 +85,25 @@ public class DataRow
 		return fieldMap.get(fieldName);
 	}
 	
+	public boolean isMigrationRequired(DataRow storeTableHeader)
+	{
+		for (DataField field : fields)
+		{
+			DataField storeField = storeTableHeader.getField(field.getName());
+			
+			// TODO: Type compatibilty check:
+			//  || storeField.getType() != field.getType())
+			// not sufficient ^ Will always auto-migrate.
+			
+			if (storeField == null)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	protected DataTable table;
 	protected static Logger log = Persistence.getLogger();
 	protected HashMap<String, DataField> fieldMap = new HashMap<String, DataField>();

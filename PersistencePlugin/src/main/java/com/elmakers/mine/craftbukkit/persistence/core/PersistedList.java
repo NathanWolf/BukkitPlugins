@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import com.elmakers.mine.bukkit.persistence.annotation.FieldInfo;
+import com.elmakers.mine.bukkit.persistence.FieldInfo;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
 import com.elmakers.mine.craftbukkit.persistence.data.DataField;
 import com.elmakers.mine.craftbukkit.persistence.data.DataRow;
@@ -34,7 +34,14 @@ public class PersistedList extends PersistedField implements PersistedReference
 		super(copy);
 		
 		owningType = copy.owningType;
-		referenceType = copy.referenceType;
+		if (isContained())
+		{
+			referenceType = new PersistedClass(copy.referenceType, this);
+		}
+		else
+		{
+			referenceType = copy.referenceType;
+		}
 		findListType();
 	}
 	

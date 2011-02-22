@@ -11,8 +11,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BlockVector;
 
-import com.elmakers.mine.bukkit.persistence.annotation.EntityInfo;
-import com.elmakers.mine.bukkit.persistence.annotation.FieldInfo;
+import com.elmakers.mine.bukkit.persistence.EntityInfo;
+import com.elmakers.mine.bukkit.persistence.FieldInfo;
+import com.elmakers.mine.bukkit.persistence.MigrationInfo;
+import com.elmakers.mine.bukkit.persistence.annotation.Migrate;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.persistence.dao.CommandSenderData;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
@@ -42,6 +44,7 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	 */
 	protected Persistence()
 	{
+		this.server = PersistencePlugin.getInstance().getServer();
 	}
 	
 	/**
@@ -348,14 +351,21 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 		if (persistedClass == null)
 		{
 			PersistClass entityAnnotation = persistClass.getAnnotation(PersistClass.class);
+			Migrate migrationAnnotation = persistClass.getAnnotation(Migrate.class);
 			
 			if (entityAnnotation == null)
 			{
 				log.warning("Persistence: class " + persistClass.getName() + " does not have the @PersistClass annotation.");
 				return null;
 			}
-		
+
 			persistedClass = getPersistedClass(persistClass, new EntityInfo(entityAnnotation));
+			
+			if (migrationAnnotation != null)
+			{
+				persistedClass.setMigrationInfo(new MigrationInfo(persistedClass, migrationAnnotation));
+			}
+		
 		}
 
 		return persistedClass;
@@ -375,7 +385,7 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 		PersistedClass persistedClass = persistedClassMap.get(persistType);
 		if (persistedClass == null)
 		{
-			persistedClass = new PersistedClass(entityInfo);
+			persistedClass = new PersistedClass(entityInfo, server);
 			if (!persistedClass.bind(persistType))
 			{
 				return null;
@@ -519,4 +529,5 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	private static final Object cacheWriteLock = new Object();
 	
 	private static Persistence instance = null;
+	private Server server;
 }

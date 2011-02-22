@@ -6,7 +6,7 @@ import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 
 @PersistClass(schema="global", name="orientation", contained=true)
-public class Orientation
+public class Orientation extends Persisted
 {
 	public Orientation()
 	{
@@ -18,6 +18,13 @@ public class Orientation
 		yaw = location.getYaw();
 		pitch = location.getPitch();
 	}
+	
+	public Orientation(float yaw, float pitch)
+	{
+		this.yaw = yaw;
+		this.pitch = pitch;
+	}
+	
 	
 	@PersistField
 	public float getPitch()

@@ -8,7 +8,7 @@ import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 import com.elmakers.mine.craftbukkit.persistence.core.PersistedClass;
 
 @PersistClass(schema="global", name="migration")
-public class MigrationStep
+public class MigrationStep extends Persisted
 {
 	public MigrationStep()
 	{

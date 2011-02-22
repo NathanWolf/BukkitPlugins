@@ -2,9 +2,9 @@ package com.elmakers.mine.bukkit.persistence.dao;
 
 import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
+import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 import org.bukkit.Location;
-import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.util.BlockVector;
 
@@ -16,7 +16,7 @@ import org.bukkit.util.BlockVector;
  * @author amkeyte
  */
 @PersistClass(schema = "global", name = "location", contained = true)
-public class LocationData
+public class LocationData extends Persisted
 {
 	/**
 	 * Default constructor for uninitialized LocationData Use setters for
@@ -35,9 +35,9 @@ public class LocationData
 	 */
 	public LocationData(Location loc)
 	{
-		blockVector = initBlockVector(loc);
-		worldData = initWorldData(loc);
-		orientation = initOrientation(loc);
+		position = new BlockVector(loc.getX(), loc.getY(), loc.getZ());
+		worldData = Persistence.getInstance().get(loc.getWorld().getName(), WorldData.class);
+		orientation = new Orientation(loc);
 	}
 
 	/**
@@ -50,10 +50,9 @@ public class LocationData
 	 */
 	public LocationData(final World world, final double x, final double y, final double z)
 	{
-		Location loc = new Location(world, x, y, z);
-		blockVector = initBlockVector(loc);
-		worldData = initWorldData(loc);
-		orientation = initOrientation(loc);
+		position = new BlockVector(x, y, z);
+		worldData = Persistence.getInstance().get(world.getName(), WorldData.class);
+		orientation = null;
 	}
 
 	/**
@@ -66,63 +65,42 @@ public class LocationData
 	 * @param yaw
 	 * @param pitch
 	 */
-	public LocationData(final World world, final double x, final double y, final double z, final float yaw,
-			final float pitch)
+	public LocationData(final World world, final double x, final double y, final double z, final float yaw, final float pitch)
 	{
-		Location loc = new Location(world, x, y, z, yaw, pitch);
-		blockVector = initBlockVector(loc);
-		worldData = initWorldData(loc);
-		orientation = initOrientation(loc);
+		position = new BlockVector(x, y, z);
+		worldData = Persistence.getInstance().get(world.getName(), WorldData.class);
+		orientation = new Orientation(yaw, pitch);
 	}
 
 	/**
-	 * initialize the orientation instance. for use in constructor
+	 * Return the position component of this location
 	 * 
-	 * @return Orientation
-	 */
-	private Orientation initOrientation(Location loc)
-	{
-		setOrientation(new Orientation(loc));
-		return orientation;
-	}
-
-	/**
-	 * initialize the block vector instance. for use in constructor
-	 * 
-	 * @return BlockVector
-	 */
-	private BlockVector initBlockVector(Location loc)
-	{
-		setBlockVector(new BlockVector(loc.getX(), loc.getY(), loc.getZ()));
-		return blockVector;
-	}
-
-	/*
-	 * initialize the worldData instance.for use in constructor
-	 * 
-	 * @return WorldData
-	 */
-	private WorldData initWorldData(Location loc)
-	{
-		World world = loc.getWorld();
-		setWorldData(new WorldData(world.getName(), world.getEnvironment()));
-		return worldData;
-	}
-
-	/**
-	 * lazy load a created instance
+	 * This is contained because it is assumed that a Location generally
+	 * moves around a lot.
 	 * 
 	 * @return the blockVector
 	 */
 	@PersistField(contained = true)
-	public BlockVector getBlockVector()
+	public BlockVector getPosition()
 	{
-
-		return blockVector;
+		return position;
 	}
 
 	/**
-	 * read only
+	 * Set the position component of this location
+	 * 
+	 * @param blockVector the blockVector to set
+	 */
+	public void setPosition(BlockVector position)
+	{
+		this.position = position;
+	}
+
+	/**
+	 * Return the orientation component of this location.
+	 * 
+	 * This is contained because it is assumed that a Location generally
+	 * changes a lot
 	 * 
 	 * @return the orientation
 	 */
@@ -133,40 +111,31 @@ public class LocationData
 	}
 
 	/**
-	 * get the worldData instance
+	 * Set the orientation component of this location.
 	 * 
-	 * readonly
+	 * @param orientation the orientation to set
+	 */
+	public void setOrientation(Orientation orientation)
+	{
+		this.orientation = orientation;
+	}
+	
+	/**
+	 * Get the world component of this location
 	 * 
-	 * @return the worldData
+	 * @return the worldData component of this location
 	 * 
 	 */
-	@PersistField(contained = true)
+	@PersistField
 	public WorldData getWorldData()
 	{
 		return worldData;
 	}
 
 	/**
-	 * @param blockVector
-	 *            the blockVector to set
-	 */
-	public void setBlockVector(BlockVector blockVector)
-	{
-		this.blockVector = blockVector;
-	}
-
-	/**
-	 * @param orientation
-	 *            the orientation to set
-	 */
-	public void setOrientation(Orientation orientation)
-	{
-		this.orientation = orientation;
-	}
-
-	/**
-	 * @param worldData
-	 *            the worldData to set
+	 * Set the world this location belongs to
+	 * 
+	 * @param worldData the worldData to set
 	 */
 	public void setWorldData(WorldData worldData)
 	{
@@ -174,163 +143,146 @@ public class LocationData
 	}
 
 	/**
-	 * creates a NEW Location object from the information that has been
-	 * persisted. parameters edited in this object will NOT be persisted.
+	 * Creates a new Location object from the information that has been
+	 * persisted. 
 	 * 
-	 * @return the location
+	 * @return A new location representing this data.
 	 */
-	public Location toLocation(Server server)
+	public Location getLocation()
 	{
-		if (worldData == null || blockVector == null || orientation == null)
+		if (worldData == null || position == null)
 		{
-			// attempt to build Location on uninitialized LocationData.
+			// Must have a world and position to make a location;
+			return null;
+		}
+		
+		if (orientation == null)
+		{
+			return new Location(worldData.getWorld(), position.getX(), position.getY(), position.getZ());
+		}
+
+		return new Location(worldData.getWorld(), position.getX(), position.getY(), position.getZ(), orientation.getYaw(), orientation.getPitch());
+	}
+
+	/**
+	 * @return the x component of the position
+	 */
+	public Double getX()
+	{
+		if (position == null)
+		{
+			return null;
+		}
+		return position.getX();
+	}
+
+	/**
+	 * @param x the x value to set in position
+	 */
+	public void setX(Double x)
+	{
+		if (position == null)
+		{
+			position = new BlockVector(x, 0, 0);
+		}
+		else
+		{
+			position.setX(x);
+		}
+	}
+
+	/**
+	 * @return the y component of the position
+	 */
+	public Double getY()
+	{
+		if (position == null)
+		{
 			return null;
 		}
 
-		return new Location(worldData.getWorld(server), blockVector.getX(), blockVector.getY(), blockVector.getZ(),
-				orientation.getYaw(), orientation.getPitch());
+		return position.getY();
 	}
 
 	/**
-	 * returns the provided Location object imprinted with information that has
-	 * been persisted. parameters edited in this object will NOT be persisted.
-	 * 
-	 * @return the location
+	 * @param y the y value to set in position
 	 */
-	public Location toLocation(Location location)
+	public void setY(Double y)
 	{
-		if (worldData == null || blockVector == null || orientation == null
-				|| !location.getWorld().getName().equals(worldData.getName()))
+		if (position == null)
 		{
-			// attempt to use Location on uninitialized LocationData.
-			// or location is from wrong world
+			position = new BlockVector(0, y, 0);
+		}
+		else
+		{
+			position.setY(y);
+		}
+	}
+
+	/**
+	 * @return the z component of the position
+	 */
+	public Double getZ()
+	{
+		if (position == null)
+		{
 			return null;
 		}
-		location.setX(blockVector.getX());
-		location.setY(blockVector.getY());
-		location.setZ(blockVector.getZ());
-		location.setPitch(orientation.getYaw());
-		location.setYaw(orientation.getPitch());
 
-		return location;
+		return position.getZ();
 	}
 
-	/************ Convenience wrappers ************/
 	/**
-	 * @return the x
+	 * @param z the z value to set in position
 	 */
-	public Double getX() throws Exception
+	public void setZ(Double z)
 	{
-		if (blockVector == null)
+		if (position == null)
 		{
-			throw new Exception("blockVector not set");
+			position = new BlockVector(0, 0, z);
 		}
-		return blockVector.getX();
+		else
+		{
+			position.setZ(z);
+		}
 	}
 
 	/**
-	 * @param x
-	 *            the x to set
+	 * @return the pitch component of orientation
 	 */
-	public void setX(Double x) throws Exception
-	{
-		if (blockVector == null)
-		{
-			throw new Exception("blockVector not set");
-		}
-
-		blockVector.setX(x);
-	}
-
-	/**
-	 * @return the y
-	 */
-	public Double getY() throws Exception
-	{
-		if (blockVector == null)
-		{
-			throw new Exception("blockVector not set");
-		}
-
-		return blockVector.getY();
-	}
-
-	/**
-	 * @param y
-	 *            the y to set
-	 */
-	public void setY(Double y) throws Exception
-	{
-		if (blockVector == null)
-		{
-			throw new Exception("blockVector not set");
-		}
-
-		blockVector.setY(y);
-	}
-
-	/**
-	 * @return the z
-	 */
-	public Double getZ() throws Exception
-	{
-		if (blockVector == null)
-		{
-			throw new Exception("blockVector not set");
-		}
-
-		return blockVector.getZ();
-	}
-
-	/**
-	 * @param z
-	 *            the z to set
-	 */
-	public void setZ(Double z) throws Exception
-	{
-		if (blockVector == null)
-		{
-			throw new Exception("blockVector not set");
-		}
-
-		blockVector.setZ(z);
-	}
-
-	/**
-	 * @return the pitch
-	 */
-	public Float getPitch() throws Exception
+	public Float getPitch()
 	{
 		if (orientation == null)
 		{
-			throw new Exception("orientation not set");
+			return null;
 		}
 
 		return orientation.getPitch();
 	}
 
 	/**
-	 * @param pitch
-	 *            the pitch to set
+	 * @param pitch the pitch to set
 	 */
-	public void setPitch(Float pitch) throws Exception
+	public void setPitch(Float pitch)
 	{
 		if (orientation == null)
 		{
-			throw new Exception("orientation not set");
+			orientation = new Orientation(0, pitch);
 		}
-
-		orientation.setPitch(pitch);
+		else
+		{
+			orientation.setPitch(pitch);
+		}
 	}
 
 	/**
 	 * @return the yaw
 	 */
-	public Float getYaw() throws Exception
+	public Float getYaw()
 	{
 		if (orientation == null)
 		{
-			throw new Exception("orientation not set");
+			return null;
 		}
 		return orientation.getYaw();
 	}
@@ -339,14 +291,16 @@ public class LocationData
 	 * @param yaw
 	 *            the yaw to set
 	 */
-	public void setYaw(Float yaw) throws Exception
+	public void setYaw(Float yaw)
 	{
 		if (orientation == null)
 		{
-			throw new Exception("orientation not set");
+			orientation = new Orientation(yaw, 0);
 		}
-
-		orientation.setYaw(yaw);
+		else
+		{
+			orientation.setYaw(yaw);
+		}
 	}
 
 	/**
@@ -355,14 +309,14 @@ public class LocationData
 	 * @param server
 	 * @return
 	 */
-	public World getWorld(Server server) throws Exception
+	public World getWorld()
 	{
 		if (worldData == null)
 		{
-			throw new Exception("worldData not set");
+			return null;
 		}
 
-		return worldData.getWorld(server);
+		return worldData.getWorld();
 	}
 
 	/**
@@ -370,14 +324,9 @@ public class LocationData
 	 * 
 	 * @param world
 	 */
-	public void setWorld(World world) throws Exception
+	public void setWorld(World world)
 	{
-		if (worldData == null)
-		{
-			throw new Exception("worldData not set");
-		}
-
-		worldData.setName(world.getName());
+		worldData = Persistence.getInstance().get(world.getName(), WorldData.class);
 	}
 
 	/**
@@ -385,14 +334,14 @@ public class LocationData
 	 * 
 	 * @return Integer
 	 */
-	public Integer getBlockX() throws Exception
+	public Integer getBlockX()
 	{
-		if (blockVector == null)
+		if (position == null)
 		{
-			throw new Exception("blockVector not set");
+			return null;
 		}
 
-		return blockVector.getBlockX();
+		return position.getBlockX();
 	}
 
 	/**
@@ -400,14 +349,14 @@ public class LocationData
 	 * 
 	 * @return Integer
 	 */
-	public Integer getBlockY() throws Exception
+	public Integer getBlockY() 
 	{
-		if (blockVector == null)
+		if (position == null)
 		{
-			throw new Exception("blockVector not set");
+			return null;
 		}
 
-		return blockVector.getBlockY();
+		return position.getBlockY();
 	}
 
 	/**
@@ -415,18 +364,17 @@ public class LocationData
 	 * 
 	 * @return Integer
 	 */
-	public Integer getBlockZ() throws Exception
+	public Integer getBlockZ()
 	{
-		if (blockVector == null)
+		if (position == null)
 		{
-			throw new Exception("blockVector not set");
+			return null;
 		}
 
-		return blockVector.getBlockZ();
+		return position.getBlockZ();
 	}
 	
-
-	private BlockVector	blockVector	= null;
+	private BlockVector	position	= null;
 	private Orientation	orientation	= null;
 	private WorldData	worldData	= null;
 }

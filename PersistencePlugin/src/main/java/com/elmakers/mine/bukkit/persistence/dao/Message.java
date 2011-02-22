@@ -18,7 +18,7 @@ import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
  */
 
 @PersistClass(schema="global", name="message")
-public class Message
+public class Message extends Persisted
 {	
 	
 	/**

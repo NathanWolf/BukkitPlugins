@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ArrayList;
 
-import com.elmakers.mine.bukkit.persistence.annotation.FieldInfo;
+import com.elmakers.mine.bukkit.persistence.FieldInfo;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
 import com.elmakers.mine.craftbukkit.persistence.data.DataField;
 import com.elmakers.mine.craftbukkit.persistence.data.DataRow;
@@ -18,7 +18,14 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 	{
 		super(copy);
 		
-		referenceType = copy.referenceType;
+		if (isContained())
+		{
+			referenceType = new PersistedClass(copy.referenceType, this);
+		}
+		else
+		{
+			referenceType = copy.referenceType;
+		}
 	}
 
 	public PersistedObject clone()

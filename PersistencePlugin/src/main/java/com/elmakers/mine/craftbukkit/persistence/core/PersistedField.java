@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Logger;
 
-import com.elmakers.mine.bukkit.persistence.annotation.FieldInfo;
+import com.elmakers.mine.bukkit.persistence.FieldInfo;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.craftbukkit.persistence.data.DataField;
 import com.elmakers.mine.craftbukkit.persistence.data.DataRow;
@@ -272,6 +272,7 @@ public class PersistedField
 		
 		if (fieldName.length() == 0)
 		{
+			log.warning("Persistence: Field " + persistClass.getName() + "." + getterOrSetter.getName() + " has an invalid name");
 			return null;
 		}
 		
@@ -304,11 +305,13 @@ public class PersistedField
 		
 		if (getter == null)
 		{
+			log.warning("Persistence: Field " + persistClass.getName() + "." + getterOrSetter.getName() + " has no getter");
 			return null;
 		}
 		
 		if (setter == null && !fieldInfo.isReadOnly())
 		{
+			log.warning("Persistence: Field " + persistClass.getName() + "." + getterOrSetter.getName() + " has no setter and is not read only");
 			return null;
 		}
 		

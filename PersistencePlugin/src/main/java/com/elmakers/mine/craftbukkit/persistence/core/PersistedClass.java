@@ -7,9 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
-import com.elmakers.mine.bukkit.persistence.annotation.EntityInfo;
-import com.elmakers.mine.bukkit.persistence.annotation.FieldInfo;
+import org.bukkit.Server;
+
+import com.elmakers.mine.bukkit.persistence.EntityInfo;
+import com.elmakers.mine.bukkit.persistence.FieldInfo;
+import com.elmakers.mine.bukkit.persistence.MigrationInfo;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
+import com.elmakers.mine.bukkit.persistence.dao.Persisted;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
 import com.elmakers.mine.craftbukkit.persistence.data.DataField;
@@ -32,9 +36,10 @@ import com.elmakers.mine.craftbukkit.persistence.data.DataType;
  */
 public class PersistedClass
 {
-	public PersistedClass(EntityInfo entityInfo)
+	public PersistedClass(EntityInfo entityInfo, Server server)
 	{
 		this.entityInfo = entityInfo;
+		this.server = server;
 	}
 	
 	public PersistedClass(PersistedClass copy, PersistedField container)
@@ -46,6 +51,7 @@ public class PersistedClass
 		this.schema = copy.schema;
 		this.entityInfo = copy.entityInfo;
 		this.persistClass = copy.persistClass;
+		this.server = copy.server;
 		
 		// TODO: Make sure it's ok to share fields!
 		for (PersistedField field : copy.fields)
@@ -58,6 +64,16 @@ public class PersistedClass
 				addField(field.clone(), field.getFieldInfo());
 			}
 		}
+	}
+	
+	public void setMigrationInfo(MigrationInfo migrationInfo)
+	{
+		this.migrationInfo = migrationInfo;
+	}
+	
+	public MigrationInfo getMigrationInfo()
+	{
+		return migrationInfo;
 	}
 	
 	public boolean bind(Class<? extends Object> persistClass)
@@ -403,13 +419,13 @@ public class PersistedClass
 		if (!store.connect()) return;
 		
 		DataTable resetTable = getClassTable(); 
-		store.reset(resetTable);
+		store.drop(resetTable.getName());
 		
 		// Reset any list sub-tables
 		for (PersistedList list : externalFields)
 		{
 			DataTable listTable = getListTable(list);
-			store.reset(listTable);
+			store.drop(listTable.getName());
 		}
 		
 		maxId = 1;
@@ -604,7 +620,7 @@ public class PersistedClass
 		classTable.createHeader();
 		populateHeader(classTable);
 		
-		store.validateTable(classTable);
+		store.migrateEntity(classTable, this);
 		
 		// Validate any list sub-tables
 		for (PersistedList list : externalFields)
@@ -612,7 +628,7 @@ public class PersistedClass
 			DataTable listTable = getListTable(list);
 			listTable.createHeader();
 			list.populateHeader(listTable);
-			store.validateTable(listTable);
+			store.migrateEntity(listTable, this);
 		}		
 	}
 	
@@ -751,6 +767,7 @@ public class PersistedClass
 		try
 		{
 			newObject = persistClass.newInstance();
+			updatePersisted(newObject);
 			load(row, newObject);
 		}
 		catch (IllegalAccessException ex)
@@ -825,8 +842,23 @@ public class PersistedClass
 		return addToCache(o, null);
 	}
 	
+	protected boolean updatePersisted(Object o)
+	{
+		if (o instanceof Persisted)
+		{
+			Persisted persisted = (Persisted)o;
+			persisted.setPersistedClass(this);
+			return true;
+		}
+		
+		return false;
+	}
+	
 	protected CachedObject addToCache(Object o, Object concreteId)
 	{
+		// First, make sure any Persisted class data is up to date
+		updatePersisted(o);
+		
 		// Check to see if this object has already been removed
 		
 		// 0 (and lower) are "magic numbers" signifying that there is no auto
@@ -925,6 +957,11 @@ public class PersistedClass
 		removedMap.put(id, co);
 	}
 	
+	public Server getServer()
+	{
+		return server;
+	}
+	
 	/*
 	 * Private data
 	 */
@@ -949,7 +986,8 @@ public class PersistedClass
 	protected HashMap<Object, CachedObject>	removedMap			= new HashMap<Object, CachedObject>();
 	protected List<CachedObject>			removedFromCache	= new ArrayList<CachedObject>();
 
-	protected Class<? extends Object>		persistClass;
+	protected Class<? extends Object>		persistClass		= null;
+	protected Server						server				= null;
 
 	protected List<PersistedField>			fields				= new ArrayList<PersistedField>();
 	protected List<PersistedField>			internalFields		= new ArrayList<PersistedField>();
@@ -961,6 +999,7 @@ public class PersistedClass
 	protected boolean						contained			= false;
 
 	protected EntityInfo					entityInfo			= null;
+	protected MigrationInfo					migrationInfo		= null;
 
 	protected String						schema 				= null;
 	protected String						name 				= null;

@@ -16,7 +16,7 @@ import com.elmakers.mine.craftbukkit.persistence.Persistence;
  *
  */
 @PersistClass(name="sender", schema="global")
-public class CommandSenderData
+public class CommandSenderData extends Persisted
 {
 	public CommandSenderData()
 	{

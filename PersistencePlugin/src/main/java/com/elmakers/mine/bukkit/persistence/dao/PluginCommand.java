@@ -18,6 +18,7 @@ import com.elmakers.mine.craftbukkit.persistence.Persistence;
  * @author NathanWolf
  *
  */
+
 @PersistClass(name="command", schema="global")
 public class PluginCommand implements Comparable<PluginCommand>
 {	

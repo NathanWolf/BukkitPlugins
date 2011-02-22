@@ -68,11 +68,11 @@ public class SqlLiteStore extends SqlStore
 		return DataType.NULL;
 	}
 
-
 	@Override
-	public DataTable getTableSchema(String tableName)
+	public DataTable getTableHeader(String tableName)
 	{
 		DataTable currentTable = new DataTable(tableName);
+		currentTable.createHeader();
 		DataRow headerRow = currentTable.getHeader();
 		
 		DataTable pragmaTable = new DataTable("pragma");

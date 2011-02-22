@@ -1,5 +1,14 @@
 # CHANGELOG
 
+# 0.50
+ 
+ - Add @Inherited to PersistField to support persisted inheritence- I think this pretty much does it!
+ - Add @Documented to PersistField, so it shows up in the docs
+ - Add Persisted base class with auto-hash id, use it for all global DAOs.
+ - Clean up and bug fix for LocationData.
+ - First round auto-reset data migration!
+ - Some more object/list container bugfixes, now needed for the refactored LocationData
+
 # 0.49
 
  - Allow access to Persistence and Security (where hasPermission now lives) via PluginUtilities
