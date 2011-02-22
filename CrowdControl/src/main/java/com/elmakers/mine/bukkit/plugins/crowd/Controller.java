@@ -8,6 +8,7 @@ import net.minecraft.server.EntityChicken;
 import net.minecraft.server.EntityCow;
 import net.minecraft.server.EntityCreeper;
 import net.minecraft.server.EntityGhast;
+import net.minecraft.server.EntityGiantZombie;
 import net.minecraft.server.EntityLiving;
 import net.minecraft.server.EntityPig;
 import net.minecraft.server.EntityPigZombie;
@@ -20,7 +21,6 @@ import net.minecraft.server.EntityZombie;
 import net.minecraft.server.WorldServer;
 
 import org.bukkit.Location;
-import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.entity.Cow;
@@ -47,9 +47,8 @@ import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 public class Controller
 {
-	public void initialize(Server server)
+	public void initialize()
 	{
-		this.server = server;
 	}
 	
 	public static boolean isEntityType(CreatureType type, LivingEntity entity)
@@ -94,7 +93,7 @@ public class Controller
 			case SQUID: e = new EntitySquid(world); break;
 			case GHAST: e = new EntityGhast(world); break;
 			case ZOMBIE: e = new EntityZombie(world); break;
-			//case GIANT_ZOMBIE: e = new EntityGiantZombie(world); break;
+			case GIANT: e = new EntityGiantZombie(world); break;
 			case SLIME: e = new EntitySlime(world); break;
 			//case FISH: e = new EntityFish(world); break;
 		}
@@ -149,7 +148,7 @@ public class Controller
 	public int nuke(ControlledWorld targetWorld, CreatureType entityType, boolean nukeAll)
 	{
 		int killCount = 0;
-		World world = targetWorld.getId().getWorld(server);
+		World world = targetWorld.getId().getWorld();
 		List<LivingEntity> entities = world.getLivingEntities();
 		for (LivingEntity entity : entities)
 		{
@@ -163,7 +162,6 @@ public class Controller
 		return killCount;
 	}
 	
-	private Server server;
 	private final Random rand = new Random();
 	private static boolean debugLog = false;
 	private static final Logger log = Persistence.getLogger();

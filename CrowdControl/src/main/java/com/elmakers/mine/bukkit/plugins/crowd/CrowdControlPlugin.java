@@ -79,7 +79,7 @@ public class CrowdControlPlugin extends JavaPlugin
 	    CrowdControlDefaults d = new CrowdControlDefaults();
 	    utilities = persistence.getUtilities(this);
 	    listener.initialize(persistence, controller);
-	    controller.initialize(getServer());
+	    controller.initialize();
 	    
 	    crowdCommand = utilities.getGeneralCommand(d.crowdCommand[0], d.crowdCommand[1], d.crowdCommand[2], PermissionType.ADMINS_ONLY);
 	    crowdControlCommand = crowdCommand.getSubCommand(d.crowdControlCommand[0], d.crowdControlCommand[1], d.crowdControlCommand[2], PermissionType.ADMINS_ONLY);
@@ -245,27 +245,27 @@ public class CrowdControlPlugin extends JavaPlugin
 		
 		if (parameters.length > 1)
 		{
+			if (!parameters[1].equalsIgnoreCase("none"))
+			{
+				targetType = getCreatureType(parameters[1]);
+			}
+		}
+		
+		if (parameters.length > 2)
+		{
 			try
 			{
-				percent = Float.parseFloat(parameters[1]);
+				percent = Float.parseFloat(parameters[2]);
 				if (percent > 1)
 				{
-					percent = (float)Integer.parseInt(parameters[1]) / 100;
+					percent = (float)Integer.parseInt(parameters[2]) / 100;
 				}
 			} 
 			catch(NumberFormatException ex)
 			{
 			}
 		}
-		
-		if (parameters.length > 2)
-		{
-			if (!parameters[2].equalsIgnoreCase("none"))
-			{
-				targetType = getCreatureType(parameters[2]);
-			}
-		}
-		
+			
 		List<ControlRule> rules = world.getRules();
 		if (rules == null)
 		{
@@ -421,7 +421,7 @@ public class CrowdControlPlugin extends JavaPlugin
 	{
 		if (worldData == null || worldData.getId() == null) return;
 		
-		World world = worldData.getId().getWorld(getServer());
+		World world = worldData.getId().getWorld();
 		int entityCount = 0;
 		List<LivingEntity> entities = world.getLivingEntities();
 		for (LivingEntity entity : entities)

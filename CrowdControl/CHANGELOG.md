@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.17
+
+ - Swap percent and replace parameters for "control"- I think this is cleaner.
+ - Ok, really have giant zombies this time :)
+ - Update to work with Persistence 0.50 (no longer pass around Server instance)
+ 
 # 0.16
 
  - Add "list" command, allow world parameters to all commands

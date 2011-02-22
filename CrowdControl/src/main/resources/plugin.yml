@@ -1,6 +1,6 @@
 name: CrowdControl
 main: com.elmakers.mine.bukkit.plugins.crowd.CrowdControlPlugin
-version: 0.16
+version: 0.17
 website: http://mine.elmakers.com
 author: NathanWolf
 description : Mainly a way to turn off ghasts in the nether.
