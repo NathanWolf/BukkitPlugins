@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.43
+
+ - Add "list worlds" command.
+
 # 0.42
 
  - Updated to work with latest Persistence refactor

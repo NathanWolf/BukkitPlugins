@@ -22,6 +22,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BlockVector;
 
+import com.elmakers.mine.bukkit.persistence.dao.LocationData;
 import com.elmakers.mine.bukkit.persistence.dao.Message;
 import com.elmakers.mine.bukkit.persistence.dao.PermissionType;
 import com.elmakers.mine.bukkit.persistence.dao.PluginCommand;
@@ -89,15 +90,15 @@ public class NetherGatePlugin extends JavaPlugin
 	    utilities = persistence.getUtilities(this);
 	    manager.initialize(getServer(), persistence, utilities);
 	    
-		netherCommand = utilities.getPlayerCommand("nether", "Manage portal areas and worlds", "<command>", PermissionType.ADMINS_ONLY);
-		createCommand = netherCommand.getSubCommand("create", "Create a portal area or world", "<world | area> <name>", PermissionType.ADMINS_ONLY);
+		netherCommand = utilities.getPlayerCommand("nether", "Manage portal areas and worlds", null, PermissionType.ADMINS_ONLY);
+		createCommand = netherCommand.getSubCommand("create", "Create a portal area or world", null, PermissionType.ADMINS_ONLY);
 		worldCommand = createCommand.getSubCommand("world", "Create a new world", "<name>", PermissionType.ADMINS_ONLY);
 		areaCommand = createCommand.getSubCommand("area", "Create a new PortalArea underground", "<name>", PermissionType.ADMINS_ONLY);
 		kitCommand = netherCommand.getSubCommand("kit", "Give yourself a portal kit", null, PermissionType.ADMINS_ONLY);
 		goCommand = netherCommand.getSubCommand("go", "TP to an area or world", "[name]", PermissionType.ADMINS_ONLY);
-		deleteCommand = netherCommand.getSubCommand("delete", "Delete an area or world", "<world | area> <name>", PermissionType.ADMINS_ONLY);
-		targetCommand = netherCommand.getSubCommand("target", "Re-target worlds or areas", "<world | area> <from> <to>", PermissionType.ADMINS_ONLY);
+		deleteCommand = netherCommand.getSubCommand("delete", "Delete an area or world", null, PermissionType.ADMINS_ONLY);
 		deleteWorldCommand = deleteCommand.getSubCommand("world", "Delete an world", "<name>", PermissionType.ADMINS_ONLY);
+		targetCommand = netherCommand.getSubCommand("target", "Re-target worlds or areas", null, PermissionType.ADMINS_ONLY);
 		targetWorldCommand = targetCommand.getSubCommand("world", "Re-target a world", "<from> <to>", PermissionType.ADMINS_ONLY);
 		scaleCommand = netherCommand.getSubCommand("scale", "Re-scale an area or world", "<world | area> <name> <scale>", PermissionType.ADMINS_ONLY); 
 		scaleWorldCommand = scaleCommand.getSubCommand("world", "Re-scale a world", "<name> <scale>", PermissionType.ADMINS_ONLY); 
@@ -105,6 +106,8 @@ public class NetherGatePlugin extends JavaPlugin
 		nukeCommand = netherCommand.getSubCommand("nuke", "Kill all ghasts (or whatever)", "[all | mobtype] [world]", PermissionType.ADMINS_ONLY);
 		centerCommand = netherCommand.getSubCommand("center", "Re-center an area or world", "<world | area> <name> <X> <Y> <Z>", PermissionType.ADMINS_ONLY); 
 		centerWorldCommand = centerCommand.getSubCommand("world", "Re-center a world", "<name> <X> <Y> <Z>", PermissionType.ADMINS_ONLY); 
+		listCommand = netherCommand.getSubCommand("list", "List worlds, areas and portals", null, PermissionType.ADMINS_ONLY);
+		listWorldsCommand = listCommand.getSubCommand("worlds", "List all known worlds", null, PermissionType.ADMINS_ONLY); 
 		
 		setHomeCommand = netherCommand.getSubCommand("sethome", "Set your home world and location", null); 
 		goHomeCommand = netherCommand.getSubCommand("home", "Go to your home world and location", null);
@@ -121,6 +124,7 @@ public class NetherGatePlugin extends JavaPlugin
 		goHomeCommand.bind("onGoHome");
 		setHomeCommand.bind("onSetHome");
 		centerWorldCommand.bind("onCenterWorld");
+		listWorldsCommand.bind("onListWorlds");
 		
 		creationFailedMessage = utilities.getMessage("creationFailed", "Nether creation failed- is there enough room below you?");
 		creationSuccessMessage = utilities.getMessage("creationSuccess", "Created new Nether area");
@@ -147,6 +151,7 @@ public class NetherGatePlugin extends JavaPlugin
 		goHomeSuccessMessage = utilities.getMessage("goHome", "Going home!");
 		noHomeMessage = utilities.getMessage("nohome", "Use sethome to set your home");
 		centeredWorldMessage = utilities.getMessage("centerWorld", "World %s centered around (%d,%d,%d)");
+		listWorldMessage = utilities.getMessage("listWorlds", "%s (%s) : %dx -> %s");
 	}
 	
 	public boolean onDeleteWorld(Player player, String[] parameters)
@@ -187,6 +192,37 @@ public class NetherGatePlugin extends JavaPlugin
 		persistence.remove(worldData);
 		
 		deletedWorldMessage.sendTo(player, worldName);
+		
+		return true;
+	}
+	
+	// "%s (%s) : %dx -> %s"
+	public boolean onListWorlds(Player player, String[] parameters)
+	{
+		// Make sure current world is registered
+		manager.getCurrentWorld(player.getWorld());
+		
+		List<NetherWorld> allWorlds = new ArrayList<NetherWorld>();
+		persistence.getAll(allWorlds, NetherWorld.class);
+		
+		for (NetherWorld checkWorld : allWorlds)
+		{
+			NetherWorld targetWorld = checkWorld.getTargetWorld();
+			double scale = checkWorld.getScale();
+			String worldName = "(unknown)";
+			String targetName = "(unknown)";
+			String envType = "(unknown)";
+			if (checkWorld != null && checkWorld.getWorld() != null)
+			{
+				worldName = checkWorld.getWorld().getName();
+				envType = checkWorld.getWorld().getEnvironmentType() == Environment.NETHER ? "nether" : "normal";
+			}
+			if (targetWorld != null && targetWorld.getWorld() != null)
+			{
+				targetName = targetWorld.getWorld().getName();
+			}
+			listWorldMessage.sendTo(player, worldName, envType, (int)scale, targetName);
+		}
 		
 		return true;
 	}
@@ -373,7 +409,7 @@ public class NetherGatePlugin extends JavaPlugin
 			}
 		}
 		
-		World world = targetWorld.getWorld().getWorld(getServer());
+		World world = targetWorld.getWorld().getWorld();
 		if (world == null)
 		{
 			killFailedMessage.sendTo(player, targetType.getName());
@@ -429,7 +465,7 @@ public class NetherGatePlugin extends JavaPlugin
 			return true;
 		}
 		
-		World world = worldData.getWorld(getServer());
+		World world = worldData.getWorld();
 		if (world == null)
 		{
 			spawnSetFailedMessage.sendTo(player);
@@ -474,11 +510,9 @@ public class NetherGatePlugin extends JavaPlugin
 		int y = player.getLocation().getBlockY();
 		int z = player.getLocation().getBlockZ();
 
-		BlockVector homeVector = new BlockVector(x, y, z);
-		playerData.setHome(homeVector);
-		playerData.setHomeWorld(currentWorld);
+		LocationData location = new LocationData(player.getLocation());
+		playerData.setHome(location);
 		persistence.put(playerData);
-		persistence.put(homeVector);
 		
 		homeSetMessage.sendTo(player, x, y, z, currentWorld.getWorld().getName());
 	
@@ -494,21 +528,21 @@ public class NetherGatePlugin extends JavaPlugin
 			return true;
 		}
 		
-		NetherWorld homeWorld = playerData.getHomeWorld();
-		if (homeWorld == null || homeWorld.getWorld() == null)
+		LocationData home = playerData.getHome();
+		if (home == null)
 		{
 			noHomeMessage.sendTo(player);
 			return true;
 		}
 		
-		BlockVector home = playerData.getHome();
-		if (home == null)
+		NetherWorld homeWorld = manager.getWorldData(home.getWorld());
+		if (homeWorld == null)
 		{
 			noHomeMessage.sendTo(player);
 			return true;
-		}		
+		}
 		
-		Location location = new Location(homeWorld.getWorld().getWorld(getServer()), home.getX(), home.getY(), home.getZ(), player.getLocation().getYaw(), player.getLocation().getPitch());
+		Location location = home.getLocation();
 		if (!manager.teleportPlayer(player, homeWorld, location))
 		{
 			goHomeFailedMessage.sendTo(player);
@@ -656,6 +690,8 @@ public class NetherGatePlugin extends JavaPlugin
 	protected PluginCommand goHomeCommand;
 	protected PluginCommand centerWorldCommand;
 	protected PluginCommand centerCommand;
+	protected PluginCommand listWorldsCommand;
+	protected PluginCommand listCommand;
 	
 	protected Message creationFailedMessage;
 	protected Message creationSuccessMessage;
@@ -682,6 +718,7 @@ public class NetherGatePlugin extends JavaPlugin
 	protected Message goHomeFailedMessage;
 	protected Message goHomeSuccessMessage;
 	protected Message noHomeMessage;
+	protected Message listWorldMessage;
 	
 	protected NetherManager manager = new NetherManager();
 	protected NetherPlayerListener playerListener = new NetherPlayerListener(manager);

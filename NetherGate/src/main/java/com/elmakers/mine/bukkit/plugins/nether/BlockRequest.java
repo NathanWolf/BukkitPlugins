@@ -63,7 +63,7 @@ public class BlockRequest
 	{
 		if (requestor == null) return;
 		
-		World targetWorld = world.getWorld().getWorld(manager.getServer());
+		World targetWorld = world.getWorld().getWorld();
 		Location location = new Location(targetWorld, center.getBlockX(), center.getBlockY(), center.getBlockZ());
 		Location targetLocation = manager.findPlaceToStand(location);
 		if (targetLocation != null)

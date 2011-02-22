@@ -21,6 +21,7 @@ import org.bukkit.util.Vector;
 
 import com.elmakers.mine.bukkit.gameplay.BlockRequestListener;
 import com.elmakers.mine.bukkit.gameplay.BoundingBox;
+import com.elmakers.mine.bukkit.persistence.dao.LocationData;
 import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.persistence.dao.WorldData;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherWorld;
@@ -170,7 +171,7 @@ public class NetherManager
 		request.translate(worldData);
 		
 		BlockVector targetLocation = request.getCenter();
-		World world = targetWorld.getWorld().getWorld(server);
+		World world = targetWorld.getWorld().getWorld();
 		Chunk chunk = world.getChunkAt(targetLocation.getBlockX(), targetLocation.getBlockZ());
 		
 		if (world.isChunkLoaded(chunk))
@@ -263,7 +264,7 @@ public class NetherManager
 		
 		int ratio = PortalArea.defaultRatio;
 			
-		nether.setOwner(playerData);
+		nether.setCreator(playerData);
 		nether.setRatio(ratio);
 		
 		nether.create(player.getWorld());
@@ -413,15 +414,8 @@ public class NetherManager
 		tpPlayer.setTargetArea(null);
 		tpPlayer.setSourcePortal(null);
 		tpPlayer.setTargetPortal(null);
-		
-		// Set home world, if none is set
-		if (tpPlayer.getHomeWorld() == null)
-		{
-			tpPlayer.setHomeWorld(currentWorld);
-			persistence.put(tpPlayer);
-		}
 			
-		World world = targetWorld.getWorld().getWorld(server);
+		World world = targetWorld.getWorld().getWorld();
 		Chunk chunk = world.getChunkAt(targetLocation.getBlockX(), targetLocation.getBlockZ());
 		
 		if (world.isChunkLoaded(chunk))
@@ -828,11 +822,16 @@ public class NetherManager
 			return;
 		}
 		
-		NetherWorld homeWorld = playerData.getHomeWorld();
+		WorldData homeWorld = null;	
+		LocationData homeLocation = playerData.getHome();
+		if (homeLocation != null)
+		{
+			homeWorld = homeLocation.getWorldData();
+		}
 		if (homeWorld != null)
 		{
-			BlockVector spawn = homeWorld.getWorld().getSpawn();
-			World home = homeWorld.getWorld().getWorld(server);
+			BlockVector spawn = homeWorld.getSpawn();
+			World home = homeWorld.getWorld();
 			Location spawnPoint = new Location
 			(
 					home,

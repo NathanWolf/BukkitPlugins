@@ -291,14 +291,14 @@ public class PortalArea
 	}
 
 	@PersistField
-	public NetherPlayer getOwner()
+	public NetherPlayer getCreator()
 	{
-		return owner;
+		return creator;
 	}
 
-	public void setOwner(NetherPlayer owner)
+	public void setCreator(NetherPlayer creator)
 	{
-		this.owner = owner;
+		this.creator = creator;
 	}
 
 	@PersistField
@@ -367,7 +367,7 @@ public class PortalArea
 		this.targetCenter = targetCenter;
 	}
 	
-	protected NetherPlayer	owner;
+	protected NetherPlayer	creator;
 	protected List<Portal>	internalPortals;
 	protected List<Portal>	externalPortals;
 	protected BoundingBox	internalArea;

@@ -79,7 +79,7 @@ public class NetherWorld
 		this.targetWorld = targetWorld;
 	}
 	
-	@PersistField
+	@PersistField(contained=true)
 	public BlockVector getTargetOffset()
 	{
 		return targetOffset;
@@ -90,7 +90,7 @@ public class NetherWorld
 		this.targetOffset = targetOffset;
 	}
 	
-	@PersistField
+	@PersistField(contained=true)
 	public BlockVector getCenterOffset()
 	{
 		return centerOffset;

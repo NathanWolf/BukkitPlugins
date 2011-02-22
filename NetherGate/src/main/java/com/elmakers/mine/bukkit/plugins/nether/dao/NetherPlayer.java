@@ -6,6 +6,7 @@ import org.bukkit.util.BlockVector;
 
 import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
+import com.elmakers.mine.bukkit.persistence.dao.LocationData;
 import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 
 
@@ -20,11 +21,18 @@ public class NetherPlayer
 	public NetherPlayer(PlayerData player)
 	{
 		this.player = player;
+		update(player.getPlayer());
 	}
 	
 	public void update(Player player)
 	{	
+		if (player == null) return;
+		
 		Location loc = player.getLocation();
+		if (home == null)
+		{
+			home = new LocationData(loc);
+		}
 		lastLocation = new BlockVector(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
 	}
 	
@@ -46,6 +54,29 @@ public class NetherPlayer
 		this.player = player;
 	}
 	
+	@PersistField(contained=true)
+	public LocationData getHome()
+	{
+		return home;
+	}
+
+	public void setHome(LocationData home)
+	{
+		this.home = home;
+	}
+
+	@PersistField(contained=true)
+	public BlockVector getLastLocation()
+	{
+		return lastLocation;
+	}
+
+	public void setLastLocation(BlockVector lastLocation)
+	{
+		this.lastLocation = lastLocation;
+	}
+	
+	// Transient state data
 	public TeleportState getState()
 	{
 		return state;
@@ -66,40 +97,6 @@ public class NetherPlayer
 		this.targetLocation = targetLocation;
 	}
 	
-	@PersistField
-	public NetherWorld getHomeWorld()
-	{
-		return homeWorld;
-	}
-
-	public void setHomeWorld(NetherWorld homeWorld)
-	{
-		this.homeWorld = homeWorld;
-	}
-	
-	@PersistField
-	public BlockVector getHome()
-	{
-		return home;
-	}
-
-	public void setHome(BlockVector home)
-	{
-		this.home = home;
-	}
-
-	@PersistField
-	public BlockVector getLastLocation()
-	{
-		return lastLocation;
-	}
-
-	public void setLastLocation(BlockVector lastLocation)
-	{
-		this.lastLocation = lastLocation;
-	}
-	
-
 	public NetherWorld getTargetWorld()
 	{
 		return targetWorld;
@@ -161,8 +158,7 @@ public class NetherPlayer
 	}
 
 	protected PlayerData 		player;
-	protected NetherWorld		homeWorld;
-	protected BlockVector		home;
+	protected LocationData		home;
 	protected BlockVector		lastLocation;
 	protected TeleportState 	state;
 	protected NetherWorld		targetWorld;
