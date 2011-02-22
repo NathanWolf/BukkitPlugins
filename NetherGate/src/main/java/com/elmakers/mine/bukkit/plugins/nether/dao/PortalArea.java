@@ -356,7 +356,7 @@ public class PortalArea
 		this.targetWorld = targetWorld;
 	}
 	
-	@PersistField
+	@PersistField(contained=true)
 	public BlockVector getTargetCenter()
 	{
 		return targetCenter;

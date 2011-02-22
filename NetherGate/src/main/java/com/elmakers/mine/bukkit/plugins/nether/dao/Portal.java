@@ -97,7 +97,7 @@ public class Portal
 		this.name = name;
 	}
 
-	@PersistField
+	@PersistField(contained=true)
 	public LocationData getLocation()
 	{
 		return location;

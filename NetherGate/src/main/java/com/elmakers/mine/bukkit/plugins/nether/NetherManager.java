@@ -180,11 +180,11 @@ public class NetherManager
 		}
 		else
 		{
-			BlockRequestList requesting = requestMap.get(chunk);
+			BlockRequestList requesting = requestMap.get(getChunkId(chunk));
 			if (requesting == null)
 			{
 				requesting = new BlockRequestList();
-				requestMap.put(chunk, requesting);
+				requestMap.put(getChunkId(chunk), requesting);
 			}
 			
 			requesting.add(request);
@@ -192,6 +192,11 @@ public class NetherManager
 		}
 		
 		return true;
+	}
+	
+	protected BlockVector getChunkId(Chunk chunk)
+	{
+		return new BlockVector(chunk.getX(), 0, chunk.getZ());
 	}
 	
 	protected static void parseMaterials(String csvList, HashMap<Material, Boolean> materials)
@@ -221,8 +226,10 @@ public class NetherManager
 		needsPlatform.put(Material.STATIONARY_WATER, true);
 		needsPlatform.put(Material.LAVA, true);
 		needsPlatform.put(Material.STATIONARY_LAVA, true);
-		
+	
 		parseMaterials(DEFAULT_DESTRUCTIBLES, destructible);
+		
+		load();
 	}
 	
 	/*
@@ -278,26 +285,21 @@ public class NetherManager
 	
 	protected void addToMap(PortalArea nether)
 	{
+		/*
 		BlockVector location = nether.getInternalArea().getCenter();
 		Chunk chunk = world.getChunkAt(location.getBlockX(), location.getBlockZ());
-		NetherList list = netherMap.get(chunk);
+		NetherList list = netherMap.get(getChunkId(chunk));
 		if (list == null)
 		{
 			list = new NetherList();
-			netherMap.put(chunk, list);
+			netherMap.put(getChunkId(chunk), list);
 		}
 		list.add(nether);
+		*/
 	}
 	
-	protected void load(World w)
+	protected void load()
 	{
-		if (world != null)
-		{
-			return;
-		}
-		world = w;
-		if (world == null) return;
-		
 		persistence.getAll(netherAreas, PortalArea.class);
 		for (PortalArea nether : netherAreas)
 		{
@@ -307,10 +309,9 @@ public class NetherManager
 	
 	public PortalArea getNether(BlockVector position)
 	{
-		if (world == null || position == null) return null;
-		
+		/*
 		Chunk chunk = world.getChunkAt(position.getBlockX(), position.getBlockZ());
-		NetherList list = netherMap.get(chunk);
+		NetherList list = netherMap.get(getChunkId(chunk));
 		if (list == null) return null;
 		
 		for (PortalArea nether : list)
@@ -320,7 +321,7 @@ public class NetherManager
 				return nether;
 			}
 		}
-		
+		*/
 		return null;
 	}
 	
@@ -424,11 +425,11 @@ public class NetherManager
 		}
 		else
 		{
-			PlayerList players = teleporting.get(chunk);
+			PlayerList players = teleporting.get(getChunkId(chunk));
 			if (players == null)
 			{
 				players = new PlayerList();
-				teleporting.put(chunk, players);
+				teleporting.put(getChunkId(chunk), players);
 			}
 			
 			players.add(tpPlayer);
@@ -532,24 +533,24 @@ public class NetherManager
 	
 	public void onChunkLoaded(Chunk chunk)
 	{
-		PlayerList players = teleporting.get(chunk);
+		PlayerList players = teleporting.get(getChunkId(chunk));
 		if (players != null)
 		{
 			for (NetherPlayer tp : players)
 			{
 				finishTeleport(tp, chunk.getWorld());
 			}
-			teleporting.put(chunk, null);
+			teleporting.put(getChunkId(chunk), null);
 		}
 		
-		BlockRequestList blockRequests = requestMap.get(chunk);
+		BlockRequestList blockRequests = requestMap.get(getChunkId(chunk));
 		if (blockRequests != null)
 		{
 			for (BlockRequest request : blockRequests)
 			{
 				request.dispatch();
 			}
-			requestMap.put(chunk, null);
+			requestMap.put(getChunkId(chunk), null);
 		}
 	}
 	
@@ -845,20 +846,18 @@ public class NetherManager
 		}
 	}
 	
-	public static BlockVector					origin					= new BlockVector(0, 0, 0);
+	public static BlockVector							origin					= new BlockVector(0, 0, 0);
 
-	protected static final String				DEFAULT_DESTRUCTIBLES	= "0,1,2,3,4,10,11,12,13,14,15,16,21,51,56,78,79,82,87,88,89";
+	protected static final String						DEFAULT_DESTRUCTIBLES	= "0,1,2,3,4,10,11,12,13,14,15,16,21,51,56,78,79,82,87,88,89";
 
-	protected HashMap<Material, Boolean>		destructible			= new HashMap<Material, Boolean>();
-	protected HashMap<Material, Boolean>		needsPlatform			= new HashMap<Material, Boolean>();
-	protected HashMap<Chunk, PlayerList>		teleporting				= new HashMap<Chunk, PlayerList>();
-	protected HashMap<Chunk, NetherList>		netherMap				= new HashMap<Chunk, NetherList>();
-	protected HashMap<Chunk, BlockRequestList>	requestMap				= new HashMap<Chunk, BlockRequestList>();
-	protected List<PortalArea>					netherAreas				= new ArrayList<PortalArea>();
-	protected World								world;
-	protected Server							server;
-	protected Persistence						persistence;
-	protected PluginUtilities					utilities;
-	protected long								disabledPhysics			= 0;
+	protected HashMap<Material, Boolean>				destructible			= new HashMap<Material, Boolean>();
+	protected HashMap<Material, Boolean>				needsPlatform			= new HashMap<Material, Boolean>();
+	protected HashMap<BlockVector, PlayerList>			teleporting				= new HashMap<BlockVector, PlayerList>();
+	protected HashMap<BlockVector, BlockRequestList>	requestMap				= new HashMap<BlockVector, BlockRequestList>();
+	protected List<PortalArea>							netherAreas				= new ArrayList<PortalArea>();
+	protected Server									server;
+	protected Persistence								persistence;
+	protected PluginUtilities							utilities;
+	protected long										disabledPhysics			= 0;
 	
 }
