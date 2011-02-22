@@ -33,7 +33,6 @@ public class PersistedList extends PersistedField implements PersistedReference
 	{
 		super(copy);
 		
-		owningType = copy.owningType;
 		if (isContained())
 		{
 			referenceType = new PersistedClass(copy.referenceType, this);
@@ -53,15 +52,13 @@ public class PersistedList extends PersistedField implements PersistedReference
 	
 	public PersistedList(FieldInfo fieldInfo, Field field, PersistedClass owningClass)
 	{
-		super(fieldInfo, field);
-		owningType = owningClass;
+		super(fieldInfo, field, owningClass);
 		findListType();
 	}
 	
 	public PersistedList(FieldInfo fieldInfo, Method getter, Method setter, PersistedClass owningClass)
 	{
-		super(fieldInfo, getter, setter);
-		owningType = owningClass;
+		super(fieldInfo, getter, setter, owningClass);
 		findListType();
 	}
 	
@@ -83,7 +80,7 @@ public class PersistedList extends PersistedField implements PersistedReference
     		{
     			if (referenceType.isContainedClass())
     			{
-    				log.warning("Persistence: " + owningType.getTableName() + "." + getDataName() + ", entity " + referenceType.getTableName() + " must be contained");
+    				log.warning("Persistence: " + owningClass.getSchema() + "." + owningClass.getTableName() + "." + getDataName() + ", entity " + referenceType.getTableName() + " must be contained");
     				referenceType = null;
     			}
     		}
@@ -122,15 +119,15 @@ public class PersistedList extends PersistedField implements PersistedReference
 	
 	protected void populate(DataRow dataRow, Object instance, Object data, PersistedField container)
 	{
-		PersistedField idField = owningType.getIdField();
+		PersistedField idField = owningClass.getIdField();
 		
 		// Add id row first, this binds to the owning class
 		Object id = null;
 		if (instance != null)
 		{
-			id = owningType.getIdData(instance);
+			id = owningClass.getIdData(instance);
 		}
-		String idName = owningType.getContainedIdName();
+		String idName = owningClass.getContainedIdName();
 		DataField idData = new DataField(idName, idField.getDataType(), id);
 		idData.setIdField(true);
 		dataRow.add(idData);
@@ -203,7 +200,7 @@ public class PersistedList extends PersistedField implements PersistedReference
         
         // Construct sub-table name
 		tableName = name.substring(0, 1).toUpperCase() + name.substring(1);
-		tableName = owningType.getTableName() + tableName;
+		tableName = owningClass.getTableName() + tableName;
 	}
 	
 	public Class<?> getListType()
@@ -252,14 +249,14 @@ public class PersistedList extends PersistedField implements PersistedReference
 		HashMap<Object, List<Object> > objectLists = new HashMap<Object, List<Object> >();
 		for (Object instance : instances)
 		{
-			Object instanceId = owningType.getIdData(instance);
+			Object instanceId = owningClass.getIdData(instance);
 			objectIdMap.put(instanceId, instance);
 			List<Object> listData = new ArrayList<Object>();
 			objectLists.put(instanceId, listData);
 		}
 		
 		// Determine column names
-		String entityIdName = owningType.getContainedIdName();
+		String entityIdName = owningClass.getContainedIdName();
 		String dataIdName = "";
 		
 		if (referenceType == null)
@@ -268,7 +265,7 @@ public class PersistedList extends PersistedField implements PersistedReference
 		}
 		else if (isContained())
 		{
-			dataIdName = owningType.getContainedIdName(this);
+			dataIdName = owningClass.getContainedIdName(this);
 		}
 		else
 		{	
@@ -387,7 +384,6 @@ public class PersistedList extends PersistedField implements PersistedReference
 	private final HashMap<Object, DeferredReferenceList> deferredInstanceMap = new HashMap<Object, DeferredReferenceList>();
 	private static final List<PersistedList> deferredLists = new ArrayList<PersistedList>();
 
-	protected final PersistedClass owningType;
 	protected String tableName;
 	protected Class<?> listType;
 	protected DataType listDataType;

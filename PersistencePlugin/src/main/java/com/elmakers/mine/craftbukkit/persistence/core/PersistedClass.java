@@ -717,7 +717,7 @@ public class PersistedClass
 		// Same type. 
 		// DAOs will be loaded recursively as needed, and then references bound when everything has been
 		// resolved.
-		PersistedObject.endDefer(this);
+		PersistedObject.endDefer();
 
 		// Defer load lists of entities
 		PersistedList.beginDefer();

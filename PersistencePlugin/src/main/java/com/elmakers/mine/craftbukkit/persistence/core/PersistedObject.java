@@ -34,14 +34,14 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 		return field;
 	}
 
-	public PersistedObject(FieldInfo fieldInfo, Field field)
+	public PersistedObject(FieldInfo fieldInfo, Field field, PersistedClass owningClass)
 	{
-		super(fieldInfo, field);
+		super(fieldInfo, field, owningClass);
 	}
 	
-	public PersistedObject(FieldInfo fieldInfo, Method getter, Method setter)
+	public PersistedObject(FieldInfo fieldInfo, Method getter, Method setter, PersistedClass owningClass)
 	{
-		super(fieldInfo, getter, setter);
+		super(fieldInfo, getter, setter, owningClass);
 	}
 	
 	@Override
@@ -179,7 +179,7 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 		deferStackDepth++;
 	}
 	
-	public static void endDefer(PersistedClass owningClass)
+	public static void endDefer()
 	{
 		deferStackDepth--;
 		if (deferStackDepth > 0) return;
@@ -194,7 +194,11 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 			ref.referenceField.set(ref.object, reference);
 			
 			// Re-add to cache so that we can cache by the new id
-			owningClass.addToCache(ref.object);
+			// Unless this is a contained object, in which case it has no id!
+			if (!ref.referenceField.hasContainer())
+			{
+				ref.referenceField.owningClass.addToCache(ref.object);
+			}
 		}
 		
 	}

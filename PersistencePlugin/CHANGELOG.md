@@ -8,6 +8,8 @@
  - Clean up and bug fix for LocationData.
  - First round auto-reset data migration!
  - Some more object/list container bugfixes, now needed for the refactored LocationData
+ - Deferred reference load bugfixes
+ - Finally broke down and gave PersistedField a reference back to its PersistedClass
 
 # 0.49
 
