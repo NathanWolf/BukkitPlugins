@@ -1,5 +1,12 @@
 # CHANGELOG
 
+# 0.44
+
+ - Start playing with portal tracking, finally!
+ - Remove nuke - See CrowdControl- sorry! :P
+ - Make "kit" more Spells-friendly
+ - 1.3 update, temporarily disable "setspawn" command
+
 # 0.43
 
  - Add "list worlds" command.

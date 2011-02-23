@@ -25,8 +25,10 @@ import com.elmakers.mine.bukkit.persistence.dao.LocationData;
 import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.persistence.dao.WorldData;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherWorld;
+import com.elmakers.mine.bukkit.plugins.nether.dao.Portal;
 import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherPlayer;
+import com.elmakers.mine.bukkit.plugins.nether.dao.PortalType;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherPlayer.TeleportState;
 
 import com.elmakers.mine.bukkit.utilities.PluginUtilities;
@@ -329,16 +331,6 @@ public class NetherManager
 	 * Player teleportation
 	 */
 	
-	protected boolean teleportPlayer(Player player, WorldData targetWorldData, Location targetLocation)
-	{
-		if (targetWorldData == null) return false;
-		
-		NetherWorld targetWorld = getWorldData(targetWorldData);
-		if (targetWorld == null) return false;
-		
-		return teleportPlayer(player, targetWorld, targetLocation);
-	}
-	
 	public BlockVector mapLocation(NetherWorld from, NetherWorld to, BlockVector target)
 	{
 		double fromScale = from.getScale();
@@ -389,66 +381,7 @@ public class NetherManager
 		return new BlockVector(transformed);
 	}
 
-	protected boolean teleportPlayer(Player player, NetherWorld targetWorld, Location targetLocation)
-	{
-		if (targetWorld == null) return false;
-		
-		NetherPlayer tpPlayer = getPlayerData(player);
-		if (tpPlayer == null) return false;
-		
-		if (!utilities.getSecurity().hasPermission(player, "NetherGate.portal.use")) 
-		{
-			cancelTeleport(tpPlayer);
-			return false;
-		}
-		
-		// Register the current world first, in case it's not already.
-		NetherWorld currentWorld = getCurrentWorld(player.getWorld());
-		if (currentWorld == null) return false;
-			
-		BlockVector target = new BlockVector(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
-		
-		tpPlayer.setTargetLocation(target);
-		tpPlayer.setTargetWorld(targetWorld);
-		tpPlayer.setSourceWorld(currentWorld);
-		tpPlayer.setSourceArea(null);
-		tpPlayer.setTargetArea(null);
-		tpPlayer.setSourcePortal(null);
-		tpPlayer.setTargetPortal(null);
-			
-		World world = targetWorld.getWorld().getWorld();
-		Chunk chunk = world.getChunkAt(targetLocation.getBlockX(), targetLocation.getBlockZ());
-		
-		if (world.isChunkLoaded(chunk))
-		{
-			finishTeleport(tpPlayer, world);
-		}
-		else
-		{
-			PlayerList players = teleporting.get(getChunkId(chunk));
-			if (players == null)
-			{
-				players = new PlayerList();
-				teleporting.put(getChunkId(chunk), players);
-			}
-			
-			players.add(tpPlayer);
-			world.loadChunk(chunk);
-		}
-		
-		return true;
-	}
-	
-	protected void startTeleport(Player player)
-	{
-		startTeleport(player, getNextWorld(player.getWorld()));
-	}
-	
-	protected boolean startTeleport(Player player, NetherWorld targetWorld)
-	{
-		return teleportPlayer(player, targetWorld, player.getLocation());
-	}
-	
+
 	protected void onPlayerMove(Player player)
 	{
 		NetherPlayer playerData = getPlayerData(player);
@@ -487,7 +420,7 @@ public class NetherManager
 		}
 		
 		if (playerData.getState() != NetherPlayer.TeleportState.NONE) return;
-		startTeleport(player);
+		startAutoPortal(player);
 	}
 	
 	public NetherWorld getWorld(String worldName, World currentWorld)
@@ -511,8 +444,8 @@ public class NetherManager
 		
 		return targetWorld;
 	}
-	
-	public WorldData go(Player player, String worldName)
+
+	public WorldData go(Player player, String worldName, PortalType autoPortal)
 	{
 		// First make sure this world is registered!
 		getCurrentWorld(player.getWorld());
@@ -523,12 +456,96 @@ public class NetherManager
 		}
 		
 		Location location = player.getLocation();
-		if (!teleportPlayer(player, targetWorld, location))
+		if (!startTeleport(player, targetWorld, location, autoPortal))
 		{
 			targetWorld = null;
 		}
 	
 		return targetWorld.getWorld();
+	}
+	
+	public WorldData go(Player player, String worldName)
+	{
+		return go(player, worldName, PortalType.NONE);
+	}
+	
+	protected boolean startAutoPortal(Player player)
+	{
+		return startTeleport(player, getNextWorld(player.getWorld()), player.getLocation(), PortalType.PORTAL_FRAME_AND_PLATFORM);
+	}
+	
+	protected boolean startTeleport(Player player, NetherWorld targetWorld, Location targetLocation)
+	{
+		return startTeleport(player, targetWorld, targetLocation, PortalType.NONE);
+	}
+	
+	protected boolean startTeleport(Player player, NetherWorld targetWorld, Location targetLocation, PortalType autoPortal)
+	{
+		if (targetWorld == null) return false;
+		
+		NetherPlayer tpPlayer = getPlayerData(player);
+		if (tpPlayer == null) return false;
+		
+		if (!utilities.getSecurity().hasPermission(player, "NetherGate.portal.use")) 
+		{
+			cancelTeleport(tpPlayer);
+			return false;
+		}
+		
+		// Register the current world first, in case it's not already.
+		NetherWorld currentWorld = getCurrentWorld(player.getWorld());
+		if (currentWorld == null) return false;
+		
+		// Look for existing Portal
+		BlockVector target = new BlockVector(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
+		Portal sourcePortal = currentWorld.findPortalAt(target);
+		Portal targetPortal = null;
+		if (sourcePortal != null)
+		{
+			targetPortal = sourcePortal.getTarget();
+		}
+		
+		if (targetPortal != null && targetPortal.getLocation() != null)
+		{
+			target = targetPortal.getLocation().getPosition();
+			NetherWorld targetPortalWorld = getWorldData(targetPortal.getLocation().getWorld());
+			if (targetPortalWorld != null)
+			{
+				targetWorld = targetPortalWorld;
+			}
+		}
+		
+		tpPlayer.setTargetLocation(target);
+		tpPlayer.setTargetWorld(targetWorld);
+		tpPlayer.setSourceWorld(currentWorld);
+		tpPlayer.setSourcePortal(sourcePortal);
+		tpPlayer.setTargetPortal(targetPortal);
+
+		// for later!
+		tpPlayer.setSourceArea(null);
+		tpPlayer.setTargetArea(null);
+			
+		World world = targetWorld.getWorld().getWorld();
+		Chunk chunk = world.getChunkAt(targetLocation.getBlockX(), targetLocation.getBlockZ());
+		
+		if (world.isChunkLoaded(chunk))
+		{
+			finishTeleport(tpPlayer, world);
+		}
+		else
+		{
+			PlayerList players = teleporting.get(getChunkId(chunk));
+			if (players == null)
+			{
+				players = new PlayerList();
+				teleporting.put(getChunkId(chunk), players);
+			}
+			
+			players.add(tpPlayer);
+			world.loadChunk(chunk);
+		}
+		
+		return true;
 	}
 	
 	public void onChunkLoaded(Chunk chunk)
@@ -569,7 +586,7 @@ public class NetherManager
 			BlockVector loc = playerData.getTargetLocation();
 			loc = mapLocation(playerData.getSourceWorld(), playerData.getTargetWorld(), loc);
 			
-			Location targetLocation = new Location
+			Location location = new Location
 			(
 					world, 
 					loc.getBlockX(), 
@@ -578,57 +595,61 @@ public class NetherManager
 					currentLocation.getYaw(),
 					currentLocation.getPitch()
 			);
+					
+			// Look up first, then down
+			Location targetLocation = findPlaceToStand(location);
+			if (targetLocation == null)
+			{
+				Persistence.getLogger().info("Couldn't find a place for " + player.getName() + " to stand - sorry for the fall!");
+				targetLocation = location;
+			}
+			else
+			{
+				// Go one up- findPlaceToStand returns a block, not a place to tp to.
+				targetLocation.setY(targetLocation.getBlockY() + 1);
+			}
 			
 			Persistence.getLogger().info("From: " + currentLocation.getBlockX() + ", " + currentLocation.getBlockY() + ", " + currentLocation.getBlockZ()
 					+ " to " + targetLocation.getBlockX() + ", " + targetLocation.getBlockY() + ", " + targetLocation.getBlockZ());
 			
+			Block standingBlock = location.getWorld().getBlockAt(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
+			standingBlock = standingBlock.getFace(BlockFace.DOWN);
 			
-			teleportTo(player, targetLocation);
+			// Check for portal connections
+			Portal sourcePortal = playerData.getSourcePortal();
+			if (sourcePortal != null && sourcePortal.getType().isTracked())
+			{
+				// Auto-bind if not bound
+				Portal targetPortal = sourcePortal.getTarget();
+				if (targetPortal == null)
+				{
+					
+				}
+				else
+				{
+					// Use portal coordinates if available!
+					targetLocation = targetPortal.getLocation().getLocation();
+				}
+				
+				if (utilities.getSecurity().hasPermission(player, NetherPermissions.autoCreate))
+				{
+					boolean buildPortal = utilities.getSecurity().hasPermission(player, NetherPermissions.autoCreatePortal);
+					boolean buildFrame = utilities.getSecurity().hasPermission(player, NetherPermissions.autoCreateFrame);
+					boolean buildPlatform = utilities.getSecurity().hasPermission(player, NetherPermissions.autoCreatePlatform);
+					boolean fillAir = utilities.getSecurity().hasPermission(player, NetherPermissions.fillAir);
+					
+					buildPortal(standingBlock, BlockFace.NORTH, PortalType.getPortalType(buildPortal, buildFrame, buildPlatform), fillAir, null);
+				}
+			}
+			
+			player.teleportTo(targetLocation);
+			
 			playerData.update(player);
 		}
 		playerData.setState(TeleportState.TELEPORTED);
 		persistence.put(playerData);
 	}	
 	
-	protected void teleportTo(Player player, Location location)
-	{
-		if (location == null) return;
-		
-		// Look up first, then down
-		Location targetLocation = findPlaceToStand(location);
-		if (targetLocation == null)
-		{
-			Persistence.getLogger().info("Couldn't find a place for " + player.getName() + " to stand - sorry for the fall!");
-			targetLocation = location;
-		}
-		else
-		{
-			// Go one up- findPlaceToStand returns a block, not a place to tp to.
-			targetLocation.setY(targetLocation.getBlockY() + 1);
-		}
-		
-		Block standingBlock = location.getWorld().getBlockAt(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
-		standingBlock = standingBlock.getFace(BlockFace.DOWN);
-		
-		if (utilities.getSecurity().hasPermission(player, "NetherGate.portal.create"))
-		{
-			boolean buildPortal = utilities.getSecurity().hasPermission(player, "NetherGate.portal.create.portal");
-			boolean buildPlatform = utilities.getSecurity().hasPermission(player, "NetherGate.portal.create.platform");
-			
-			if (buildPortal)
-			{
-				buildPortal(standingBlock, BlockFace.NORTH, true, false, false, null);	
-			}
-			else if (buildPlatform)
-			{
-				buildPlatform(standingBlock, null);
-			}
-		}
-		
-		player.teleportTo(targetLocation);
-	}
-	
-
 	protected Location findPlaceToStand(Location startLocation)
 	{
 		World world = startLocation.getWorld();
@@ -684,7 +705,6 @@ public class NetherManager
 				return new Location(world, x, y, z, startLocation.getYaw(), startLocation.getPitch());
 			}
 			
-	
 			blocks[2] = blocks[1];				
 			blocks[1] = blocks[0];
 			blocks[0] = blocks[0].getFace(BlockFace.DOWN);
@@ -717,26 +737,24 @@ public class NetherManager
 		return null;
 	}
 	
-	public void buildPortal(Block centerBlock, BlockFace facing, boolean platform, boolean frame, List<Block> blockList)
+	public void buildPortal(Block centerBlock, BlockFace facing, PortalType portalType, boolean fillAir, List<Block> blockList)
 	{
-		buildPortal(centerBlock, facing, platform, frame, true, blockList);
-	}
-	
-	public void buildPortal(Block centerBlock, BlockFace facing, boolean platform, boolean frame, boolean portal, List<Block> blockList)
-	{
-		clearPortalArea(centerBlock, facing, blockList);
-	
-		if (frame)
+		if (fillAir)
 		{
-			//buildFrame(centerBlock, facing);
+			clearPortalArea(centerBlock, facing, blockList);
+		}
+	
+		if (portalType.hasFrame())
+		{
+			buildFrame(centerBlock, facing);
 		}
 		
-		if (platform)
+		if (portalType.hasPlatform())
 		{
 			buildPlatform(centerBlock, blockList);
 		}
 		
-		if (portal)
+		if (portalType.hasPortal())
 		{
 			buildPortalBlocks(centerBlock, facing);
 		}
@@ -831,18 +849,22 @@ public class NetherManager
 		}
 		if (homeWorld != null)
 		{
-			BlockVector spawn = homeWorld.getSpawn();
-			World home = homeWorld.getWorld();
-			Location spawnPoint = new Location
-			(
-					home,
-					spawn.getX(),
-					spawn.getY(),
-					spawn.getZ(),
-					player.getLocation().getYaw(),
-					player.getLocation().getPitch()
-			);
-			teleportPlayer(player, homeWorld, spawnPoint);
+			NetherWorld netherHome = persistence.get(homeWorld, NetherWorld.class);
+			if (netherHome != null)
+			{
+				BlockVector spawn = homeWorld.getSpawn();
+				World home = homeWorld.getWorld();
+				Location spawnPoint = new Location
+				(
+						home,
+						spawn.getX(),
+						spawn.getY(),
+						spawn.getZ(),
+						player.getLocation().getYaw(),
+						player.getLocation().getPitch()
+				);
+				startTeleport(player, netherHome, spawnPoint);
+			}
 		}
 	}
 	

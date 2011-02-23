@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import net.minecraft.server.WorldServer;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -27,7 +29,6 @@ import com.elmakers.mine.bukkit.persistence.dao.Message;
 import com.elmakers.mine.bukkit.persistence.dao.PermissionType;
 import com.elmakers.mine.bukkit.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.persistence.dao.WorldData;
-import com.elmakers.mine.bukkit.plugins.gameplay.EntityType;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherPlayer;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherWorld;
 import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
@@ -103,7 +104,6 @@ public class NetherGatePlugin extends JavaPlugin
 		scaleCommand = netherCommand.getSubCommand("scale", "Re-scale an area or world", "<world | area> <name> <scale>", PermissionType.ADMINS_ONLY); 
 		scaleWorldCommand = scaleCommand.getSubCommand("world", "Re-scale a world", "<name> <scale>", PermissionType.ADMINS_ONLY); 
 		setSpawnCommand = netherCommand.getSubCommand("setspawn", "Set the current world's spawn point", null, PermissionType.ADMINS_ONLY);
-		nukeCommand = netherCommand.getSubCommand("nuke", "Kill all ghasts (or whatever)", "[all | mobtype] [world]", PermissionType.ADMINS_ONLY);
 		centerCommand = netherCommand.getSubCommand("center", "Re-center an area or world", "<world | area> <name> <X> <Y> <Z>", PermissionType.ADMINS_ONLY); 
 		centerWorldCommand = centerCommand.getSubCommand("world", "Re-center a world", "<name> <X> <Y> <Z>", PermissionType.ADMINS_ONLY); 
 		listCommand = netherCommand.getSubCommand("list", "List worlds, areas and portals", null, PermissionType.ADMINS_ONLY);
@@ -119,7 +119,6 @@ public class NetherGatePlugin extends JavaPlugin
 		deleteWorldCommand.bind("onDeleteWorld");
 		targetWorldCommand.bind("onTargetWorld");
 		scaleWorldCommand.bind("onScaleWorld");
-		nukeCommand.bind("onNuke");
 		setSpawnCommand.bind("onSetSpawn");
 		goHomeCommand.bind("onGoHome");
 		setHomeCommand.bind("onSetHome");
@@ -140,9 +139,6 @@ public class NetherGatePlugin extends JavaPlugin
 		scaledWorldMessage = utilities.getMessage("scaleWorld", "Re-scaled world %s to %.2f");
 		invalidNumberMessage = utilities.getMessage("invalidNumber", "'%s' is not a number");
 		disableScaleMessage = utilities.getMessage("disableScale", "Disabling scaling for world %s");
-		killedEntitiesMessage = utilities.getMessage("killedEntities", "Nuked %d of those darn %ss!");
-		noEntityMessage = utilities.getMessage("noEntities", "You are currently %s-free. Congrats!");
-		killFailedMessage = utilities.getMessage("killFailed", "Sorry, couldn't kill any &ss!");
 		spawnSetMessage = utilities.getMessage("setSpawn", "The spawn for world %s now set to (%d, %d, %d)");
 		spawnSetFailedMessage = utilities.getMessage("setSpawnfailed", "Couldn't set the spawn, sorry!");
 		homeSetMessage = utilities.getMessage("setHome", "Set your home to (%d, %d, %d) in %s");
@@ -370,66 +366,6 @@ public class NetherGatePlugin extends JavaPlugin
 		
 		return true;
 	}
-
-	public boolean onNuke(Player player, String[] parameters)
-	{
-		String worldName = null;
-		NetherWorld targetWorld = null;
-		EntityType targetType = EntityType.GHAST;
-		
-		if (parameters.length > 0)
-		{
-			targetType = EntityType.parseString(parameters[0]);
-			if (targetType == EntityType.UNKNOWN)
-			{
-				targetType = EntityType.GHAST;
-			}
-		}
-		
-		if (parameters.length > 1)
-		{
-			worldName = parameters[0];
-			targetWorld = manager.getWorld(worldName, player.getWorld());
-		}
-		else
-		{
-			targetWorld = manager.getCurrentWorld(player.getWorld());
-		}
-		
-		if (targetWorld == null)
-		{
-			if (worldName != null)
-			{
-				noWorldMessage.sendTo(player, worldName);	
-			}
-			else
-			{
-				killFailedMessage.sendTo(player, targetType.getName());
-				return true;
-			}
-		}
-		
-		World world = targetWorld.getWorld().getWorld();
-		if (world == null)
-		{
-			killFailedMessage.sendTo(player, targetType.getName());
-			return true;
-		}
-		
-		Nuke nuke = new Nuke();
-		int killCount = nuke.nuke(world, targetType);
-		
-		if (killCount > 0)
-		{
-			killedEntitiesMessage.sendTo(player, killCount, targetType.getName());
-		}
-		else
-		{
-			noEntityMessage.sendTo(player, targetType.getName());
-		}
-		
-		return true;
-	}
 	
 	public boolean onSetSpawn(Player player, String[] parameters)
 	{
@@ -475,17 +411,21 @@ public class NetherGatePlugin extends JavaPlugin
 		worldData.update(world);
 		persistence.put(worldData);
 		
+		// TODO!
+		/*
 		CraftWorld cWorld = (CraftWorld)world;
 		int x = player.getLocation().getBlockX();
 		int y = player.getLocation().getBlockY();
 		int z = player.getLocation().getBlockZ();
-		
+	
+		WorldServer wServer = cWorld.getHandle();
 		cWorld.getHandle().spawnX = player.getLocation().getBlockX();
 		cWorld.getHandle().spawnY = player.getLocation().getBlockY();
 		cWorld.getHandle().spawnZ = player.getLocation().getBlockZ();
+		*/
+		//spawnSetMessage.sendTo(player, worldData.getName(), x, y, z);
+		player.sendMessage("Sorry- broken by 1.3! Will fix soon!");
 		
-		spawnSetMessage.sendTo(player, worldData.getName(), x, y, z);
-	
 		return true;
 	}
 	
@@ -543,7 +483,7 @@ public class NetherGatePlugin extends JavaPlugin
 		}
 		
 		Location location = home.getLocation();
-		if (!manager.teleportPlayer(player, homeWorld, location))
+		if (!manager.startTeleport(player, homeWorld, location))
 		{
 			goHomeFailedMessage.sendTo(player);
 		}
@@ -623,20 +563,40 @@ public class NetherGatePlugin extends JavaPlugin
 		PlayerInventory inventory = player.getInventory();
 		
 		// Give a bit of obsidian
-		ItemStack itemStack = new ItemStack(Material.OBSIDIAN, 32);
-		inventory.addItem(itemStack);
+		if (!inventory.contains(Material.OBSIDIAN))
+		{
+			// Try to play nice with Spells by putting the materials
+			// on the right, if possible
+			ItemStack itemStack = new ItemStack(Material.OBSIDIAN, 32);
+			ItemStack[] items = inventory.getContents();
+			boolean inActive = false;
+			for (int i = 8; i >= 0; i--)
+			{
+				if (items[i] == null || items[i].getType() == Material.AIR)
+				{
+					inventory.setItem(i, itemStack);
+					inActive = true;
+					break;
+				}
+			}
+			
+			if (!inActive)
+			{
+				inventory.addItem(itemStack);
+			}
+		}
 		
 		// And a flint and steel, if they don't have one
 		if (!inventory.contains(Material.FLINT_AND_STEEL))
 		{
-			itemStack = new ItemStack(Material.FLINT_AND_STEEL, 1);
+			ItemStack itemStack = new ItemStack(Material.FLINT_AND_STEEL, 1);
 			player.getInventory().addItem(itemStack);
 		}
 		
 		// And a diamond pickaxe (for destroying), if they don't have one
 		if (!inventory.contains(Material.DIAMOND_PICKAXE))
 		{
-			itemStack = new ItemStack(Material.DIAMOND_PICKAXE, 1);
+			ItemStack itemStack = new ItemStack(Material.DIAMOND_PICKAXE, 1);
 			player.getInventory().addItem(itemStack);
 		}
 		
@@ -684,7 +644,6 @@ public class NetherGatePlugin extends JavaPlugin
 	protected PluginCommand deleteWorldCommand;
 	protected PluginCommand scaleCommand;
 	protected PluginCommand scaleWorldCommand;
-	protected PluginCommand nukeCommand;
 	protected PluginCommand setSpawnCommand;
 	protected PluginCommand setHomeCommand;
 	protected PluginCommand goHomeCommand;
@@ -708,9 +667,6 @@ public class NetherGatePlugin extends JavaPlugin
 	protected Message centeredWorldMessage;
 	protected Message invalidNumberMessage;
 	protected Message disableScaleMessage;
-	protected Message killedEntitiesMessage;
-	protected Message killFailedMessage;
-	protected Message noEntityMessage;
 	protected Message spawnSetMessage;
 	protected Message spawnSetFailedMessage;
 	protected Message homeSetMessage;

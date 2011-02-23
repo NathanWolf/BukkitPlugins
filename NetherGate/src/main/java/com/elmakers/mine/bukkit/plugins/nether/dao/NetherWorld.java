@@ -1,7 +1,11 @@
 package com.elmakers.mine.bukkit.plugins.nether.dao;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.util.BlockVector;
 
+import com.elmakers.mine.bukkit.gameplay.BoundingBox;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.persistence.dao.WorldData;
@@ -112,10 +116,66 @@ public class NetherWorld
 		this.scale = scale;
 	}
 	
+	public void populatePortals(List<Portal> allPortals)
+	{
+		if (portals == null) return;
+		
+		portals = new ArrayList<Portal>();
+		for (Portal portal : allPortals)
+		{
+			if (portal.getLocation().getWorld() == world)
+			{
+				portals.add(portal);
+			}
+		}
+	}
+	
+	/**
+	 * Adds a Portal to this world.
+	 * 
+	 * You *should* only call this if this Portal's Location
+	 * is in this world!
+	 * 
+	 * Also, this does not check for duplicates- it's just a 
+	 * quick add to the transient list, meant to stay in sync
+	 * with the Portal Location world values.
+	 * 
+	 * @param portal the portal to add to this world
+	 */
+	public void addPortal(Portal portal)
+	{
+		if (portals == null)
+		{
+			portals = new ArrayList<Portal>();
+		}
+		portals.add(portal);
+	}
+	
+	public Portal findPortalAt(BlockVector position)
+	{
+		if (portals == null)
+		{
+			return null;
+		}
+		for (Portal portal : portals)
+		{
+			BoundingBox portalBlocks = portal.getBoundingBox();
+			if (portalBlocks.contains(position))
+			{
+				return portal;
+			}
+		}
+		
+		return null;
+	}
+	
 	protected WorldData 	world;
 	protected NetherWorld	targetWorld;
 	protected PortalArea	targetArea;
 	protected BlockVector	targetOffset;
 	protected BlockVector	centerOffset;
 	protected double		scale;
+	
+	// Transient
+	protected List<Portal>	portals;
 }

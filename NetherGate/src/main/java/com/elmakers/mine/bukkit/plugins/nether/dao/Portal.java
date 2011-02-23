@@ -2,9 +2,13 @@ package com.elmakers.mine.bukkit.plugins.nether.dao;
 
 import java.util.Date;
 
+import org.bukkit.util.BlockVector;
+
+import com.elmakers.mine.bukkit.gameplay.BoundingBox;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.persistence.dao.LocationData;
+import com.elmakers.mine.bukkit.persistence.dao.Orientation;
 
 @PersistClass(schema="nether", name="portal")
 public class Portal
@@ -108,6 +112,33 @@ public class Portal
 		this.location = location;
 	}
 
+	@PersistField
+	public PortalType getType()
+	{
+		return type;
+	}
+
+	public void setType(PortalType type)
+	{
+		this.type = type;
+	}
+	
+	public BoundingBox getBoundingBox()
+	{
+		BlockVector position = location.getPosition();
+		Orientation orientation = location.getOrientation();
+		if (orientation.getYaw() == 0)
+		{
+			BlockVector min = new BlockVector(position.getBlockX(), position.getBlockY(), position.getBlockZ());
+			BlockVector max = new BlockVector(position.getBlockX() + 1, position.getBlockY(), position.getBlockZ());
+			return new BoundingBox(min, max);
+		}
+
+		BlockVector min = new BlockVector(position.getBlockX(), position.getBlockY(), position.getBlockZ());
+		BlockVector max = new BlockVector(position.getBlockX(), position.getBlockY(), position.getBlockZ() + 1);
+		return new BoundingBox(min, max);
+	}
+	
 	protected int			id;
 	protected LocationData 	location;
 	protected PortalArea	container;
@@ -117,4 +148,5 @@ public class Portal
 	protected Date			lastUsed;
 	protected Portal		target;
 	protected NetherPlayer	creator;
+	protected PortalType	type;
 }
