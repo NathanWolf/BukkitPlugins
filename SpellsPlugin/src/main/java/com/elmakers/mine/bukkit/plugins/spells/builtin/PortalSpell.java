@@ -8,6 +8,7 @@ import org.bukkit.util.BlockVector;
 
 import com.elmakers.mine.bukkit.gameplay.BoundingBox;
 import com.elmakers.mine.bukkit.plugins.nether.NetherManager;
+import com.elmakers.mine.bukkit.plugins.nether.dao.PortalType;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 
@@ -88,7 +89,7 @@ public class PortalSpell extends Spell
 			}
 		}
 	
-		nether.buildPortal(portalBase, getPlayerFacing(), false, true, null);
+		nether.buildPortal(portalBase, getPlayerFacing(), PortalType.PORTAL, false, null);
 		spells.scheduleCleanup(portalBlocks);
 		
 		return true;

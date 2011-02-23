@@ -75,41 +75,37 @@ public class TorchSpell extends Spell
 		}
 		
 		boolean isAir = face.getType() == Material.AIR;
-		boolean isAttachmentSlippery = target.getType() == Material.GLASS || target.getType() == Material.ICE || target.getType() == Material.SNOW;
+		boolean isAttachmentSlippery = target.getType() == Material.GLASS || target.getType() == Material.ICE;
+		boolean replaceAttachment = target.getType() == Material.SNOW || target.getType() == Material.NETHERRACK || target.getType() == Material.SOUL_SAND;
 		boolean isWater = face.getType() == Material.STATIONARY_WATER || face.getType() == Material.WATER;
+		boolean isNether = face.getType() == Material.NETHERRACK || face.getType() == Material.SOUL_SAND;
+		Material targetMaterial = Material.TORCH;
+		
+		if (isWater || isAttachmentSlippery || isNether)
+		{
+			targetMaterial = Material.GLOWSTONE;
+		}
+		
 		if 
 		(
 				face == null
 		|| 		(!isAir && !isWater)
-		||		(isWater && !allowLightstone)
-		||		(isAttachmentSlippery && !allowLightstone)
+		||		(targetMaterial == Material.GLOWSTONE && !allowLightstone)
 		)
 		{
 			player.sendMessage("Can't put a torch there");
 			return false;
 		}
+
+		if (replaceAttachment)
+		{
+			target = face;
+		}	
 		
 		castMessage(player, "Flame on!");
 		BlockList torchBlock = new BlockList();
-		torchBlock.addBlock(face);
-		
-		if (isWater || isAttachmentSlippery)
-		{
-			face.setType(Material.GLOWSTONE);
-		}
-		else
-		{
-			if (target.getType() == Material.NETHERRACK || target.getType() == Material.SOUL_SAND)
-			{
-				target.setType(Material.GLOWSTONE);
-				torchBlock.addBlock(target);
-			}
-			else
-			{
-				face.setType(Material.TORCH);
-			}
-		}
-		
+		target.setType(targetMaterial);
+		torchBlock.addBlock(target);
 		spells.addToUndoQueue(player, torchBlock);
 		
 		return true;

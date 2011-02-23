@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.96
+
+ - Update for NetherGate 0.44
+ - Add first-rev fire and lava spells - DANGEROUS!
+ - Fix some torch bugs
+
 ## 0.95
 
  - Refactor to work with Persistence 0.49
