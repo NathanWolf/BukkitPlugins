@@ -1,8 +1,8 @@
 # CHANGELOG
 
-## 0.64
+# 0.64
 
- - Call the new player.updateInventory method (er, guess they removed it? Oh, well)
+ - 1.3 update temporarily broke "isSneaking", disable material cycling for now
 
 ## 0.63
 

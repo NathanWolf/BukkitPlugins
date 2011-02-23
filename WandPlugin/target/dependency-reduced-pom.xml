@@ -90,7 +90,7 @@
   </dependencies>
   <dependencyManagement />
   <properties>
-    <build.version>0.63</build.version>
+    <build.version>0.64</build.version>
   </properties>
 </project>
 

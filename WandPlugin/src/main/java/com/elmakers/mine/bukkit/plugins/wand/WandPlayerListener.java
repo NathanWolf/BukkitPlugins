@@ -266,9 +266,12 @@ class WandPlayerListener extends PlayerListener
 			return;
 		}
 		
+		boolean cycleSpells = false;
+		// TODO: Sneaking broken by 1.3 update :( 
+		// cycleSpells = player.isSneaking()
 		if (materialId == wands.getWandTypeId())
 		{	
-			if (player.isSneaking())
+			if (cycleSpells)
 			{
 				if (!cycleMaterials(event.getPlayer()))
 				{
