@@ -1,5 +1,12 @@
 # CHANGELOG
 
+# 0.51
+
+ - Switch to concurrent hashmaps, remove locks (for now)
+ - Give LocationData a unique hash, which includes a hash of worldname- so it can now be used uncontained
+ - Allow using a contained entity as an id
+ - Allow byte persistence
+
 # 0.50
  
  - Add @Inherited to PersistField to support persisted inheritence- I think this pretty much does it!

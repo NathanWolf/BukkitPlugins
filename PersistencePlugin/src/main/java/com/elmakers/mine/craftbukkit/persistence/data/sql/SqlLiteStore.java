@@ -33,6 +33,8 @@ public class SqlLiteStore extends SqlStore
 		{
 			case INTEGER:
 				return "INTEGER";
+			case BYTE:
+				return "INTEGER";
 			case LONG:
 				return "INTEGER";
 			case BOOLEAN:

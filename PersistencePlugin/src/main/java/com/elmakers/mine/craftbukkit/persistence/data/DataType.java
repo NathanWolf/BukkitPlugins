@@ -5,6 +5,7 @@ import java.util.List;
 
 public enum DataType
 {
+	BYTE,
 	INTEGER,
 	LONG,
 	BOOLEAN,
@@ -62,6 +63,10 @@ public enum DataType
 		{
 			sqlType = DataType.LONG;
 		}
+		else if (Byte.class.isAssignableFrom(fieldType))
+		{
+			sqlType = DataType.BYTE;
+		}
 		else if (String.class.isAssignableFrom(fieldType))
 		{
 			sqlType = DataType.STRING;
@@ -86,6 +91,10 @@ public enum DataType
 		{
 			sqlType = DataType.FLOAT;
 		}
+		else if (byte.class.isAssignableFrom(fieldType))
+		{
+			sqlType = DataType.BYTE;
+		}
 		else
 		{
 			// Don't get the PersistedClass here, or you might cause recursion issues with circular dependencies.
@@ -94,6 +103,106 @@ public enum DataType
 			sqlType = DataType.OBJECT;
 		}
 		return sqlType;
+	}
+	
+	// TODO: SqlDataType class?
+	public static int getSqlType(DataType dataType)
+	{
+		switch(dataType)
+		{
+			case BOOLEAN: return java.sql.Types.BOOLEAN;
+			case DATE: return java.sql.Types.DATE;
+			case DOUBLE: return java.sql.Types.DOUBLE;
+			case FLOAT: return java.sql.Types.FLOAT;
+			case INTEGER: return java.sql.Types.INTEGER;
+			case BYTE: return java.sql.Types.TINYINT;
+			case STRING: return java.sql.Types.VARCHAR;
+		}
+		
+		return java.sql.Types.NULL;
+	}
+	
+
+	/**
+	 * Convert a SQL data type to a DataType.
+	 * 
+	 * Only converts supported DataTypes.
+	 * 
+	 * TODO: Move this to a SqlData type class, allow
+	 * stores to override type conversion
+	 * 
+	 * @param sqlType The java.sql.Type value to convert
+	 * @return A DataType value, or DataType.NULL if invalid
+	 */
+	public static DataType getTypeFromSqlType(int sqlType)
+	{
+		DataType dataType = DataType.NULL;
+		
+		switch(sqlType)
+		{
+			case java.sql.Types.BOOLEAN:
+				dataType = DataType.BOOLEAN;
+				break;
+			case java.sql.Types.BIT:
+				dataType = DataType.BOOLEAN;
+				break;	
+			case java.sql.Types.TINYINT:
+				dataType = DataType.BYTE;
+				break;	
+			case java.sql.Types.DATE:
+				dataType = DataType.DATE;
+				break;
+			case java.sql.Types.DECIMAL:
+				dataType = DataType.DOUBLE;
+				break;	
+			case java.sql.Types.DOUBLE:
+				dataType = DataType.DOUBLE;
+				break;	
+			case java.sql.Types.FLOAT:
+				dataType = DataType.DOUBLE;
+				break;	
+			case java.sql.Types.INTEGER:
+				dataType = DataType.INTEGER;
+				break;	
+			case java.sql.Types.JAVA_OBJECT:
+				dataType = DataType.OBJECT;
+				break;	
+			case java.sql.Types.LONGNVARCHAR:
+				dataType = DataType.STRING;
+				break;	
+			case java.sql.Types.LONGVARCHAR:
+				dataType = DataType.STRING;
+				break;	
+			case java.sql.Types.NCHAR:
+				dataType = DataType.STRING;
+				break;	
+			case java.sql.Types.NULL:
+				dataType = DataType.NULL;
+				break;	
+			case java.sql.Types.NUMERIC:
+				dataType = DataType.INTEGER;
+				break;	
+			case java.sql.Types.REAL:
+				dataType = DataType.DOUBLE;
+				break;	
+			case java.sql.Types.ROWID:
+				dataType = DataType.INTEGER;
+				break;	
+			case java.sql.Types.SMALLINT:
+				dataType = DataType.INTEGER;
+				break;	
+			case java.sql.Types.TIME:
+				dataType = DataType.DATE;
+				break;	
+			case java.sql.Types.TIMESTAMP:
+				dataType = DataType.DATE;
+				break;	
+			case java.sql.Types.VARCHAR:
+				dataType = DataType.STRING;
+				break;	
+		}
+		
+		return dataType;
 	}
 	
 	public static Object convertValue(Object value, Class<?> targetClass)
@@ -150,6 +259,31 @@ public enum DataType
 			}
 		}
 		
+		// Handle conversion to byte
+		if (byte.class.isAssignableFrom(targetClass) || Byte.class.isAssignableFrom(targetClass))
+		{
+			if (Byte.class.isAssignableFrom(valueClass) || byte.class.isAssignableFrom(valueClass))
+			{
+				return value;	
+			}
+			if (Long.class.isAssignableFrom(valueClass) || long.class.isAssignableFrom(valueClass))
+			{
+				return (Byte)(byte)(long)(Long)value;	
+			}
+			if (Float.class.isAssignableFrom(valueClass) || float.class.isAssignableFrom(valueClass))
+			{
+				return (Byte)(byte)(float)(Float)value;	
+			}
+			if (Double.class.isAssignableFrom(valueClass) || double.class.isAssignableFrom(valueClass))
+			{
+				return (Byte)(byte)(double)(Double)value;	
+			}
+			if (Integer.class.isAssignableFrom(valueClass) || int.class.isAssignableFrom(valueClass))
+			{
+				return (Byte)(byte)(int)(Integer)value;	
+			}
+		}
+		
 		// Handle conversion to int
 		if (int.class.isAssignableFrom(targetClass) || Integer.class.isAssignableFrom(targetClass))
 		{
@@ -168,6 +302,10 @@ public enum DataType
 			if (Double.class.isAssignableFrom(valueClass) || double.class.isAssignableFrom(valueClass))
 			{
 				return (Integer)(int)(double)(Double)value;	
+			}
+			if (Byte.class.isAssignableFrom(valueClass) || byte.class.isAssignableFrom(valueClass))
+			{
+				return (Integer)(int)(byte)(Byte)value;	
 			}
 		}
 		
@@ -190,6 +328,10 @@ public enum DataType
 			{
 				return (Long)(long)(double)(Double)value;	
 			}
+			if (Byte.class.isAssignableFrom(valueClass) || byte.class.isAssignableFrom(valueClass))
+			{
+				return (Long)(long)(byte)(Byte)value;	
+			}
 		}
 		
 		// Conversion to flaot
@@ -211,6 +353,10 @@ public enum DataType
 			{
 				return (Float)(float)(double)(Double)value;	
 			}
+			if (Byte.class.isAssignableFrom(valueClass) || byte.class.isAssignableFrom(valueClass))
+			{
+				return (Float)(float)(byte)(Byte)value;	
+			}
 		}
 		
 		// Conversion to double
@@ -231,6 +377,10 @@ public enum DataType
 			if (Float.class.isAssignableFrom(valueClass) || float.class.isAssignableFrom(valueClass))
 			{
 				return (Double)(double)(float)(Float)value;	
+			}
+			if (Byte.class.isAssignableFrom(valueClass) || byte.class.isAssignableFrom(valueClass))
+			{
+				return (Double)(double)(byte)(Byte)value;	
 			}
 		}
 				

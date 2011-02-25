@@ -2,8 +2,9 @@ package com.elmakers.mine.craftbukkit.persistence;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import org.bukkit.Server;
@@ -90,16 +91,13 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	 */
 	public <T> void getAll(List<T> objects, Class<T> objectType)
 	{	
-		synchronized(cacheReadLock)
+		PersistedClass persistedClass = getPersistedClass(objectType);
+		if (persistedClass == null)
 		{
-			PersistedClass persistedClass = getPersistedClass(objectType);
-			if (persistedClass == null)
-			{
-				return;
-			}
-			
-			persistedClass.getAll(objects);	
+			return;
 		}
+		
+		persistedClass.getAll(objects);	
 	}
 	
 	/**
@@ -109,16 +107,13 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	 */
 	public void remove(Object removeObject)
 	{
-		synchronized(cacheWriteLock)
+		PersistedClass persistedClass = getPersistedClass(removeObject.getClass());
+		if (persistedClass == null)
 		{
-			PersistedClass persistedClass = getPersistedClass(removeObject.getClass());
-			if (persistedClass == null)
-			{
-				return;
-			}
-			
-			persistedClass.remove(removeObject);
+			return;
 		}
+		
+		persistedClass.remove(removeObject);
 	}
 	
 	/**
@@ -144,19 +139,13 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	 */
 	public <T> void putAll(List<T> objects, Class<T> objectType)
 	{
-		synchronized(cacheReadLock)
+		PersistedClass persistedClass = getPersistedClass(objectType);
+		if (persistedClass == null)
 		{
-			synchronized(cacheWriteLock)
-			{
-				PersistedClass persistedClass = getPersistedClass(objectType);
-				if (persistedClass == null)
-				{
-					return;
-				}
-				
-				persistedClass.putAll(objects);	
-			}
+			return;
 		}
+		
+		persistedClass.putAll(objects);	
 	}
 	
 	/**
@@ -175,18 +164,15 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	@SuppressWarnings("unchecked")
 	public <T> T get(Object id, Class<T> objectType)
 	{
-		synchronized(cacheReadLock)
+		PersistedClass persistedClass = getPersistedClass(objectType);
+		if (persistedClass == null)
 		{
-			PersistedClass persistedClass = getPersistedClass(objectType);
-			if (persistedClass == null)
-			{
-				return null;
-			}
-			
-			Object result = persistedClass.get(id);
-			if (result == null) return null;
-			return (T)result;	
+			return null;
 		}
+		
+		Object result = persistedClass.get(id);
+		if (result == null) return null;
+		return (T)result;	
 	}
 	
 	/**
@@ -204,19 +190,14 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	{
 		if (persist == null) return false;
 		
-		synchronized(cacheReadLock)
+		PersistedClass persistedClass = getPersistedClass(persist.getClass());
+		if (persistedClass == null)
 		{
-			synchronized(cacheWriteLock)
-			{
-				PersistedClass persistedClass = getPersistedClass(persist.getClass());
-				if (persistedClass == null)
-				{
-					return false;
-				}
-				
-				persistedClass.put(persist);
-			}
+			return false;
 		}
+		
+		persistedClass.put(persist);
+
 		return true;		
 	}
 	
@@ -230,7 +211,7 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	 */
 	public void save()
 	{
-		for (PersistedClass persistedClass : persistedClasses)
+		for (PersistedClass persistedClass : persistedClassMap.values())
 		{
 			persistedClass.save();
 		}
@@ -245,10 +226,8 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	 */
 	public void clear()
 	{
-		persistedClasses.clear();
 		persistedClassMap.clear();
 		schemaMap.clear();
-		schemas.clear();
 	}
 	
 	/**
@@ -279,34 +258,6 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	}
 	
 	/**
-	 * Retrieve or create the persistence store for a particular schema.
-	 * 
-	 * Each schema gets its own persistent connection and database schema.
-	 * 
-	 * This is an internal function that doesn't necessarily need to be called.
-	 * 
-	 * @param schema The schema name to retrieve
-	 * @return The data store for the given schema
-	 */
-	public DataStore getStore(String schema)
-	{
-		DataStore store = null;
-		synchronized(dataLock)
-		{
-			schema = schema.toLowerCase();
-			store = schemaStores.get(schema);
-			if (store == null)
-			{
-				store = createStore();
-				store.initialize(schema, this);
-				schemaStores.put(schema, store);
-				stores.add(store);
-			}
-		}
-		return store;
-	}
-	
-	/**
 	 * Retrieve a Schema definition, with a list of PersistedClasses.
 	 * 
 	 * This function is used for inspecting schemas and entities.
@@ -329,7 +280,7 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	public List<Schema> getSchemaList()
 	{
 		List<Schema> schemaList = new ArrayList<Schema>();
-		schemaList.addAll(schemas);
+		schemaList.addAll(schemaMap.values());
 		return schemaList;
 	}
 	
@@ -371,6 +322,44 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 		return persistedClass;
 	}
 	
+	protected PersistedClass createPersistedClass(Class<? extends Object> persistType, EntityInfo entityInfo)
+	{
+		PersistedClass persistedClass = new PersistedClass(entityInfo, server);
+		if (!persistedClass.bind(persistType))
+		{
+			return null;
+		}
+		String schemaName = persistedClass.getSchemaName();
+		Schema schema = getSchema(schemaName);
+		if (schema == null)
+		{
+			schema = createSchema(schemaName);
+		}
+		schema.addPersistedClass(persistedClass);
+		persistedClass.setSchema(schema);
+		
+		persistedClassMap.put(persistType, persistedClass);
+		
+		// Deferred bind refernces- to avoid circular reference issues
+		persistedClass.bindReferences();
+		
+		return persistedClass;
+	}
+	
+	protected Schema createSchema(String schemaName)
+	{
+		Schema schema = schemaMap.get(schemaName);
+		if (schema == null)
+		{
+			schemaName = schemaName.toLowerCase();
+			DataStore store = createStore();
+			store.initialize(schemaName, this);
+			schema = new Schema(schemaName, store);
+			schemaMap.put(schemaName, schema);
+		}
+		return schema;
+	}
+	
 	/**
 	 * Retrieve or create a persisted class definition for a given class type.
 	 * 
@@ -385,26 +374,15 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 		PersistedClass persistedClass = persistedClassMap.get(persistType);
 		if (persistedClass == null)
 		{
-			persistedClass = new PersistedClass(entityInfo, server);
-			if (!persistedClass.bind(persistType))
+			// Lock now, to create an atomic checkCreate for class:
+			synchronized(classCreateLock)
 			{
-				return null;
+				persistedClass = persistedClassMap.get(persistType);
+				if (persistedClass == null)
+				{
+					persistedClass = createPersistedClass(persistType, entityInfo);
+				}
 			}
-			String schemaName = persistedClass.getSchema();
-			Schema schema = schemaMap.get(schemaName);
-			if (schema == null)
-			{
-				schema = new Schema();
-				schema.setName(schemaName);
-				schemas.add(schema);
-				schemaMap.put(schemaName, schema);
-			}
-			schema.addPersistedClass(persistedClass);
-			persistedClasses.add(persistedClass);
-			persistedClassMap.put(persistType, persistedClass);
-			
-			// Deferred bind refernces- to avoid circular reference issues
-			persistedClass.bindReferences();
 		}
 		return persistedClass;
 	}
@@ -484,14 +462,9 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	
 	public void disconnect()
 	{
-		synchronized(dataLock)
+		for (Schema schema : schemaMap.values())
 		{
-			for (DataStore store : stores)
-			{
-				store.disconnect();
-			}
-			stores.clear();
-			schemaStores.clear();
+			schema.disconnect();
 		}
 	}
 	
@@ -513,21 +486,20 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	
 	private static boolean allowOpsSUAccess = true;
 	
-	private final HashMap<Class<? extends Object>, PersistedClass> persistedClassMap = new HashMap<Class<? extends Object>, PersistedClass>(); 
-	private final List<PersistedClass> persistedClasses = new ArrayList<PersistedClass>(); 
-	private final List<Schema> schemas = new ArrayList<Schema>();
-	private final HashMap<String, Schema> schemaMap = new HashMap<String, Schema>();
-
 	private static final Logger log = Logger.getLogger("Minecraft");
 	
-	private final HashMap<String, DataStore> schemaStores = new HashMap<String, DataStore>();
-	private final List<DataStore> stores = new ArrayList<DataStore>();
-	
-	private static final Object dataLock = new Object();
-	private static final Object instanceLock = new Object();
-	private static final Object cacheReadLock = new Object();
-	private static final Object cacheWriteLock = new Object();
+	private final Map<Class<? extends Object>, PersistedClass> persistedClassMap = new ConcurrentHashMap<Class<? extends Object>, PersistedClass>(); 
+	private final Map<String, Schema> schemaMap = new ConcurrentHashMap<String, Schema>();
 	
 	private static Persistence instance = null;
 	private Server server;
+	
+	// Locks for manual synchronization
+	
+	// Make sure that we don't create a persisted class twice at the same time
+	private static final Object classCreateLock = new Object();
+	
+	// Make sure we don't create more than one instance of Persistence
+	private static final Object instanceLock = new Object();
+	
 }

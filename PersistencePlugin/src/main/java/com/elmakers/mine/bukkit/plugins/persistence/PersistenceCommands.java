@@ -316,7 +316,7 @@ public class PersistenceCommands
 			
 			if (refType != null)
 			{
-				dataField = refType.getSchema() + "." + refType.getTableName() + "." + dataField;
+				dataField = refType.getSchemaName() + "." + refType.getTableName() + "." + dataField;
 			}
 			
 			String row = fieldName + " = " + dataField;

@@ -65,7 +65,7 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 		{
 			if (referenceType.isContainedClass())
 			{
-				log.warning("Persistence: Field: " + getDataName() + ", Class " + referenceType.getTableName() + " must be contained");
+				log.warning("Persistence: " + owningClass.getSchemaName() + "." + owningClass.getTableName() + "." + getDataName() + ", entity " + referenceType.getTableName() + " must be contained");
 				referenceType = null;
 			}
 		}

@@ -15,7 +15,7 @@ import org.bukkit.util.BlockVector;
  * 
  * @author amkeyte
  */
-@PersistClass(schema = "global", name = "location", contained = true)
+@PersistClass(schema = "global", name = "location")
 public class LocationData extends Persisted
 {
 	/**
@@ -35,9 +35,7 @@ public class LocationData extends Persisted
 	 */
 	public LocationData(Location loc)
 	{
-		position = new BlockVector(loc.getX(), loc.getY(), loc.getZ());
-		worldData = Persistence.getInstance().get(loc.getWorld().getName(), WorldData.class);
-		orientation = new Orientation(loc);
+		update(loc);
 	}
 
 	/**
@@ -373,6 +371,62 @@ public class LocationData extends Persisted
 
 		return position.getBlockZ();
 	}
+	
+	/**
+	 * Update this LocationData given a location
+	 * 
+	 * @param location The location to take data from
+	 */
+	public void update(Location location)
+	{
+		updatePosition(location);
+		updateOrientation(location);
+		updateWorld(location);
+	}
+	
+	/**
+	 * Update this LocationData's position given a location
+	 * 
+	 * @param location The location to take position from
+	 */
+	public void updatePosition(Location loc)
+	{
+		position = new BlockVector(loc.getX(), loc.getY(), loc.getZ());
+	}
+	
+	/**
+	 * Update this LocationData's orientation given a location
+	 * 
+	 * @param location The location to take orientation from
+	 */
+	public void updateOrientation(Location loc)
+	{
+		orientation = new Orientation(loc);
+	}
+	
+	/**
+	 * Update this LocationData's world given a location
+	 * 
+	 * @param location The location to take world from
+	 */
+	public void updateWorld(Location loc)
+	{
+		worldData = Persistence.getInstance().get(loc.getWorld().getName(), WorldData.class);
+	}
+
+    /**
+     * Returns a hash code for this Location- does not include orientation.
+     *
+     * @return hash code
+     */
+    @Override
+    @PersistField(id=true, name="id", readonly=true)
+    public int hashCode()
+    {
+    	int positionHash = position == null ? 0 : position.hashCode();
+    	int worldHash = worldData == null ? 0 : worldData.getName().hashCode();
+    	return positionHash ^ (worldHash << 14);
+    }
 	
 	private BlockVector	position	= null;
 	private Orientation	orientation	= null;

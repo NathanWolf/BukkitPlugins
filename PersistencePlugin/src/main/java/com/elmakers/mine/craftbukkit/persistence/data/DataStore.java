@@ -84,7 +84,7 @@ public abstract class DataStore
 			else
 			{
 				// Custom migration not supported- just dump error.
-				logMigrateError(entity.getSchema(), entity.getName());
+				logMigrateError(entity.getSchemaName(), entity.getName());
 			}
 		}
 		

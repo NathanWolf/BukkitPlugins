@@ -52,7 +52,7 @@ public class MigrationStep extends Persisted
 		
 		
 		entity = entityClass.getName();
-		schema = entityClass.getSchema();
+		schema = entityClass.getSchemaName();
 	}
 	
 	/**

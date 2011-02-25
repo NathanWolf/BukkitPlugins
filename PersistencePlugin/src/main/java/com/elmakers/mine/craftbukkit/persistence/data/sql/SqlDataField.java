@@ -30,7 +30,7 @@ public class SqlDataField extends DataField
 	{
 		if (value == null)
 		{
-			ps.setNull(fieldIndex, SqlDataRow.getSqlType(dataType));
+			ps.setNull(fieldIndex, DataType.getSqlType(dataType));
 			return;
 		}
 		
@@ -40,28 +40,35 @@ public class SqlDataField extends DataField
 			case FLOAT:
 				if (float.class.isAssignableFrom(valueClass) || Float.class.isAssignableFrom(valueClass))
 				{
-					ps.setFloat(fieldIndex, (float)(Float)value);
+					ps.setFloat(fieldIndex, (Float)value);
 					return;
 				}
 				break;
 			case DOUBLE:
 				if (double.class.isAssignableFrom(valueClass) || Double.class.isAssignableFrom(valueClass))
 				{
-					ps.setDouble(fieldIndex, (double)(Double)value);
+					ps.setDouble(fieldIndex, (Double)value);
 					return;
 				}
 				break;	
 			case INTEGER:
 				if (int.class.isAssignableFrom(valueClass) || Integer.class.isAssignableFrom(valueClass))
 				{
-					ps.setInt(fieldIndex, (int)(Integer)value);
+					ps.setInt(fieldIndex, (Integer)value);
+					return;
+				}
+				break;	
+			case BYTE:
+				if (byte.class.isAssignableFrom(valueClass) || Byte.class.isAssignableFrom(valueClass))
+				{
+					ps.setByte(fieldIndex, (Byte)value);
 					return;
 				}
 				break;	
 			case LONG:
 				if (long.class.isAssignableFrom(valueClass) || Long.class.isAssignableFrom(valueClass))
 				{
-					ps.setLong(fieldIndex, (long)(Long)value);
+					ps.setLong(fieldIndex, (Long)value);
 					return;
 				}
 				break;	
@@ -78,7 +85,7 @@ public class SqlDataField extends DataField
 				break;
 			case DATE:
 				Date d = (Date)value;
-				Integer seconds = (int) (d.getTime() / 1000);
+				Integer seconds = (int)(d.getTime() / 1000);
 				ps.setInt(fieldIndex, seconds);
 				return;
 			case BOOLEAN:

@@ -3,8 +3,10 @@ package com.elmakers.mine.craftbukkit.persistence.core;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import org.bukkit.Server;
@@ -15,7 +17,6 @@ import com.elmakers.mine.bukkit.persistence.MigrationInfo;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.persistence.dao.Persisted;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
-import com.elmakers.mine.craftbukkit.persistence.Persistence;
 import com.elmakers.mine.craftbukkit.persistence.data.DataField;
 import com.elmakers.mine.craftbukkit.persistence.data.DataRow;
 import com.elmakers.mine.craftbukkit.persistence.data.DataStore;
@@ -45,10 +46,10 @@ public class PersistedClass
 	public PersistedClass(PersistedClass copy, PersistedField container)
 	{
 		this.contained = true;
-		this.defaultStore = copy.defaultStore;
+		this.schema = copy.schema;
 		this.container = container;
 		this.name = copy.name;
-		this.schema = copy.schema;
+		this.schemaName = copy.schemaName;
 		this.entityInfo = copy.entityInfo;
 		this.persistClass = copy.persistClass;
 		this.server = copy.server;
@@ -81,13 +82,12 @@ public class PersistedClass
 		this.persistClass = persistClass;
 		
 		cacheObjects = entityInfo.isCached();
-		schema = entityInfo.getSchema();
+		schemaName = entityInfo.getSchema();
 		name = entityInfo.getName();
 		
 		name = name.replace(" ", "_");
-		schema = schema.replace(" ", "_");
-		
-		defaultStore = Persistence.getInstance().getStore(schema);
+		schemaName = schemaName.replace(" ", "_");
+		schema = null; // Persistence will assign a schema after binding
 		
 		if (!cacheObjects)
 		{
@@ -192,11 +192,6 @@ public class PersistedClass
 			if (idField != null)
 			{
 				log.warning("Persistence: class " + persistClass.getName() + ": can't have more than one id field");
-				return false;
-			}
-			if (fieldInfo.isContained())
-			{
-				log.warning("Persistence: class " + persistClass.getName() + ": an id field can't be a contained entity");
 				return false;
 			}
 			idField = field;
@@ -321,7 +316,7 @@ public class PersistedClass
 		dirty = true;
 	}
 	
-	protected Object getById(PersistedField idField, HashMap<Object, CachedObject> fromCache, Object id)
+	protected Object getById(PersistedField idField, Map<Object, CachedObject> fromCache, Object id)
 	{
 		if (idField == null || id == null) return null;
 		if (id.getClass().isAssignableFrom(idField.getType()))
@@ -385,7 +380,7 @@ public class PersistedClass
 	public <T> void getAll(List<T> objects)
 	{
 		checkLoadCache();
-		for (CachedObject cachedObject : cache)
+		for (CachedObject cachedObject : cacheMap.values())
 		{
 			Object object = cachedObject.getObject();
 			if (persistClass.isAssignableFrom(object.getClass()))
@@ -405,13 +400,18 @@ public class PersistedClass
 	{
 		cacheMap.clear();
 		concreteIdMap.clear();
-		cache.clear();
 		loadState = LoadState.UNLOADED;
 	}
 	
 	public void reset()
 	{
-		reset(defaultStore);
+		reset(getDefaultStore());
+	}
+	
+	public DataStore getDefaultStore()
+	{
+		if (schema == null) return null;
+		return schema.getStore();
 	}
 	
 	public void reset(DataStore store)
@@ -451,9 +451,19 @@ public class PersistedClass
 		return name;
 	}
 	
-	public String getSchema()
+	public String getSchemaName()
+	{
+		return schemaName;
+	}
+	
+	public Schema getSchema()
 	{
 		return schema;
+	}
+	
+	public void setSchema(Schema schema)
+	{
+		this.schema = schema;
 	}
 	
 	public Class<? extends Object> getType()
@@ -473,7 +483,7 @@ public class PersistedClass
 	
 	public void save()
 	{
-		save(defaultStore);
+		save(getDefaultStore());
 	}
 	
 	public void save(DataStore store)
@@ -482,19 +492,19 @@ public class PersistedClass
 		if (!dirty) return;
 		
 		// Drop removed objects
-		if (removedFromCache.size() > 0)
+		Collection<CachedObject> removedList = removedMap.values();
+		if (removedList.size() > 0)
 		{
 			DataTable clearTable = getClassTable();
-			populate(clearTable, removedFromCache);			
+			populate(clearTable, removedList);			
 			store.clear(clearTable);
 			
-			removedFromCache.clear();
 			removedMap.clear();
 		}
 		
 		// Save dirty objects
 		List<CachedObject> dirtyObjects = new ArrayList<CachedObject>();
-		for (CachedObject cached : cache)
+		for (CachedObject cached : cacheMap.values())
 		{
 			if (cached.isDirty())
 			{
@@ -506,7 +516,7 @@ public class PersistedClass
 		dirty = false;
 	}
 	
-	protected void populate(DataTable dataTable, List<CachedObject> instances)
+	protected void populate(DataTable dataTable, Collection<CachedObject> instances)
 	{
 		for (CachedObject instance : instances)
 		{
@@ -526,7 +536,7 @@ public class PersistedClass
 	
 	public void save(List<CachedObject> instances)
 	{
-		save(instances, defaultStore);
+		save(instances, getDefaultStore());
 	}
 	
 	public void save(List<CachedObject> instances, DataStore store)
@@ -582,7 +592,7 @@ public class PersistedClass
 	
 	protected void checkLoadCache()
 	{
-		checkLoadCache(defaultStore);
+		checkLoadCache(getDefaultStore());
 	}
 	
 	protected void checkLoadCache(DataStore store)
@@ -662,7 +672,7 @@ public class PersistedClass
 	
 	protected void loadCache()
 	{
-		loadCache(defaultStore);
+		loadCache(getDefaultStore());
 	}
 	
 	protected void loadCache(DataStore store)
@@ -726,7 +736,7 @@ public class PersistedClass
 		if (externalFields.size() > 0)
 		{
 			List<Object> instances = new ArrayList<Object>();
-			for (CachedObject cached : cache)
+			for (CachedObject cached : cacheMap.values())
 			{
 				instances.add(cached.getObject());
 			}
@@ -859,21 +869,24 @@ public class PersistedClass
 		// First, make sure any Persisted class data is up to date
 		updatePersisted(o);
 		
-		// Check to see if this object has already been removed
-		
+		// Handle autogen ids
 		// 0 (and lower) are "magic numbers" signifying that there is no auto
 		// id set, and we need to generate one.
 		boolean autogenerate = idField.isAutogenerated();
 		Object id = null;
 		if (!autogenerate)
 		{
-			CachedObject removedObject = removedMap.get(id);
-			if (removedObject != null)
-			{
-				removedMap.remove(id);
-				removedFromCache.remove(removedObject);
-			}
 			id = getId(o);
+			if (id != null)
+			{
+				// Check to see if this object has already been removed, if so
+				// un-remove it
+				CachedObject removedObject = removedMap.get(id);
+				if (removedObject != null)
+				{
+					removedMap.remove(id);
+				}
+			}
 			if (concreteId == null)
 			{
 				concreteId = getIdData(o);
@@ -915,15 +928,12 @@ public class PersistedClass
 			idField.set(o, id);
 		}
 
-		CachedObject cached = new CachedObject(o);
-		if (id != null || concreteId != null)
-		{
-			cache.add(cached);
-		}
-		else
+		if (id == null && concreteId == null)
 		{
 			return null;
 		}
+
+		CachedObject cached = new CachedObject(o);
 		if (id != null)
 		{
 			cacheMap.put(id, cached);
@@ -944,7 +954,6 @@ public class PersistedClass
 			return;
 		}
 		
-		cache.remove(co);
 		if (cacheMap.containsKey(id))
 		{
 			cacheMap.remove(id);
@@ -953,7 +962,6 @@ public class PersistedClass
 		{
 			concreteIdMap.remove(id);
 		}
-		removedFromCache.add(co);
 		removedMap.put(id, co);
 	}
 	
@@ -977,18 +985,16 @@ public class PersistedClass
 	protected LoadState						loadState			= LoadState.UNLOADED;
 
 	protected boolean						cacheObjects		= false;
-	protected DataStore						defaultStore		= null;
 	protected long							maxId				= 1;
 
-	protected HashMap<Object, CachedObject>	cacheMap			= new HashMap<Object, CachedObject>();
-	protected HashMap<Object, CachedObject>	concreteIdMap		= new HashMap<Object, CachedObject>();
-	protected List<CachedObject>			cache				= new ArrayList<CachedObject>();
-	protected HashMap<Object, CachedObject>	removedMap			= new HashMap<Object, CachedObject>();
-	protected List<CachedObject>			removedFromCache	= new ArrayList<CachedObject>();
+	protected Map<Object, CachedObject>		cacheMap			= new ConcurrentHashMap<Object, CachedObject>();
+	protected Map<Object, CachedObject>		concreteIdMap		= new ConcurrentHashMap<Object, CachedObject>();
+	protected Map<Object, CachedObject>		removedMap			= new ConcurrentHashMap<Object, CachedObject>();
 
 	protected Class<? extends Object>		persistClass		= null;
 	protected Server						server				= null;
 
+	// TODO: Make sure these are ok non-concurrent? Should never be writing to these after startup!
 	protected List<PersistedField>			fields				= new ArrayList<PersistedField>();
 	protected List<PersistedField>			internalFields		= new ArrayList<PersistedField>();
 	protected List<PersistedList>			externalFields		= new ArrayList<PersistedList>();
@@ -1001,7 +1007,8 @@ public class PersistedClass
 	protected EntityInfo					entityInfo			= null;
 	protected MigrationInfo					migrationInfo		= null;
 
-	protected String						schema 				= null;
+	protected Schema						schema	 			= null;
+	protected String						schemaName 			= null;
 	protected String						name 				= null;
 
 	protected static Logger					log					= PersistencePlugin.getLogger();

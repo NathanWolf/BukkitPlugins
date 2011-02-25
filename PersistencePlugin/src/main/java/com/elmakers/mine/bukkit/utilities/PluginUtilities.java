@@ -359,6 +359,7 @@ public class PluginUtilities
 					{
 						Class<?> senderType = senderData.getType();
 						if (senderType == null) continue;
+						if (!senderType.isAssignableFrom(sender.getClass())) continue;
 						try
 						{
 							Method customHandler;
@@ -392,7 +393,7 @@ public class PluginUtilities
 			}
 			catch (NoSuchMethodException ex)
 			{
-				log.warning("Persistence: Can't find callback method " + callbackName + " of " + listener.getClass().getName());
+				log.warning("Persistence: Can't find callback method " + callbackName + " of " + listener.getClass().getName() + " for sender " + sender.getClass().getName());
 			}					
 			catch (SecurityException ex)
 			{
