@@ -37,6 +37,7 @@ public class User implements IProfile
 	public User(PlayerData player)
 	{
 		this.id = player;
+		player.setProfile(this);
 	}
 
 	public void removeFromGroup(Group group)

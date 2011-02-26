@@ -8,8 +8,11 @@ import java.util.logging.Logger;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.event.Event.Priority;
+import org.bukkit.event.Event.Type;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.elmakers.mine.bukkit.persistence.dao.Message;
@@ -77,6 +80,8 @@ public class GroupsPlugin extends JavaPlugin
 	    // Permissions backward compatibility
 	    bindToPermissions();
 	    
+		listener.initialize(persistence);
+	    
 	    GroupsDefaults d = new GroupsDefaults();
 	    utilities = persistence.getUtilities(this);
 	    
@@ -114,6 +119,10 @@ public class GroupsPlugin extends JavaPlugin
 		denyGroupCommand.bind("onDenyGroupr");
 		grantPlayerCommand.bind("onGrantPlayer");
 		grantGroupCommand.bind("onGrantGroup");
+		
+		PluginManager pm = getServer().getPluginManager();
+		
+		pm.registerEvent(Type.PLAYER_JOIN, listener, Priority.Normal, this);
 	}
 	
 	public void bindToPermissions()
@@ -420,6 +429,8 @@ public class GroupsPlugin extends JavaPlugin
 		
 		return true;
 	}
+	
+	protected GroupPlayerListener listener = new GroupPlayerListener();
 	
 	protected Persistence persistence = null;
 	protected PluginUtilities utilities = null;
