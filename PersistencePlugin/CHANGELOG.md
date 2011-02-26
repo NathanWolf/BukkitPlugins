@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.52
+
+ - Some fixes to the built-in security framework. Groups.jar is now needed for
+   Permissions support, until bukkit.permissions is ready to take over.
+
 # 0.51
 
  - Switch to concurrent hashmaps, remove locks (for now)

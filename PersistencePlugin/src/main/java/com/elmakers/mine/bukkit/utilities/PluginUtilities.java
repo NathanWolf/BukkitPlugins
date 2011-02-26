@@ -45,7 +45,7 @@ public class PluginUtilities
 		this.persistence = persistence;
 		this.owner = requestingPlugin;
 		
-		// Retreive or create the plugin data record for this plugin.
+		// Retrieve or create the plugin data record for this plugin.
 		PluginDescriptionFile pdfFile = requestingPlugin.getDescription();
 		String pluginId = pdfFile.getName();
 		plugin = persistence.get(pluginId, PluginData.class);
@@ -54,6 +54,9 @@ public class PluginUtilities
 			plugin = new PluginData(requestingPlugin);
 			persistence.put(plugin);
 		}
+		
+		// TODO : (remove this) : Initialize PluginCommand.security - this should be temporary.
+		PluginCommand.setSecurity(getSecurity());
 		
 		// Let the plugin bind its transient command and message instances
 		List<Message> allMessages = new ArrayList<Message>();
