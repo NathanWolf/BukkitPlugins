@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.46
+
+ - More auto-portal work
+ - Fix an NPE when a user tries to TP but has no permission to do so
+
 # 0.45
 
  - Portal tracking! First round. Creating portals on the other side now.

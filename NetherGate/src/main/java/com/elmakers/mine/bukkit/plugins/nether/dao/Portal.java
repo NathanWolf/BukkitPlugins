@@ -249,9 +249,9 @@ public class Portal
 		BoundingBox rightSide = new BoundingBox(centerBlock.getX() + 2, centerBlock.getY() - 1, centerBlock.getZ() - 1,
 				centerBlock.getX() + 1, centerBlock.getY() + 4, centerBlock.getZ());
 		BoundingBox top = new BoundingBox(centerBlock.getX() - 1, centerBlock.getY() + 3, centerBlock.getZ() - 1,
-				centerBlock.getX(), centerBlock.getY() + 4, centerBlock.getZ());
+				centerBlock.getX() + 1, centerBlock.getY() + 4, centerBlock.getZ());
 		BoundingBox bottom = new BoundingBox(centerBlock.getX() - 1, centerBlock.getY() - 1, centerBlock.getZ() - 1,
-				centerBlock.getX(), centerBlock.getY(), centerBlock.getZ());
+				centerBlock.getX() + 1, centerBlock.getY(), centerBlock.getZ());
 		
 		leftSide.fill(centerBlock.getWorld(), Material.OBSIDIAN, destructible, blockList);
 		rightSide.fill(centerBlock.getWorld(), Material.OBSIDIAN, destructible, blockList);

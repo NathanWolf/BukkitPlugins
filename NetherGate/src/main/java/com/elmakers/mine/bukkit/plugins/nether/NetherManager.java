@@ -452,6 +452,7 @@ public class NetherManager
 		if (!startTeleport(player, targetWorld, location, autoPortal))
 		{
 			targetWorld = null;
+			return null;
 		}
 	
 		return targetWorld.getWorld();
