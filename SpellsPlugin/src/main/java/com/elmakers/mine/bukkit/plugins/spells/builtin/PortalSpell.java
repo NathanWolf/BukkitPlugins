@@ -6,11 +6,10 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.util.BlockVector;
 
-import com.elmakers.mine.bukkit.gameplay.BoundingBox;
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
+import com.elmakers.mine.bukkit.gameplay.dao.BoundingBox;
 import com.elmakers.mine.bukkit.plugins.nether.NetherManager;
-import com.elmakers.mine.bukkit.plugins.nether.dao.PortalType;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 
 public class PortalSpell extends Spell
 {
@@ -54,10 +53,7 @@ public class PortalSpell extends Spell
 		
 		BlockList portalBlocks = new BlockList();
 		portalBlocks.setTimeToLive(10000);
-		portalBase = portalBase.getFace(BlockFace.DOWN);
 
-		
-		
 		/*
 		for (int z = 0; z < 2; z++)
 		{
@@ -84,13 +80,12 @@ public class PortalSpell extends Spell
 				for (int z = min.getBlockZ(); z < max.getBlockZ(); z++)
 				{
 					Block block = world.getBlockAt(x, y, z);
-					portalBlocks.addBlock(block);
+					portalBlocks.add(block);
 				}
 			}
 		}
 	
-		nether.buildPortal(portalBase, getPlayerFacing(), PortalType.PORTAL, false, null);
-		spells.scheduleCleanup(portalBlocks);
+		nether.createTemporaryPortal(player, portalBase);
 		
 		return true;
 	}
@@ -100,7 +95,7 @@ public class PortalSpell extends Spell
 		Block block = baseBlock.getRelative(x, y, z);
 		if (block.getType() == Material.AIR)
 		{
-			blocks.addBlock(block);
+			blocks.add(block);
 			block.setType(material);
 		}		
 	}

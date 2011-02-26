@@ -7,8 +7,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class StairsSpell extends Spell
@@ -94,24 +94,24 @@ public class StairsSpell extends Spell
 						boolean useStairs = (h == 0);
 						if (useStairs)
 						{
-							stairBlocks.addBlock(targetBlock);
+							stairBlocks.add(targetBlock);
 							targetBlock.setType(stairsMaterial);
 						}
 						else
 						if (useTorch)
 						{
-							tunneledBlocks.addBlock(targetBlock);
+							tunneledBlocks.add(targetBlock);
 							targetBlock.setType(Material.TORCH);
 						}
 						else
 						{
-							tunneledBlocks.addBlock(targetBlock);
+							tunneledBlocks.add(targetBlock);
 							targetBlock.setType(Material.AIR);
 						}
 						Block standingBlock = targetBlock.getFace(BlockFace.DOWN);
 						if (standingBlock.getType() == Material.AIR)
 						{
-							stairBlocks.addBlock(standingBlock);
+							stairBlocks.add(standingBlock);
 							standingBlock.setType(fillMaterial);
 						}
 					}
@@ -125,7 +125,7 @@ public class StairsSpell extends Spell
 
 		spells.addToUndoQueue(player, tunneledBlocks);
 		spells.addToUndoQueue(player, stairBlocks);
-		castMessage(player, "Tunneled through " + tunneledBlocks.getCount() + "blocks and created " + stairBlocks.getCount() + " stairs");
+		castMessage(player, "Tunneled through " + tunneledBlocks.size() + "blocks and created " + stairBlocks.size() + " stairs");
 	}	
 	
 	protected void createSpiralStairs(Block targetBlock)

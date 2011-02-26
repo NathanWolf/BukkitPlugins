@@ -4,8 +4,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class LavaSpell extends Spell
@@ -67,7 +67,7 @@ public class LavaSpell extends Spell
 			Block currentTarget = target.getWorld().getBlockAt(targetLoc.getBlockX(), targetLoc.getBlockY(), targetLoc.getBlockZ());
 			if (currentTarget.getType() == Material.AIR)
 			{
-				burnedBlocks.addBlock(currentTarget);
+				burnedBlocks.add(currentTarget);
 				Material mat = i > 15 ? Material.STATIONARY_LAVA : Material.LAVA;
 				byte data = i > 15 ? 15 : (byte)i;
 				
@@ -77,13 +77,13 @@ public class LavaSpell extends Spell
 			targetLoc.add(aim);
 		}
 		
-		if (burnedBlocks.getCount() > 0)
+		if (burnedBlocks.size() > 0)
 		{
 			burnedBlocks.setTimeToLive(2);
 			spells.addToUndoQueue(player, burnedBlocks);
 		}
 		
-		castMessage(player, "Blasted " + burnedBlocks.getCount() + " lava blocks");
+		castMessage(player, "Blasted " + burnedBlocks.size() + " lava blocks");
 		
 		return true;
 	}

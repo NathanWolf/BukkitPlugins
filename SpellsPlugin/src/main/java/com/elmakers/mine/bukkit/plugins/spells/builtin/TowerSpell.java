@@ -3,8 +3,8 @@ package com.elmakers.mine.bukkit.plugins.spells.builtin;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 
 public class TowerSpell extends Spell {
 
@@ -61,7 +61,7 @@ public class TowerSpell extends Spell {
 					{
 						blocksCreated++;
 						Block block = getBlockAt(x, y, z);
-						towerBlocks.addBlock(block);
+						towerBlocks.add(block);
 						block.setTypeId(material);
 					}					
 				}

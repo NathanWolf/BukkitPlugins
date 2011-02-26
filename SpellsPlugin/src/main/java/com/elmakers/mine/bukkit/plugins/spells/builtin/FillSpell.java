@@ -6,8 +6,10 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
+import com.elmakers.mine.bukkit.gameplay.BlockRecurse;
+import com.elmakers.mine.bukkit.gameplay.ReplaceMaterialAction;
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class FillSpell extends Spell 
@@ -15,10 +17,12 @@ public class FillSpell extends Spell
 	private int maxDimension = 128;
 	private int maxVolume = 512;
 	private final HashMap<String, Block> playerTargets = new HashMap<String, Block>();
+	private final BlockRecurse blockRecurse = new BlockRecurse();
 	
 	public FillSpell()
 	{
-		addVariant("paint", Material.PAINTING, getCategory(), "Fill a single block", "with single");
+		addVariant("paint", Material.PAINTING, getCategory(), "Fill a single block", "single");
+		addVariant("recurse", Material.WOOD_SPADE, getCategory(), "Recursively fill blocks", "recurse");
 	}
 	
 	@Override
@@ -26,23 +30,10 @@ public class FillSpell extends Spell
 	{
 		Block targetBlock = getTargetBlock();
 		Material material = spells.finishMaterialUse(player);
-		boolean singleBlock = false;
 		byte data = spells.getMaterialData(player);
+		boolean singleBlock = false;
+		boolean recurse = false;
 	
-		for (int i = 0; i < parameters.length; i++)
-		{
-			if (parameters[i].equalsIgnoreCase("single"))
-			{
-				singleBlock = true;
-			}
-		}
-		
-		if (targetBlock == null) 
-		{
-			castMessage(player, "No target");
-			return false;
-		}
-		
 		boolean overrideMaterial = false;
 		
 		ItemStack buildWith = getBuildingMaterial();
@@ -52,13 +43,49 @@ public class FillSpell extends Spell
 			data = getItemData(buildWith);
 			overrideMaterial = true;
 		}
+		
+		for (int i = 0; i < parameters.length; i++)
+		{
+			String parameter = parameters[i];
+			if (parameter.equalsIgnoreCase("single"))
+			{
+				singleBlock = true;
+				continue;
+			}
+			if (parameter.equalsIgnoreCase("recurse"))
+			{
+				recurse = true;
+				continue;
+			}
+			if (parameter.equalsIgnoreCase("with") && i < parameters.length - 1)
+			{
+				String materialName = parameters[i + 1];
+				data = 0;
+				material = getMaterial(materialName, spells.getBuildingMaterials());
+				i++;
+				continue;
+			}
+		}
+		
+		if (targetBlock == null) 
+		{
+			castMessage(player, "No target");
+			return false;
+		}
 	
-	
-		if (singleBlock)
+		if (recurse)
+		{
+			ReplaceMaterialAction action = new ReplaceMaterialAction(targetBlock, material, data);
+			blockRecurse.recurse(targetBlock, action);
+			spells.addToUndoQueue(player, action.getBlocks());
+			castMessage(player, "Filled " + action.getBlocks().size() + " blocks with " + material.name().toLowerCase());	
+			return true;
+		}
+		else if (singleBlock)
 		{
 			BlockList filledBlocks = new BlockList();
 			
-			filledBlocks.addBlock(targetBlock);
+			filledBlocks.add(targetBlock);
 			targetBlock.setType(material);
 			targetBlock.setData(data);
 			
@@ -111,7 +138,7 @@ public class FillSpell extends Spell
 					for (int iz = 0; iz < absz; iz++)
 					{
 						Block block = getBlockAt(x + ix * dx, y + iy * dy, z + iz * dz);
-						filledBlocks.addBlock(block);
+						filledBlocks.add(block);
 						block.setType(material);
 						block.setData(data);
 					}

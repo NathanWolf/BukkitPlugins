@@ -7,8 +7,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class ConstructSpell extends Spell
@@ -193,7 +193,7 @@ public class ConstructSpell extends Spell
 		}
 
 		spells.addToUndoQueue(player, constructedBlocks);
-		castMessage(player, "Constructed " + constructedBlocks.getCount() + "blocks");
+		castMessage(player, "Constructed " + constructedBlocks.size() + "blocks");
 	}
 	
 	public int getDistance(int x, int y, int z)
@@ -211,7 +211,7 @@ public class ConstructSpell extends Spell
 		{
 			return;
 		}
-		constructedBlocks.addBlock(block);
+		constructedBlocks.add(block);
 		block.setType(material);
 		block.setData(data);
 	}

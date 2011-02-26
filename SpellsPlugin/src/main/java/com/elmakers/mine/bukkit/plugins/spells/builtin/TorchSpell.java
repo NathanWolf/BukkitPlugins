@@ -3,8 +3,8 @@ package com.elmakers.mine.bukkit.plugins.spells.builtin;
 import org.bukkit.block.Block;
 import org.bukkit.Material;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class TorchSpell extends Spell 
@@ -97,7 +97,7 @@ public class TorchSpell extends Spell
 			return false;
 		}
 
-		if (replaceAttachment)
+		if (!replaceAttachment)
 		{
 			target = face;
 		}	
@@ -105,7 +105,7 @@ public class TorchSpell extends Spell
 		castMessage(player, "Flame on!");
 		BlockList torchBlock = new BlockList();
 		target.setType(targetMaterial);
-		torchBlock.addBlock(target);
+		torchBlock.add(target);
 		spells.addToUndoQueue(player, torchBlock);
 		
 		return true;

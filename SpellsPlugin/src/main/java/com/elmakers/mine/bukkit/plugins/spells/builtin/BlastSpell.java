@@ -6,8 +6,8 @@ import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class BlastSpell extends Spell
@@ -86,7 +86,7 @@ public class BlastSpell extends Spell
 		}
 
 		spells.addToUndoQueue(player, blastedBlocks);
-		castMessage(player, "Blasted " + blastedBlocks.getCount() + "blocks");
+		castMessage(player, "Blasted " + blastedBlocks.size() + "blocks");
 
 		return true;
 	}
@@ -106,7 +106,7 @@ public class BlastSpell extends Spell
 		{
 			return;
 		}
-		blastedBlocks.addBlock(block);
+		blastedBlocks.add(block);
 		block.setType(Material.AIR);
 	}
 

@@ -7,8 +7,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class AlterSpell extends Spell
@@ -63,7 +63,7 @@ public class AlterSpell extends Spell
 	
 	protected void adjust(Block block, byte dataValue, BlockList adjustedBlocks, boolean recursive, int rDepth)
 	{
-		adjustedBlocks.addBlock(block);
+		adjustedBlocks.add(block);
 		block.setData(dataValue);
 		
 		if (recursive && rDepth < recurseDistance)

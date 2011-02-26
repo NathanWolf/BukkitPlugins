@@ -6,8 +6,8 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 
 public class ExtendSpell extends Spell 
 {
@@ -55,7 +55,7 @@ public class ExtendSpell extends Spell
 			return false;
 		}
 		BlockList bridgeBlocks = new BlockList();
-		bridgeBlocks.addBlock(targetBlock);
+		bridgeBlocks.add(targetBlock);
 		targetBlock.setType(material);
 		targetBlock.setData(data);
 		

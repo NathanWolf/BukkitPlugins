@@ -1,10 +1,18 @@
 # CHANGELOG
 
+## 0.97
+
+ - Update for portal, NetherGate 0.45
+ - More Gameplay integration - use BlockList from Gameplay
+ - Auto-expanding undo (cave-in/breakage prevention) temporarily disabled
+ - Finally fix findPlaceToStand so blink doesn't take you to 255 y!
+
 ## 0.96
 
  - Update for NetherGate 0.44
  - Add first-rev fire and lava spells - DANGEROUS!
  - Fix some torch bugs
+ - Frost now puts out fires
 
 ## 0.95
 

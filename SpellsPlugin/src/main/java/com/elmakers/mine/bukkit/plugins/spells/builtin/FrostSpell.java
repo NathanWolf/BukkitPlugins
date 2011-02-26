@@ -4,13 +4,13 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class FrostSpell extends Spell
 {
-	private int				defaultRadius			= 4;
+	private int				defaultRadius			= 2;
 	private int				maxRadius				= 32;
 	private int				defaultSearchDistance	= 32;
 	private int				verticalSearchDistance	= 8;
@@ -75,7 +75,7 @@ public class FrostSpell extends Spell
 		}
 
 		spells.addToUndoQueue(player, frostedBlocks);
-		castMessage(player, "Frosted " + frostedBlocks.getCount() + " blocks");
+		castMessage(player, "Frosted " + frostedBlocks.size() + " blocks");
 		
 		return true;
 	}
@@ -106,31 +106,34 @@ public class FrostSpell extends Spell
 			block = block.getFace(BlockFace.DOWN);
 		}
 
-		if (block.getType() == Material.AIR || block.getType() == Material.ICE || block.getType() == Material.SNOW)
+		if (block.getType() == Material.AIR || block.getType() == Material.SNOW)
 		{
 			return;
 		}
 		Material material = Material.SNOW;
+		Block target = block;
 		if (block.getType() == Material.WATER || block.getType() == Material.STATIONARY_WATER)
 		{
 			material = Material.ICE;
 		}
-		else
-		if (block.getType() == Material.LAVA)
+		else if (block.getType() == Material.LAVA)
 		{
 			material = Material.COBBLESTONE;
 		}
-		else
-		if (block.getType() == Material.STATIONARY_LAVA)
+		else if (block.getType() == Material.STATIONARY_LAVA)
 		{
 			material = Material.OBSIDIAN;
 		}
+		else if (block.getType() == Material.FIRE)
+		{
+			material = Material.AIR;
+		}
 		else
 		{
-			block = block.getFace(BlockFace.UP);
+			target = target.getFace(BlockFace.UP);
 		}
-		frostedBlocks.addBlock(block);
-		block.setType(material);
+		frostedBlocks.add(target);
+		target.setType(material);
 	}
 
 	public int checkPosition(int x, int z, int R)

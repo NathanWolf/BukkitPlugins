@@ -284,7 +284,7 @@ public abstract class Spell implements Comparable<Spell>
 		World world = player.getWorld();
 
 		// search for a spot to stand
-		while (2 < y && y < 255)
+		while (4 < y && y < 125)
 		{
 			Block block = world.getBlockAt(x, y, z);
 			Block blockOneUp = world.getBlockAt(x, y + 1, z);

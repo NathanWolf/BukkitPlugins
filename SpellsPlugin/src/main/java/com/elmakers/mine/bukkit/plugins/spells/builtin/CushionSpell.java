@@ -5,8 +5,8 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftWorld;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class CushionSpell extends Spell
@@ -53,11 +53,11 @@ public class CushionSpell extends Spell
 					{
 						if (dx <= bubbleStart || dx >= bubbleEnd || dz <= bubbleStart || dz >= bubbleEnd || dy <= 0)
 						{
-							airBlocks.addBlock(block);
+							airBlocks.add(block);
 						}
 						else
 						{
-							cushionBlocks.addBlock(block);
+							cushionBlocks.add(block);
 							block.setType(Material.STATIONARY_WATER);
 						}
 					}

@@ -10,8 +10,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class MineSpell extends Spell
@@ -51,12 +51,12 @@ public class MineSpell extends Spell
 		byte data = (byte)(int)minedData.get(index);
 		
 		Location itemDrop = new Location(world, target.getX(), target.getY(), target.getZ(), 0, 0);
-		ItemStack items = new ItemStack(mineMaterial, (int)minedBlocks.getCount(), (short)0 , data);
+		ItemStack items = new ItemStack(mineMaterial, (int)minedBlocks.size(), (short)0 , data);
 		player.getWorld().dropItemNaturally(itemDrop, items);
 		
 		// This isn't undoable, since we can't pick the items back up!
 		// So, don't add it to the undo queue.
-		castMessage(player, "Mined " + minedBlocks.getCount() + " blocks of " + mineMaterial.name().toLowerCase());
+		castMessage(player, "Mined " + minedBlocks.size() + " blocks of " + mineMaterial.name().toLowerCase());
 		
 		return true;
 	}
@@ -68,7 +68,7 @@ public class MineSpell extends Spell
 	
 	protected void mine(Block block, Material fillMaterial, BlockList minedBlocks, int rDepth)
 	{
-		minedBlocks.addBlock(block);
+		minedBlocks.add(block);
 		block.setType(Material.AIR);
 		
 		if (rDepth < maxRecursion)

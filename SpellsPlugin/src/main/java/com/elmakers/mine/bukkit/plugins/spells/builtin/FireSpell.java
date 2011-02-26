@@ -4,8 +4,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class FireSpell extends Spell
@@ -77,7 +77,7 @@ public class FireSpell extends Spell
 		}
 
 		spells.addToUndoQueue(player, burnedBlocks);
-		castMessage(player, "Burned " + burnedBlocks.getCount() + " blocks");
+		castMessage(player, "Burned " + burnedBlocks.size() + " blocks");
 		
 		return true;
 	}
@@ -123,7 +123,7 @@ public class FireSpell extends Spell
 			block = block.getFace(BlockFace.UP);
 		}
 		
-		burnedBlocks.addBlock(block);
+		burnedBlocks.add(block);
 		block.setType(material);
 	}
 

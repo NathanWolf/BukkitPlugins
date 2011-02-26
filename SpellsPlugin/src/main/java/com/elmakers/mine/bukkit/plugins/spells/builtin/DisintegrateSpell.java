@@ -3,8 +3,8 @@ package com.elmakers.mine.bukkit.plugins.spells.builtin;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class DisintegrateSpell extends Spell
@@ -27,7 +27,7 @@ public class DisintegrateSpell extends Spell
 		}
 		
 		BlockList disintigrated = new BlockList();
-		disintigrated.addBlock(target);
+		disintigrated.add(target);
 		
 		if (isUnderwater())
 		{

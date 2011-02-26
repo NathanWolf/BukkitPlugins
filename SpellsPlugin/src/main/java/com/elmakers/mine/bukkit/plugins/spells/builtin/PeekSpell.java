@@ -6,8 +6,8 @@ import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class PeekSpell extends Spell
@@ -84,7 +84,7 @@ public class PeekSpell extends Spell
 		peekedBlocks.setTimeToLive(8000);
 		spells.scheduleCleanup(peekedBlocks);
 
-		castMessage(player, "Peeked through  " + peekedBlocks.getCount() + "blocks");
+		castMessage(player, "Peeked through  " + peekedBlocks.size() + "blocks");
 
 		return true;
 	}
@@ -105,7 +105,7 @@ public class PeekSpell extends Spell
 		{
 			return;
 		}
-		blocks.addBlock(block);
+		blocks.add(block);
 		block.setType(Material.GLASS);
 	}
 

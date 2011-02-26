@@ -7,8 +7,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class TunnelSpell extends Spell
@@ -78,7 +78,7 @@ public class TunnelSpell extends Spell
 						&& 		(h == 1)
 						&& 		(d % torchFrequency == 0)
 						);
-						tunneledBlocks.addBlock(targetBlock);
+						tunneledBlocks.add(targetBlock);
 						if (useTorch)
 						{
 							// First check to see if the torch will stick to the wall
@@ -114,7 +114,7 @@ public class TunnelSpell extends Spell
 		}
 
 		spells.addToUndoQueue(player, tunneledBlocks);
-		castMessage(player, "Tunneled through " + tunneledBlocks.getCount() + "blocks");
+		castMessage(player, "Tunneled through " + tunneledBlocks.size() + "blocks");
 		
 		return true;
 	}

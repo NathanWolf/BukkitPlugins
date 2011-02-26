@@ -4,6 +4,8 @@ import java.util.LinkedList;
 
 import org.bukkit.block.Block;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
+
 
 public class UndoQueue
 {

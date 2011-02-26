@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityEvent;
@@ -19,12 +18,11 @@ import org.bukkit.event.player.PlayerItemEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.nether.NetherManager;
 import com.elmakers.mine.bukkit.plugins.spells.builtin.*;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoQueue;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 import com.elmakers.mine.bukkit.utilities.PluginUtilities;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
@@ -176,6 +174,7 @@ public class Spells
 	{
 		UndoQueue queue = getUndoQueue(player.getName());
 		
+		/* TODO: Get this working again!
 		if (autoExpandUndo)
 		{
 			BlockList expandedBlocks = new BlockList(blocks);
@@ -246,7 +245,7 @@ public class Spells
 			}
 			blocks = expandedBlocks;
 		}
-		
+		*/
 		queue.add(blocks);
 	}
 	
@@ -663,7 +662,7 @@ public class Spells
 	private List<Material>	buildingMaterials	= new ArrayList<Material>();
 	private List<Material>	stickyMaterials		= new ArrayList<Material>();
 	private List<Material>	stickyMaterialsDoubleHeight		= new ArrayList<Material>();
-	private Material gravityFillMaterial = Material.DIRT;
+	//private Material gravityFillMaterial = Material.DIRT;
 	
 	private final List<BlockList> cleanupBlocks = new ArrayList<BlockList>();
 	private final Object cleanupLock = new Object();

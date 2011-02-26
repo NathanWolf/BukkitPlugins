@@ -8,9 +8,9 @@ import org.bukkit.block.Block;
 import org.bukkit.util.BlockVector;
 
 import com.elmakers.mine.bukkit.gameplay.BlockRequestListener;
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.nether.NetherManager;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 
 public class WindowSpell extends Spell implements BlockRequestListener
@@ -135,7 +135,7 @@ public class WindowSpell extends Spell implements BlockRequestListener
 		}
 		spells.scheduleCleanup(peekedBlocks);
 	
-		castMessage(player, "Windowed through  " + peekedBlocks.getCount() + "blocks");
+		castMessage(player, "Windowed through  " + peekedBlocks.size() + "blocks");
 	}
 	
 
@@ -154,7 +154,7 @@ public class WindowSpell extends Spell implements BlockRequestListener
 		{
 			return;
 		}
-		blocks.addBlock(block);
+		blocks.add(block);
 		block.setType(mat);
 	}
 

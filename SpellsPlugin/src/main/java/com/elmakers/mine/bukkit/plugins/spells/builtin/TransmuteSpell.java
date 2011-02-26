@@ -4,9 +4,9 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockData;
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.UndoableBlock;
 
 public class TransmuteSpell extends Spell
 {
@@ -50,7 +50,7 @@ public class TransmuteSpell extends Spell
 		Material material = targetItem.getType();
 		byte data = getItemData(targetItem);
 				
-		for (UndoableBlock undoBlock : transmuteAction.getBlocks())
+		for (BlockData undoBlock : transmuteAction)
 		{
 			Block block = undoBlock.getBlock();
 			block.setType(material);

@@ -5,8 +5,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
 
+import com.elmakers.mine.bukkit.gameplay.dao.BlockList;
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
-import com.elmakers.mine.bukkit.plugins.spells.utilities.BlockList;
 
 public class PillarSpell extends Spell 
 {
@@ -60,7 +60,7 @@ public class PillarSpell extends Spell
 		
 		BlockList pillarBlocks = new BlockList();
 		Block pillar = getBlockAt(targetBlock.getX(), targetBlock.getY(), targetBlock.getZ());
-		pillarBlocks.addBlock(pillar);
+		pillarBlocks.add(pillar);
 		pillar.setType(material);
 		pillar.setData(data);
 		
