@@ -4,15 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import net.minecraft.server.WorldServer;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
@@ -107,10 +104,11 @@ public class NetherGatePlugin extends JavaPlugin
 		centerCommand = netherCommand.getSubCommand("center", "Re-center an area or world", "<world | area> <name> <X> <Y> <Z>", PermissionType.ADMINS_ONLY); 
 		centerWorldCommand = centerCommand.getSubCommand("world", "Re-center a world", "<name> <X> <Y> <Z>", PermissionType.ADMINS_ONLY); 
 		listCommand = netherCommand.getSubCommand("list", "List worlds, areas and portals", null, PermissionType.ADMINS_ONLY);
-		listWorldsCommand = listCommand.getSubCommand("worlds", "List all known worlds", null, PermissionType.ADMINS_ONLY); 
+		listWorldsCommand = listCommand.getSubCommand("worlds", "List all known worlds", null, PermissionType.ADMINS_ONLY);
 		
 		setHomeCommand = netherCommand.getSubCommand("sethome", "Set your home world and location", null); 
 		goHomeCommand = netherCommand.getSubCommand("home", "Go to your home world and location", null);
+		compassCommand = netherCommand.getSubCommand("compass", "Get your current location", null);
 		
 		areaCommand.bind("onCreateArea");
 		worldCommand.bind("onCreateWorld");
@@ -124,6 +122,7 @@ public class NetherGatePlugin extends JavaPlugin
 		setHomeCommand.bind("onSetHome");
 		centerWorldCommand.bind("onCenterWorld");
 		listWorldsCommand.bind("onListWorlds");
+		compassCommand.bind("onCompass");
 		
 		creationFailedMessage = utilities.getMessage("creationFailed", "Nether creation failed- is there enough room below you?");
 		creationSuccessMessage = utilities.getMessage("creationSuccess", "Created new Nether area");
@@ -148,6 +147,7 @@ public class NetherGatePlugin extends JavaPlugin
 		noHomeMessage = utilities.getMessage("nohome", "Use sethome to set your home");
 		centeredWorldMessage = utilities.getMessage("centerWorld", "World %s centered around (%d,%d,%d)");
 		listWorldMessage = utilities.getMessage("listWorlds", "%s (%s) : %dx -> %s");
+		compassMessage = utilities.getMessage("compass", "%d,%d,%d in %s");
 	}
 	
 	public boolean onDeleteWorld(Player player, String[] parameters)
@@ -189,6 +189,21 @@ public class NetherGatePlugin extends JavaPlugin
 		
 		deletedWorldMessage.sendTo(player, worldName);
 		
+		return true;
+	}
+	
+	public boolean onCompass(Player player, String[] parameters)
+	{
+		NetherWorld currentWorld = manager.getCurrentWorld(player.getWorld());
+		if (currentWorld == null)
+		{
+			noWorldMessage.sendTo(player, "unknown");
+		}
+		Location playerLocation = player.getLocation();
+		int x = playerLocation.getBlockX();
+		int y = playerLocation.getBlockY();
+		int z = playerLocation.getBlockZ();
+		compassMessage.sendTo(player, x, y, z, currentWorld.getWorld().getName());
 		return true;
 	}
 	
@@ -563,18 +578,45 @@ public class NetherGatePlugin extends JavaPlugin
 		PlayerInventory inventory = player.getInventory();
 		
 		// Give a bit of obsidian
-		if (!inventory.contains(Material.OBSIDIAN))
+		// Try to play nice with Spells by putting the materials
+		// on the right, if possible
+		ItemStack itemStack = new ItemStack(Material.OBSIDIAN, 32);
+		ItemStack[] items = inventory.getContents();
+		boolean inActive = false;
+		for (int i = 8; i >= 0; i--)
+		{
+			if (items[i] == null || items[i].getType() == Material.AIR)
+			{
+				inventory.setItem(i, itemStack);
+				inActive = true;
+				break;
+			}
+		}
+		
+		if (!inActive)
+		{
+			inventory.addItem(itemStack);
+		}
+		
+		// And a flint and steel, if they don't have one
+		if (!inventory.contains(Material.FLINT_AND_STEEL))
+		{
+			ItemStack flintItem = new ItemStack(Material.FLINT_AND_STEEL, 1);
+			player.getInventory().addItem(flintItem);
+		}
+		
+		// And a diamond pickaxe (for destroying), if they don't have one
+		if (!inventory.contains(Material.DIAMOND_PICKAXE))
 		{
 			// Try to play nice with Spells by putting the materials
 			// on the right, if possible
-			ItemStack itemStack = new ItemStack(Material.OBSIDIAN, 32);
-			ItemStack[] items = inventory.getContents();
-			boolean inActive = false;
+			ItemStack pickAxeItem = new ItemStack(Material.DIAMOND_PICKAXE, 1);
+			inActive = false;
 			for (int i = 8; i >= 0; i--)
 			{
 				if (items[i] == null || items[i].getType() == Material.AIR)
 				{
-					inventory.setItem(i, itemStack);
+					inventory.setItem(i, pickAxeItem);
 					inActive = true;
 					break;
 				}
@@ -582,22 +624,8 @@ public class NetherGatePlugin extends JavaPlugin
 			
 			if (!inActive)
 			{
-				inventory.addItem(itemStack);
+				inventory.addItem(pickAxeItem);
 			}
-		}
-		
-		// And a flint and steel, if they don't have one
-		if (!inventory.contains(Material.FLINT_AND_STEEL))
-		{
-			ItemStack itemStack = new ItemStack(Material.FLINT_AND_STEEL, 1);
-			player.getInventory().addItem(itemStack);
-		}
-		
-		// And a diamond pickaxe (for destroying), if they don't have one
-		if (!inventory.contains(Material.DIAMOND_PICKAXE))
-		{
-			ItemStack itemStack = new ItemStack(Material.DIAMOND_PICKAXE, 1);
-			player.getInventory().addItem(itemStack);
 		}
 		
 		return true;
@@ -651,6 +679,7 @@ public class NetherGatePlugin extends JavaPlugin
 	protected PluginCommand centerCommand;
 	protected PluginCommand listWorldsCommand;
 	protected PluginCommand listCommand;
+	protected PluginCommand compassCommand;
 	
 	protected Message creationFailedMessage;
 	protected Message creationSuccessMessage;
@@ -675,6 +704,7 @@ public class NetherGatePlugin extends JavaPlugin
 	protected Message goHomeSuccessMessage;
 	protected Message noHomeMessage;
 	protected Message listWorldMessage;
+	protected Message compassMessage;
 	
 	protected NetherManager manager = new NetherManager();
 	protected NetherPlayerListener playerListener = new NetherPlayerListener(manager);

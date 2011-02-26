@@ -10,7 +10,7 @@ import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;
 
 import com.elmakers.mine.bukkit.gameplay.BlockRequestListener;
-import com.elmakers.mine.bukkit.gameplay.BoundingBox;
+import com.elmakers.mine.bukkit.gameplay.dao.BoundingBox;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherWorld;
 
 public class BlockRequest

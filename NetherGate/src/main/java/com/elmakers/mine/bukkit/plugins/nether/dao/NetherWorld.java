@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.bukkit.util.BlockVector;
 
-import com.elmakers.mine.bukkit.gameplay.BoundingBox;
+import com.elmakers.mine.bukkit.gameplay.dao.BoundingBox;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.persistence.dao.WorldData;

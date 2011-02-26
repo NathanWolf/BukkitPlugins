@@ -1,16 +1,14 @@
 package com.elmakers.mine.bukkit.plugins.nether.dao;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.util.BlockVector;
 
-import com.elmakers.mine.bukkit.gameplay.BoundingBox;
+import com.elmakers.mine.bukkit.gameplay.dao.BoundingBox;
+import com.elmakers.mine.bukkit.gameplay.dao.MaterialList;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 
@@ -40,7 +38,7 @@ public class PortalArea
 	public static int floorPercentChange = 5;
 	public static int poolSize = 4;
 	
-	public static HashMap<Material, Boolean> destructable = null;
+	public static MaterialList destructable = null;
 	
 	private static final Random random = new Random();
 
@@ -58,29 +56,31 @@ public class PortalArea
 	{
 		if (destructable == null)
 		{
-			destructable = new HashMap<Material, Boolean>();
-			destructable.put(Material.STONE, true);
-			destructable.put(Material.GRASS, true);
-			destructable.put(Material.DIRT, true);
-			destructable.put(Material.COBBLESTONE, true);
-			destructable.put(Material.SAND, true);
-			destructable.put(Material.STONE, true);
-			destructable.put(Material.GRAVEL, true);
-			destructable.put(Material.WATER, true);
-			destructable.put(Material.STATIONARY_WATER, true);
-			destructable.put(Material.COAL_ORE, true);
-			destructable.put(Material.DIAMOND_ORE, true);
-			destructable.put(Material.LAPIS_ORE, true);
-			destructable.put(Material.REDSTONE_ORE, true);
-			destructable.put(Material.GOLD_ORE, true);
-			destructable.put(Material.NETHERRACK, true);
-			destructable.put(Material.GLOWSTONE, true);
-			destructable.put(Material.IRON_ORE, true);
+			destructable = new MaterialList();
+			destructable.add(Material.STONE);
+			destructable.add(Material.GRASS);
+			destructable.add(Material.DIRT);
+			destructable.add(Material.COBBLESTONE);
+			destructable.add(Material.SAND);
+			destructable.add(Material.STONE);
+			destructable.add(Material.GRAVEL);
+			destructable.add(Material.WATER);
+			destructable.add(Material.STATIONARY_WATER);
+			destructable.add(Material.COAL_ORE);
+			destructable.add(Material.DIAMOND_ORE);
+			destructable.add(Material.LAPIS_ORE);
+			destructable.add(Material.REDSTONE_ORE);
+			destructable.add(Material.GOLD_ORE);
+			destructable.add(Material.NETHERRACK);
+			destructable.add(Material.GLOWSTONE);
+			destructable.add(Material.IRON_ORE);
 		}
 	}
 	
 	public void create(World world)
 	{
+		// TODO : Bring this back? Maybe in Spells?
+		/*
 		// Create bedrock box
 		BlockFace[] box = {BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST, BlockFace.DOWN, BlockFace.UP};
 		for (BlockFace face : box)
@@ -139,7 +139,7 @@ public class PortalArea
 				for (int dY = ySize; dY >=0; dY--)
 				{
 					Block block = world.getBlockAt(xOffset + mapX, yOffset + dY, zOffset + mapZ);
-					if (destructable.get(block.getType()) == null) continue;
+					if (destructable.contains(block.getType())) continue;
 					
 					// Create lava pools
 					if (block.getType() == Material.LAVA || block.getType() == Material.STATIONARY_LAVA)
@@ -170,6 +170,7 @@ public class PortalArea
 				}
 			}
 		}	
+		*/
 	}
 	
 	protected void createPool(byte[][] map, int mapX, int mapZ)

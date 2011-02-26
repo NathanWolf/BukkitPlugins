@@ -1,5 +1,12 @@
 # CHANGELOG
 
+# 0.45
+
+ - Portal tracking! First round. Creating portals on the other side now.
+ - Add compass command.
+ - Enable fast-travel by default for new world/nether worlds.
+ - Commented-out PortalArea.create, just in case
+
 # 0.44
 
  - Start playing with portal tracking, finally!

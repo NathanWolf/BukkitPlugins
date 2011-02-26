@@ -3,6 +3,7 @@ package com.elmakers.mine.bukkit.plugins.nether;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 
 
 import org.bukkit.Chunk;
@@ -20,7 +21,7 @@ import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;
 
 import com.elmakers.mine.bukkit.gameplay.BlockRequestListener;
-import com.elmakers.mine.bukkit.gameplay.BoundingBox;
+import com.elmakers.mine.bukkit.gameplay.dao.BoundingBox;
 import com.elmakers.mine.bukkit.persistence.dao.LocationData;
 import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.persistence.dao.WorldData;
@@ -66,11 +67,10 @@ public class NetherManager
 			switch (defaultType)
 			{
 				case NETHER:
-					//worldData.setScale(8); // hrm..
-					worldData.setScale(0);
+					worldData.setScale(8);
 					break;
 				default:
-					worldData.setScale(0); // TODO: Fix all this!
+					worldData.setScale(1);
 			}
 			persistence.put(worldData);
 			persistence.put(worldData.getTargetOffset());
@@ -223,13 +223,6 @@ public class NetherManager
 		this.server = server;
 		this.utilities = utilities;
 		this.persistence = persistence;
-		
-		needsPlatform.put(Material.WATER, true);
-		needsPlatform.put(Material.STATIONARY_WATER, true);
-		needsPlatform.put(Material.LAVA, true);
-		needsPlatform.put(Material.STATIONARY_LAVA, true);
-	
-		parseMaterials(DEFAULT_DESTRUCTIBLES, destructible);
 		
 		load();
 	}
@@ -483,12 +476,12 @@ public class NetherManager
 	{
 		if (targetWorld == null) return false;
 		
-		NetherPlayer tpPlayer = getPlayerData(player);
-		if (tpPlayer == null) return false;
+		NetherPlayer playerData = getPlayerData(player);
+		if (playerData == null) return false;
 		
 		if (!utilities.getSecurity().hasPermission(player, "NetherGate.portal.use")) 
 		{
-			cancelTeleport(tpPlayer);
+			cancelTeleport(playerData);
 			return false;
 		}
 		
@@ -502,11 +495,13 @@ public class NetherManager
 		Portal targetPortal = null;
 		if (sourcePortal != null)
 		{
+			sourcePortal.initialize(this);
 			targetPortal = sourcePortal.getTarget();
 		}
 		
 		if (targetPortal != null && targetPortal.getLocation() != null)
 		{
+			targetPortal.initialize(this);
 			target = targetPortal.getLocation().getPosition();
 			NetherWorld targetPortalWorld = getWorldData(targetPortal.getLocation().getWorld());
 			if (targetPortalWorld != null)
@@ -514,23 +509,47 @@ public class NetherManager
 				targetWorld = targetPortalWorld;
 			}
 		}
+		else
+		{
+			targetPortal = null;
+			if (sourcePortal != null)
+			{
+				sourcePortal.setTarget(null);
+			}
+		}
 		
-		tpPlayer.setTargetLocation(target);
-		tpPlayer.setTargetWorld(targetWorld);
-		tpPlayer.setSourceWorld(currentWorld);
-		tpPlayer.setSourcePortal(sourcePortal);
-		tpPlayer.setTargetPortal(targetPortal);
+		// Check for auto-portal, register this one if binding
+		if (autoPortal != null && autoPortal.isTracked())
+		{
+			 if (sourcePortal == null)
+			 {
+				 sourcePortal = new Portal(player, targetLocation, autoPortal, this);
+				 persistence.put(sourcePortal);
+				 currentWorld.addPortal(sourcePortal);
+			 }
+		}
+		else
+		{
+			// ignore source portal if not tracking- just use portal loc instead
+			sourcePortal = null;
+		}
+		
+		playerData.setTargetLocation(target);
+		playerData.setTargetWorld(targetWorld);
+		playerData.setSourceWorld(currentWorld);
+		playerData.setSourcePortal(sourcePortal);
+		playerData.setTargetPortal(targetPortal);
 
 		// for later!
-		tpPlayer.setSourceArea(null);
-		tpPlayer.setTargetArea(null);
+		playerData.setSourceArea(null);
+		playerData.setTargetArea(null);
 			
 		World world = targetWorld.getWorld().getWorld();
 		Chunk chunk = world.getChunkAt(targetLocation.getBlockX(), targetLocation.getBlockZ());
 		
 		if (world.isChunkLoaded(chunk))
 		{
-			finishTeleport(tpPlayer, world);
+			finishTeleport(playerData, world);
 		}
 		else
 		{
@@ -541,7 +560,7 @@ public class NetherManager
 				teleporting.put(getChunkId(chunk), players);
 			}
 			
-			players.add(tpPlayer);
+			players.add(playerData);
 			world.loadChunk(chunk);
 		}
 		
@@ -596,11 +615,14 @@ public class NetherManager
 					currentLocation.getPitch()
 			);
 					
-			// Look up first, then down
+			// Find a good place to stand
 			Location targetLocation = findPlaceToStand(location);
 			if (targetLocation == null)
 			{
-				Persistence.getLogger().info("Couldn't find a place for " + player.getName() + " to stand - sorry for the fall!");
+				if (debugLogging)
+				{
+					log.info("NG: Couldn't find a place for " + player.getName() + " to stand - sorry for the fall!");
+				}
 				targetLocation = location;
 			}
 			else
@@ -609,39 +631,85 @@ public class NetherManager
 				targetLocation.setY(targetLocation.getBlockY() + 1);
 			}
 			
-			Persistence.getLogger().info("From: " + currentLocation.getBlockX() + ", " + currentLocation.getBlockY() + ", " + currentLocation.getBlockZ()
-					+ " to " + targetLocation.getBlockX() + ", " + targetLocation.getBlockY() + ", " + targetLocation.getBlockZ());
-			
+			if (debugLogging)
+			{
+				String formatMessage =  "NG: TP'ing Player %s from (%d, %d, %d) to (%d, %d, %d)";
+				String message = String.format
+				(
+					formatMessage, 
+					player.getName(), 
+					currentLocation.getBlockX(), 
+					currentLocation.getBlockY(), 
+					currentLocation.getBlockZ(), 
+					targetLocation.getBlockX(), 
+					targetLocation.getBlockY(), 
+					targetLocation.getBlockZ()
+				);
+				log.info(message);
+			}
 			Block standingBlock = location.getWorld().getBlockAt(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
-			standingBlock = standingBlock.getFace(BlockFace.DOWN);
+			
+			// Get player permissions
+			boolean buildPortal = utilities.getSecurity().hasPermission(player, NetherPermissions.autoCreatePortal);
+			boolean buildPlatform = utilities.getSecurity().hasPermission(player, NetherPermissions.autoCreatePlatform);
+			boolean fillAir = utilities.getSecurity().hasPermission(player, NetherPermissions.fillAir);			
 			
 			// Check for portal connections
 			Portal sourcePortal = playerData.getSourcePortal();
-			if (sourcePortal != null && sourcePortal.getType().isTracked())
+			NetherWorld worldData = getWorldData(world);
+			if (sourcePortal != null && sourcePortal.getType().isTracked() && worldData != null)
 			{
-				// Auto-bind if not bound
+				sourcePortal.initialize(this);
+				// Auto-bind if not bound, and you have permission to create at least the portal
 				Portal targetPortal = sourcePortal.getTarget();
-				if (targetPortal == null)
+				if (targetPortal == null && buildPortal)
 				{
-					
+					targetPortal = new Portal(player, targetLocation, sourcePortal.getType(), this);
+					persistence.put(targetPortal);
+					worldData.addPortal(targetPortal);
+					if (debugLogging)
+					{
+						String formatMessage =  "NG: Building a full portal at %d, %d, %d and %s filling with air";
+						String message = String.format(formatMessage, targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ(), fillAir ? "" : "not");
+						log.info(message);
+					}
+					targetPortal.build(fillAir);
+					sourcePortal.setTarget(targetPortal);
 				}
 				else
 				{
 					// Use portal coordinates if available!
+					targetPortal.initialize(this);
 					targetLocation = targetPortal.getLocation().getLocation();
 				}
-				
-				if (utilities.getSecurity().hasPermission(player, NetherPermissions.autoCreate))
+			}
+			else
+			{
+				// Check for platform and air perms
+				if (fillAir)
 				{
-					boolean buildPortal = utilities.getSecurity().hasPermission(player, NetherPermissions.autoCreatePortal);
-					boolean buildFrame = utilities.getSecurity().hasPermission(player, NetherPermissions.autoCreateFrame);
-					boolean buildPlatform = utilities.getSecurity().hasPermission(player, NetherPermissions.autoCreatePlatform);
-					boolean fillAir = utilities.getSecurity().hasPermission(player, NetherPermissions.fillAir);
-					
-					buildPortal(standingBlock, BlockFace.NORTH, PortalType.getPortalType(buildPortal, buildFrame, buildPlatform), fillAir, null);
+					Portal.clearPortalArea(standingBlock, null);
+					if (debugLogging)
+					{
+						String formatMessage =  "NG: Clearing area around %d, %d, %d";
+						String message = String.format(formatMessage, targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
+						log.info(message);
+					}
+				}
+				if (buildPlatform)
+				{
+					Portal.buildPlatform(standingBlock, null);
+					if (debugLogging)
+					{
+						String formatMessage =  "NG: Building a platform at %d, %d, %d";
+						String message = String.format(formatMessage, targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
+						log.info(message);
+					}
 				}
 			}
 			
+			// Go up one block so the player is inside the portal
+			targetLocation.setY(targetLocation.getY() + 1);
 			player.teleportTo(targetLocation);
 			
 			playerData.update(player);
@@ -649,6 +717,26 @@ public class NetherManager
 		playerData.setState(TeleportState.TELEPORTED);
 		persistence.put(playerData);
 	}	
+	
+	public void createTemporaryPortal(Player player, Block centerBlock)
+	{
+		Portal tempPortal = new Portal(player, centerBlock.getLocation(), PortalType.PORTAL, this);
+		tempPortal.build(false);
+		if (debugLogging)
+		{
+			String formatMessage =  "NG: Buiding temporary portal at (%d, %d, %d)";
+			String message = String.format
+			(
+				formatMessage, 
+				player.getName(), 
+				centerBlock.getX(), 
+				centerBlock.getY(), 
+				centerBlock.getZ()
+			);
+			log.info(message);
+		}
+
+	}
 	
 	protected Location findPlaceToStand(Location startLocation)
 	{
@@ -737,72 +825,12 @@ public class NetherManager
 		return null;
 	}
 	
-	public void buildPortal(Block centerBlock, BlockFace facing, PortalType portalType, boolean fillAir, List<Block> blockList)
-	{
-		if (fillAir)
-		{
-			clearPortalArea(centerBlock, facing, blockList);
-		}
-	
-		if (portalType.hasFrame())
-		{
-			buildFrame(centerBlock, facing);
-		}
-		
-		if (portalType.hasPlatform())
-		{
-			buildPlatform(centerBlock, blockList);
-		}
-		
-		if (portalType.hasPortal())
-		{
-			buildPortalBlocks(centerBlock, facing);
-		}
-	}
-	
-	protected void buildPortalBlocks(Block centerBlock, BlockFace facing)
-	{
-		disablePhysics();
-		BoundingBox container = new BoundingBox(centerBlock.getX() - 1, centerBlock.getY() + 1, centerBlock.getZ() - 1,
-				centerBlock.getX() + 1, centerBlock.getY() + 4, centerBlock.getZ());
-		
-		container.fill(centerBlock.getWorld(), Material.PORTAL, destructible);
-		disablePhysics();
-	}
-	
-	protected void buildFrame(Block centerBlock, BlockFace facing)
-	{
-		disablePhysics();
-		BoundingBox container = new BoundingBox(centerBlock.getX() - 2, centerBlock.getY() + 1, centerBlock.getZ() - 1,
-				centerBlock.getX() + 2, centerBlock.getY() + 5, centerBlock.getZ());
-		
-		container.fill(centerBlock.getWorld(), Material.OBSIDIAN, destructible);
-		disablePhysics();
-	}
-	
-	protected void clearPortalArea(Block centerBlock, BlockFace facing, List<Block> blockList)
-	{
-		BoundingBox container = new BoundingBox(centerBlock.getX() - 3, centerBlock.getY() + 1, centerBlock.getZ() - 3,
-				centerBlock.getX() + 2, centerBlock.getY() + 5, centerBlock.getZ() + 2);
-		
-		container.fill(centerBlock.getWorld(), Material.AIR, destructible, blockList);
-	}
-	
-	protected void buildPlatform(Block centerBlock, List<Block> blockList)
-	{
-		BoundingBox platform = new BoundingBox(centerBlock.getX() - 3, centerBlock.getY(), centerBlock.getZ() - 3,
-				centerBlock.getX() + 2, centerBlock.getY() + 1, centerBlock.getZ() + 2);
-		
-		platform.fill(centerBlock.getWorld(), Material.OBSIDIAN, needsPlatform, blockList);
-	}
-	
-	
-	protected boolean isOkToStandIn(Material mat)
+	public boolean isOkToStandIn(Material mat)
 	{
 		return (mat == Material.AIR || mat == Material.PORTAL);
 	}
 
-	protected boolean isOkToStandOn(Material mat)
+	public boolean isOkToStandOn(Material mat)
 	{
 		return (mat != Material.AIR);
 	}
@@ -823,7 +851,7 @@ public class NetherManager
 		return true;
 	}
 	
-	protected void disablePhysics()
+	public void disablePhysics()
 	{
 		disabledPhysics = System.currentTimeMillis() + 5000;
 	}
@@ -870,10 +898,9 @@ public class NetherManager
 	
 	public static BlockVector							origin					= new BlockVector(0, 0, 0);
 
-	protected static final String						DEFAULT_DESTRUCTIBLES	= "0,1,2,3,4,10,11,12,13,14,15,16,21,51,56,78,79,82,87,88,89";
-
-	protected HashMap<Material, Boolean>				destructible			= new HashMap<Material, Boolean>();
-	protected HashMap<Material, Boolean>				needsPlatform			= new HashMap<Material, Boolean>();
+	protected static boolean 							debugLogging			= true;
+	protected static final Logger 						log						= Persistence.getLogger();
+	
 	protected HashMap<BlockVector, PlayerList>			teleporting				= new HashMap<BlockVector, PlayerList>();
 	protected HashMap<BlockVector, BlockRequestList>	requestMap				= new HashMap<BlockVector, BlockRequestList>();
 	protected List<PortalArea>							netherAreas				= new ArrayList<PortalArea>();
