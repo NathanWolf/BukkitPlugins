@@ -56,23 +56,31 @@ public class FireSpell extends Spell
 		int midZ = (diameter - 1) / 2;
 		int diameterOffset = diameter - 1;
 
-		for (int x = 0; x < radius; ++x)
+		if (radius <= 1)
 		{
-			for (int z = 0; z < radius; ++z)
+			burnBlock(0, midY, 0, target, 0, burnedBlocks);
+		}
+		else
+		{
+			for (int x = 0; x < radius; ++x)
 			{
-				if (checkPosition(x - midX, z - midZ, radius) <= 0)
+				for (int z = 0; z < radius; ++z)
 				{
-					int y = midY;
-					burnBlock(x, y, z, target, radius, burnedBlocks);
-					burnBlock(diameterOffset - x, y, z, target, radius, burnedBlocks);
-					burnBlock(x, diameterOffset - y, z, target, radius, burnedBlocks);
-					burnBlock(x, y, diameterOffset - z, target, radius, burnedBlocks);
-					burnBlock(diameterOffset - x, diameterOffset - y, z, target, radius, burnedBlocks);
-					burnBlock(x, diameterOffset - y, diameterOffset - z, target, radius, burnedBlocks);
-					burnBlock(diameterOffset - x, y, diameterOffset - z, target, radius, burnedBlocks);
-					burnBlock(diameterOffset - x, diameterOffset - y, diameterOffset - z, target, radius, burnedBlocks);
+					if (checkPosition(x - midX, z - midZ, radius) <= 0)
+					{
+						int y = midY;
+						burnBlock(x, y, z, target, radius, burnedBlocks);
+						
+						burnBlock(diameterOffset - x, y, z, target, radius, burnedBlocks);
+						burnBlock(x, diameterOffset - y, z, target, radius, burnedBlocks);
+						burnBlock(x, y, diameterOffset - z, target, radius, burnedBlocks);
+						burnBlock(diameterOffset - x, diameterOffset - y, z, target, radius, burnedBlocks);
+						burnBlock(x, diameterOffset - y, diameterOffset - z, target, radius, burnedBlocks);
+						burnBlock(diameterOffset - x, y, diameterOffset - z, target, radius, burnedBlocks);
+						burnBlock(diameterOffset - x, diameterOffset - y, diameterOffset - z, target, radius, burnedBlocks);
+					}
+					
 				}
-				
 			}
 		}
 
