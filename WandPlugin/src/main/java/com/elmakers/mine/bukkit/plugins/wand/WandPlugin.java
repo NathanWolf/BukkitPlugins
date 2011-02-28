@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
@@ -98,6 +99,9 @@ public class WandPlugin extends JavaPlugin
 				ItemStack itemStack = new ItemStack(Material.getMaterial(wands.getWandTypeId()), 1);
 				player.getInventory().addItem(itemStack);
 				gaveWand = true;
+				
+				CraftPlayer cPlayer = ((CraftPlayer)player);
+				cPlayer.getHandle().l();
 			}
 			
     		if (!gaveWand)
@@ -121,6 +125,9 @@ public class WandPlugin extends JavaPlugin
     	
 		ItemStack itemStack = new ItemStack(spell.getMaterial(), 1);
 		player.getInventory().addItem(itemStack);
+		
+		CraftPlayer cPlayer = ((CraftPlayer)player);
+		cPlayer.getHandle().l();
 		
 		return true;
 	}

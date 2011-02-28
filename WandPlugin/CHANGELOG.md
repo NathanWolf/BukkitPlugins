@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.65
+
+ - Bring material cycling back! Requires CB#478
+
 # 0.64
 
  - 1.3 update temporarily broke "isSneaking", disable material cycling for now
