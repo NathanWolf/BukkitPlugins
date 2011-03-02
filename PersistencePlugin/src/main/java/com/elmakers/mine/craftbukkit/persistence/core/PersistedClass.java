@@ -703,21 +703,12 @@ public class PersistedClass
 					if (id > maxId) maxId = id;
 				}
 				
-				// Check for objects with objects as ids
-				// These will have null ids at the moment, since the
-				// id object's class load is deferred.
-				
-				// So, in this case, we need to get the concrete id 
-				// from the data store to cache this instance so we 
-				// can look it up later when we bind its instances
-				
-				Object id = getId(newInstance);
-				Object concreteId = null;
-				if (id == null)
-				{
-					DataField idData = row.get(idField.getDataName());
-					concreteId = idData.getValue();
-				}
+				// cache by concrete (data) is from the store
+				// as well as the actual id
+				// This covers the case of "object as id", when that
+				// Object may not be loaded yet
+				DataField idData = row.get(idField.getDataName());
+				Object concreteId = idData.getValue();
 				
 				addToCache(newInstance, concreteId);
 			}

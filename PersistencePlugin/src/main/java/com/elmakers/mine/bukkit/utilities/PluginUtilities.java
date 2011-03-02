@@ -95,17 +95,10 @@ public class PluginUtilities
 		if (data == null)
 		{
 			data = new WorldData(name, defaultType);
-			addNewWorld(server, data);
+			persistence.put(data);
 		}
 		
 		return data;
-	}
-	
-	protected void addNewWorld(Server server, WorldData newWorld)
-	{		
-		//TODO : Ok, really need to find some way to automatically persist references....
-		persistence.put(newWorld);
-		persistence.put(newWorld.getSpawn());
 	}
 	
 	public WorldData getWorld(Server server, World world)
@@ -115,7 +108,7 @@ public class PluginUtilities
 		{
 			data = new WorldData();
 			data.update(world);
-			addNewWorld(server, data);
+			persistence.put(data);
 		}
 		else
 		{
@@ -310,12 +303,7 @@ public class PluginUtilities
 	protected boolean dispatch(Object listener, CommandSender sender, PluginCommand command, String commandString, String[] parameters)
 	{		
 		if (command != null && command.checkCommand(sender, commandString))
-		{
-			if (!command.checkPermission(sender))
-			{
-				return true;
-			}
-			
+		{			
 			boolean handledByChild = false;
 			if (parameters != null && parameters.length > 0)
 			{
@@ -344,6 +332,12 @@ public class PluginUtilities
 			}
 			
 			// Not handled by a sub-child, so handle it ourselves.
+			
+			if (!command.checkPermission(sender))
+			{
+				return true;
+			}
+
 			String callbackName = command.getCallbackMethod();
 			if (callbackName == null || callbackName.length() <= 0) 
 			{

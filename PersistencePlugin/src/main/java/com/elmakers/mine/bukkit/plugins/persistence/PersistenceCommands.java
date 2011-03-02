@@ -282,6 +282,46 @@ public class PersistenceCommands
 		return true;
 	}
 	
+	protected String listCompactEntity(PersistedClass type, Object instance)
+	{
+		String output = " [";
+		boolean firstField = true;
+		for (PersistedField field : type.getPersistedFields())
+		{
+			String fieldName = field.getName();
+			fieldName = padColumn(fieldName);
+			
+			PersistedClass refType = field.getReferenceType();			
+			String dataField = "null";
+			Object data = null;
+			if (instance != null)
+			{
+				data = field.get(instance);
+			}
+			if (refType != null)
+			{
+				data = refType.getIdData(data);
+				if (data != null)
+				{
+					dataField = refType.getName() + "." + data.toString();
+				}
+				else
+				{
+					dataField = refType.getName() + ".null";
+				}
+			}
+			
+			if (!firstField)
+			{
+				output += ",";
+			}
+			output += dataField;
+			
+			firstField = false;
+		}
+		return output + "]";
+	}
+	
 	protected void listEntity(CommandSender messageOutput, String schemaName, String entityName, String id)
 	{
 		PersistedClass persisted = getEntity(messageOutput, schemaName, entityName);
@@ -313,10 +353,9 @@ public class PersistenceCommands
 			{
 				dataField = data.toString();
 			}
-			
-			if (refType != null)
+			else if (refType != null)
 			{
-				dataField = refType.getSchemaName() + "." + refType.getTableName() + "." + dataField;
+				dataField = listCompactEntity(refType, data);
 			}
 			
 			String row = fieldName + " = " + dataField;

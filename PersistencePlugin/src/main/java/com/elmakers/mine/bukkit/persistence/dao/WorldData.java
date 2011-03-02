@@ -69,7 +69,7 @@ public class WorldData extends Persisted
 		this.name = name;
 	}
 	
-	@PersistField
+	@PersistField(contained=true)
 	public BlockVector getSpawn()
 	{
 		return spawn;

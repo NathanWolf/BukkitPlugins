@@ -31,7 +31,6 @@ public class PersistenceListener extends PlayerListener
 			playerData.setSuperUser(false);
 		}
 		persistence.put(playerData);
-		persistence.save();
 	}
 
 	@Override
@@ -44,7 +43,6 @@ public class PersistenceListener extends PlayerListener
 		{
 			playerData.disconnect(player);
 			persistence.put(playerData);
-			persistence.save();
 		}
 	}
 	

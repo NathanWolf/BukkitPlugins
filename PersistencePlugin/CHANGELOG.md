@@ -1,9 +1,17 @@
 # CHANGELOG
 
-# 0.52
+# 0.53
 
  - Some fixes to the built-in security framework. Groups.jar is now needed for
    Permissions support, until bukkit.permissions is ready to take over.
+ - Make WorldData contain its spawn location
+ - Improvements to persist list
+ - No longer save on player join/quit
+ - Some refactoring to deferred-loading, which was giving me some grief
+
+# 0.52
+
+ - Uh... I think I skipped a version! Whoops! I should check the thread changelog..
 
 # 0.51
 
