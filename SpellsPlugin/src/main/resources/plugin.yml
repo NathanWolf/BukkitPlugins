@@ -1,6 +1,6 @@
 name: Spells
 main: com.elmakers.mine.bukkit.plugins.spells.SpellsPlugin
-version: 0.96
+version: 0.98
 website: http://mine.elmakers.com
 author: NathanWolf
 description : Mmmmmmaaaaagic!

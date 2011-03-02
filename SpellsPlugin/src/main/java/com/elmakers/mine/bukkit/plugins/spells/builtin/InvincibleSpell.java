@@ -1,20 +1,25 @@
 package com.elmakers.mine.bukkit.plugins.spells.builtin;
 
-import java.util.HashMap;
-
 import org.bukkit.Material;
 
 import com.elmakers.mine.bukkit.plugins.spells.Spell;
 
 public class InvincibleSpell extends Spell 
 {
-	private final HashMap<String, Boolean> invinciblePlayers = new HashMap<String, Boolean>();
-
 	@Override
 	public boolean onCast(String[] parameters) 
 	{
-		invinciblePlayers.put(player.getName(), true);
-		return false;
+		boolean invincible = !spells.isInvincible(player);
+		spells.setInvincible(player, invincible);
+		if (invincible)
+		{
+			castMessage(player, "You feel invincible!");
+		}
+		else
+		{
+			castMessage(player, "You feel ... normal.");
+		}
+		return true;
 	}
 
 	@Override
@@ -26,7 +31,7 @@ public class InvincibleSpell extends Spell
 	@Override
 	public String getCategory() 
 	{
-		return "wip";
+		return "help";
 	}
 
 	@Override

@@ -9,8 +9,8 @@ import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
 import org.bukkit.event.player.PlayerEvent;
@@ -458,7 +458,6 @@ public class Spells
 		PluginProperties properties = new PluginProperties(propertiesFile);
 		properties.load();
 		
-		permissionsFile = properties.getString("spells-general-classes-file", permissionsFile);
 		undoQueueDepth = properties.getInteger("spells-general-undo-depth", undoQueueDepth);
 		silent = properties.getBoolean("spells-general-silent", silent);
 		quiet = properties.getBoolean("spells-general-quiet", quiet);
@@ -542,9 +541,12 @@ public class Spells
 		*/
 	}
 	  
-    public void onPlayerDamage(Player player, EntityEvent event)
+    public void onPlayerDamage(Player player, EntityDamageEvent event)
     {
-    	// TODO!
+    	if (isInvincible(player))
+    	{
+    		event.setCancelled(true);
+    	}
     }
     
    
@@ -630,6 +632,7 @@ public class Spells
 		addSpell(new PeekSpell());
 		addSpell(new FireSpell());
 		addSpell(new LavaSpell());
+		addSpell(new InvincibleSpell());
 		
 		// wip
 		// addSpell(new TowerSpell());
@@ -646,11 +649,26 @@ public class Spells
 		}
 	}
 	
+	public boolean isInvincible(Player player)
+	{
+		Boolean isInvincible = invinciblePlayers.get(player.getName());
+		if (isInvincible == null)
+		{
+			return false;
+		}
+		
+		return isInvincible;
+	}
+	
+	public void setInvincible(Player player, boolean invincible)
+	{
+		invinciblePlayers.put(player.getName(), invincible);
+	}
+	
 	/*
 	 * Private data
 	 */
 	private final String propertiesFile = "spells.properties";
-	private String permissionsFile = "spell-classes.txt";
 	
 	private final String wandPropertiesFile = "wand.properties";
 	private int wandTypeId = 280;
@@ -686,7 +704,9 @@ public class Spells
 	private final List<Spell> materialListeners = new ArrayList<Spell>();
 	private final List<Spell> quitListeners = new ArrayList<Spell>();
 	private final List<Spell> deathListeners = new ArrayList<Spell>();
-	
+	private final HashMap<String, Boolean> invinciblePlayers = new HashMap<String, Boolean>();
+
+
 	private SpellsPlugin plugin = null;
 	private NetherManager nether = null;
 	

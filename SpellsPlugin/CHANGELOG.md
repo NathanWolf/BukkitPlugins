@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.98
+
+ - But blast paramaters back in :)
+ - Invincible!
+
 ## 0.97
 
  - Update for portal, NetherGate 0.45

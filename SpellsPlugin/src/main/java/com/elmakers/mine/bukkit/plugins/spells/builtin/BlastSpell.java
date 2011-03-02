@@ -139,7 +139,7 @@ public class BlastSpell extends Spell
 	@Override
 	public void onLoad(PluginProperties properties)
 	{
-		destructibleMaterials = PluginProperties.parseMaterials(DEFAULT_DESTRUCTIBLES);
+		destructibleMaterials =  properties.getMaterials("spells-blast-destroy", DEFAULT_DESTRUCTIBLES);
 		defaultRadius = properties.getInteger("spells-blast-radius", defaultRadius);
 		maxRadius = properties.getInteger("spells-blast-max-radius", maxRadius);
 		defaultSearchDistance = properties.getInteger("spells-blast-search-distance", defaultSearchDistance);

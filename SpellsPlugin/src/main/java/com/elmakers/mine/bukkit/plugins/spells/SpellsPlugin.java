@@ -60,17 +60,9 @@ public class SpellsPlugin extends JavaPlugin
         pm.registerEvent(Type.PLAYER_MOVE, playerListener, Priority.Normal, this);
         pm.registerEvent(Type.PLAYER_QUIT, playerListener, Priority.Normal, this);
         
-        pm.registerEvent(Type.ENTITY_DEATH, entityListener, Priority.Normal, this);
-        
-        /*
+        pm.registerEvent(Type.ENTITY_DEATH, entityListener, Priority.Normal, this);   
         pm.registerEvent(Type.ENTITY_DAMAGED, entityListener, Priority.Normal, this);
-        pm.registerEvent(Type.ENTITY_COMBUST, entityListener, Priority.Normal, this);
-        pm.registerEvent(Type.ENTITY_DAMAGEDBY_BLOCK, entityListener, Priority.Normal, this);
-        pm.registerEvent(Type.ENTITY_DAMAGEDBY_ENTITY, entityListener, Priority.Normal, this);
-        pm.registerEvent(Type.ENTITY_DAMAGEDBY_PROJECTILE, entityListener, Priority.Normal, this);
-        pm.registerEvent(Type.ENTITY_EXPLODE, entityListener, Priority.Normal, this);
-        */
-        
+         
         PluginDescriptionFile pdfFile = this.getDescription();
         log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled");
 	}
