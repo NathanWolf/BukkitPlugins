@@ -25,6 +25,7 @@ import com.elmakers.mine.bukkit.plugins.groups.dao.User;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.utilities.PluginUtilities;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
+import com.nijiko.permissions.PermissionHandler;
 import com.nijikokun.bukkit.Permissions.Permissions;
 
 public class GroupsPlugin extends JavaPlugin
@@ -130,7 +131,9 @@ public class GroupsPlugin extends JavaPlugin
 		Plugin checkForPermissions = this.getServer().getPluginManager().getPlugin("Permissions");
 	    if (checkForPermissions != null) 
 	    {
-	    	User.setPermissions((Permissions)checkForPermissions);
+	    	getServer().getPluginManager().enablePlugin(checkForPermissions);
+	    	PermissionHandler handler = ((Permissions)checkForPermissions).getHandler();
+	    	User.setPermissions(handler);
 	    	log.info("Groups: Found Permissions, using it for permissions.");
 	    }
 	}

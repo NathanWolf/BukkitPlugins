@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.15
+
+ - More Permissions fixes- still don't know if it's working :P
+
 # 0.14
 
  - Fix Permissions support - sorry about that.

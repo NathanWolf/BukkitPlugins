@@ -7,7 +7,7 @@
 	<name>elMakers - Bukkit Plugins : Groups</name>
 	<url>http://mine.elmakers.com</url>
 	<properties>
-		<build.version>0.14</build.version>
+		<build.version>0.15</build.version>
 	</properties>
 	<repositories>
 		<repository>

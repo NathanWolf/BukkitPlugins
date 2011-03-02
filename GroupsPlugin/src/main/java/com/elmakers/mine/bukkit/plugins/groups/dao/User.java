@@ -11,7 +11,7 @@ import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 import com.elmakers.mine.bukkit.persistence.dao.IProfile;
 import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.plugins.groups.dao.Group;
-import com.nijikokun.bukkit.Permissions.Permissions;
+import com.nijiko.permissions.PermissionHandler;
 
 /**
  * Encapsulate a User that can be part of a Group
@@ -180,7 +180,7 @@ public class User implements IProfile
 			Player player = id.getPlayer();
 			if (player == null) return false;
 			
-			return Permissions.Security.has(player, key);
+			return permissions.has(player, key);
 		}
 		
 		return false;
@@ -260,10 +260,10 @@ public class User implements IProfile
 	
 	
 	// Permissions backwards-compatibility
-	public static void setPermissions(Permissions permissions)
+	public static void setPermissions(PermissionHandler permissions)
 	{
 		User.permissions = permissions;
 	}
 	
-	protected static Permissions permissions = null;
+	protected static PermissionHandler permissions = null;
 }
