@@ -210,27 +210,32 @@ public class Portal
 		World world = location.getWorld();
 		Location loc = location.getLocation();
 		Block centerBlock = world.getBlockAt(loc);
-		Orientation orientation = location.getOrientation();
-		BlockFace facing = orientation.getYaw() == 0 ? BlockFace.NORTH : BlockFace.WEST;
+		//Orientation orientation = location.getOrientation();
+		//BlockFace facing = orientation.getYaw() == 0 ? BlockFace.NORTH : BlockFace.WEST;
 		if (fillAir)
 		{
 			clearPortalArea(centerBlock, blockList);
 		}
 	
-		if (type.hasFrame())
-		{
-			buildFrame(centerBlock, facing, blockList);
-		}
+		// TURNING THIS BACK OFF FOR NOW :P
+		updatePending = true;
 		
 		if (type.hasPlatform())
 		{
 			buildPlatform(centerBlock, blockList);
+		}
+
+		/*
+		if (type.hasFrame())
+		{
+			buildFrame(centerBlock, facing, blockList);
 		}
 		
 		if (type.hasPortal())
 		{
 			buildPortalBlocks(centerBlock, facing, blockList);
 		}
+		*/
 	}
 	
 	protected void buildPortalBlocks(Block centerBlock, BlockFace facing, BlockList blockList)
@@ -259,7 +264,7 @@ public class Portal
 		bottom.fill(centerBlock.getWorld(), Material.OBSIDIAN, destructible, blockList);
 	}
 	
-	public static void clearPortalArea(Block centerBlock, BlockList blockList)
+	protected static void clearPortalArea(Block centerBlock, BlockList blockList)
 	{
 		BoundingBox container = new BoundingBox(centerBlock.getX() - 3, centerBlock.getY(), centerBlock.getZ() - 3,
 				centerBlock.getX() + 2, centerBlock.getY() + 4, centerBlock.getZ() + 2);
@@ -267,7 +272,7 @@ public class Portal
 		container.fill(centerBlock.getWorld(), Material.AIR, destructible, blockList);
 	}
 	
-	public static void buildPlatform(Block centerBlock, BlockList blockList)
+	protected static void buildPlatform(Block centerBlock, BlockList blockList)
 	{
 		BoundingBox platform = new BoundingBox(centerBlock.getX() - 3, centerBlock.getY() - 1, centerBlock.getZ() - 3,
 				centerBlock.getX() + 2, centerBlock.getY(), centerBlock.getZ() + 2);

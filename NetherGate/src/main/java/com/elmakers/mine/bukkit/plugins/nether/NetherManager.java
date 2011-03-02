@@ -14,7 +14,6 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.util.BlockVector;
@@ -176,12 +175,12 @@ public class NetherManager
 		World world = targetWorld.getWorld().getWorld();
 		Chunk chunk = world.getChunkAt(targetLocation.getBlockX(), targetLocation.getBlockZ());
 		
-		if (world.isChunkLoaded(chunk))
+		/*if (world.isChunkLoaded(chunk))
 		{
 			request.dispatch();
 		}
 		else
-		{
+		{*/
 			BlockRequestList requesting = requestMap.get(getChunkId(chunk));
 			if (requesting == null)
 			{
@@ -191,7 +190,7 @@ public class NetherManager
 			
 			requesting.add(request);
 			world.loadChunk(chunk);
-		}
+	//	}
 		
 		return true;
 	}
@@ -545,7 +544,13 @@ public class NetherManager
 		playerData.setSourceArea(null);
 		playerData.setTargetArea(null);
 			
-		World world = targetWorld.getWorld().getWorld();
+		WorldData targetWorldData = targetWorld.getWorld();
+		if (targetWorldData == null)
+		{
+			cancelTeleport(playerData);
+			return false;
+		}
+		World world = targetWorldData.getWorld();
 		Chunk chunk = world.getChunkAt(targetLocation.getBlockX(), targetLocation.getBlockZ());
 		
 		if (world.isChunkLoaded(chunk))
@@ -648,8 +653,6 @@ public class NetherManager
 				);
 				log.info(message);
 			}
-			Block standingBlock = location.getWorld().getBlockAt(targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
-			
 			// Get player permissions
 			boolean buildPortal = utilities.getSecurity().hasPermission(player, NetherPermissions.autoCreatePortal);
 			boolean buildPlatform = utilities.getSecurity().hasPermission(player, NetherPermissions.autoCreatePlatform);
@@ -684,23 +687,21 @@ public class NetherManager
 					targetLocation = targetPortal.getLocation().getLocation();
 				}
 			}
-			else
+			else if(fillAir || buildPlatform)
 			{
-				// Check for platform and air perms
-				if (fillAir)
+				Portal tempPortal =  new Portal(player, targetLocation, PortalType.PLATFORM, this);
+				tempPortal.build(fillAir);
+			
+				if (debugLogging)
 				{
-					Portal.clearPortalArea(standingBlock, null);
-					if (debugLogging)
+					if (fillAir)
 					{
 						String formatMessage =  "NG: Clearing area around %d, %d, %d";
 						String message = String.format(formatMessage, targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
 						log.info(message);
 					}
-				}
-				if (buildPlatform)
-				{
-					Portal.buildPlatform(standingBlock, null);
-					if (debugLogging)
+
+					if (buildPlatform)
 					{
 						String formatMessage =  "NG: Building a platform at %d, %d, %d";
 						String message = String.format(formatMessage, targetLocation.getBlockX(), targetLocation.getBlockY(), targetLocation.getBlockZ());
@@ -742,31 +743,16 @@ public class NetherManager
 	protected Location findPlaceToStand(Location startLocation)
 	{
 		World world = startLocation.getWorld();
+		boolean goUp = world.getEnvironment() == Environment.NETHER;
 
 		// get player position, start from top
+		int minY = 3;
+		int maxY = 126;
+		
 		int x = startLocation.getBlockX();
-		int y = 125;
+		int y = goUp ? minY : maxY;
+		int dy = goUp ? 1 : -1;
 		int z = startLocation.getBlockZ();		
-		
-		// First, try built-in!
-		CraftWorld cWorld = (CraftWorld)world;
-		int highestY = cWorld.getHighestBlockYAt(x, z);
-		
-		if (highestY > 0 && highestY < 128)
-		{
-			Block block = world.getBlockAt(x, highestY, z);
-			Block oneUp = block.getFace(BlockFace.UP);
-			Block twoUp = oneUp.getFace(BlockFace.UP);
-			if 
-			(
-				isOkToStandOn(block.getType())
-			&&	isOkToStandIn(oneUp.getType())
-			&& 	isOkToStandIn(twoUp.getType())
-			)
-			{
-				return block.getLocation();
-			}
-		}
 
 		// search for a spot to stand
 		Block[] blocks = new Block[3];
@@ -781,7 +767,7 @@ public class NetherManager
 			mats[i] = blocks[i].getType();
 		}
 		
-		for (;y > 5; y--)
+		for (;y >= minY && y <= maxY; y += dy)
 		{
 			if 
 			(
@@ -794,9 +780,18 @@ public class NetherManager
 				return new Location(world, x, y, z, startLocation.getYaw(), startLocation.getPitch());
 			}
 			
-			blocks[2] = blocks[1];				
-			blocks[1] = blocks[0];
-			blocks[0] = blocks[0].getFace(BlockFace.DOWN);
+			if (goUp)
+			{
+				blocks[1] = blocks[2];				
+				blocks[0] = blocks[1];
+				blocks[2] = blocks[2].getFace(BlockFace.UP);
+			}
+			else
+			{
+				blocks[2] = blocks[1];				
+				blocks[1] = blocks[0];
+				blocks[0] = blocks[0].getFace(BlockFace.DOWN);
+			}
 	
 			for (int i = 0; i < blocks.length; i++)
 			{
@@ -813,7 +808,7 @@ public class NetherManager
 		World world = startLocation.getWorld();
 		Block currentBlock = world.getBlockAt(startLocation.getBlockX(), startLocation.getBlockY(), startLocation.getBlockZ());
 		int y = currentBlock.getY();
-		while (y > 5)
+		while (y > 2)
 		{
 			if (isOkToStandOn(currentBlock.getType()))
 			{
@@ -894,6 +889,17 @@ public class NetherManager
 				);
 				startTeleport(player, netherHome, spawnPoint);
 			}
+		}
+	}
+	
+	public void loadWorlds()
+	{
+		// Make sure all worlds are loaded before a player joins!
+		List<WorldData> allWorlds = new ArrayList<WorldData>();
+		persistence.getAll(allWorlds, WorldData.class);
+		for (WorldData loadWorld : allWorlds)
+		{
+			loadWorld.getWorld();
 		}
 	}
 	

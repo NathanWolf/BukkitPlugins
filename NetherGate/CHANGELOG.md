@@ -1,5 +1,28 @@
 # CHANGELOG
 
+# 0.50
+
+ - Make you temporarily invincible during TP
+ - Maaaybe fix the "moved wrongly" bug? Or, break portalling on machines with lots of RAM- not sure which yet.
+
+# 0.49
+
+ - Don't platform air blocks!
+ - Change the pnodes up a bit- still testing permissions.
+
+# 0.48
+
+ - Preload worlds
+ - Add "spawn" command, "clean", fix setspawn for 1.3
+ - Make all commands available server-side. (Some commands don't really work/apply, such as "spawn")
+ - Fix for platforms always being created- should only be on air, water or lava
+
+# 0.47
+
+ - Turn auto-portalling back off for now :P
+ - Some fixes to the "find place to stand" algorithm- including the proper nether/normal switch!
+ - Remove CB dependency
+
 # 0.46
 
  - More auto-portal work

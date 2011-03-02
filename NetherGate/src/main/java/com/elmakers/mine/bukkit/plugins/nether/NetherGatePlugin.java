@@ -4,12 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import net.minecraft.server.WorldServer;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Priority;
 import org.bukkit.event.Event.Type;
@@ -28,7 +33,6 @@ import com.elmakers.mine.bukkit.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.persistence.dao.WorldData;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherPlayer;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherWorld;
-import com.elmakers.mine.bukkit.plugins.nether.dao.PortalArea;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.utilities.PluginUtilities;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
@@ -49,7 +53,10 @@ public class NetherGatePlugin extends JavaPlugin
 	{
 		try
 		{
-			initialize();
+			if (!initialize())
+			{
+				throw new Exception("Initialization returned false");
+			}
 			PluginDescriptionFile pdfFile = this.getDescription();
 	        log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " is enabled");
 		}
@@ -58,19 +65,20 @@ public class NetherGatePlugin extends JavaPlugin
 			PluginDescriptionFile pdfFile = this.getDescription();
 	        log.info(pdfFile.getName() + " version " + pdfFile.getVersion() + " failed to initialize");	
 	        e.printStackTrace();
+	        return;
 		}
 		
 		// Hook up event listeners
 		PluginManager pm = getServer().getPluginManager();
 		
         pm.registerEvent(Type.PLAYER_MOVE, playerListener, Priority.Normal, this);
-        pm.registerEvent(Type.PLAYER_JOIN, playerListener, Priority.Normal, this);
+        pm.registerEvent(Type.PLAYER_LOGIN, playerListener, Priority.Monitor, this);
         pm.registerEvent(Type.CHUNK_LOADED, worldListener, Priority.Normal, this);
         pm.registerEvent(Type.BLOCK_PHYSICS, physicsListener, Priority.Normal, this);
-       // pm.registerEvent(Type.ENTITY_DEATH, entityListener, Priority.Normal, this);
+        pm.registerEvent(Type.ENTITY_DAMAGED, entityListener, Priority.Normal, this);
     }
 	
-	public void initialize()
+	public boolean initialize()
 	{
 		Plugin checkForPersistence = this.getServer().getPluginManager().getPlugin("Persistence");
 	    if(checkForPersistence != null) 
@@ -82,13 +90,13 @@ public class NetherGatePlugin extends JavaPlugin
 	    {
 	    	log.warning("The NetherGate plugin depends on Persistence");
 	    	this.getServer().getPluginManager().disablePlugin(this);
-	    	return;
+	    	return false;
 	    }
 	    
 	    utilities = persistence.getUtilities(this);
 	    manager.initialize(getServer(), persistence, utilities);
 	    
-		netherCommand = utilities.getPlayerCommand("nether", "Manage portal areas and worlds", null, PermissionType.ADMINS_ONLY);
+		netherCommand = utilities.getGeneralCommand("nether", "Manage portal areas and worlds", null, PermissionType.ADMINS_ONLY);
 		createCommand = netherCommand.getSubCommand("create", "Create a portal area or world", null, PermissionType.ADMINS_ONLY);
 		worldCommand = createCommand.getSubCommand("world", "Create a new world", "<name>", PermissionType.ADMINS_ONLY);
 		areaCommand = createCommand.getSubCommand("area", "Create a new PortalArea underground", "<name>", PermissionType.ADMINS_ONLY);
@@ -100,15 +108,21 @@ public class NetherGatePlugin extends JavaPlugin
 		targetWorldCommand = targetCommand.getSubCommand("world", "Re-target a world", "<from> <to>", PermissionType.ADMINS_ONLY);
 		scaleCommand = netherCommand.getSubCommand("scale", "Re-scale an area or world", "<world | area> <name> <scale>", PermissionType.ADMINS_ONLY); 
 		scaleWorldCommand = scaleCommand.getSubCommand("world", "Re-scale a world", "<name> <scale>", PermissionType.ADMINS_ONLY); 
-		setSpawnCommand = netherCommand.getSubCommand("setspawn", "Set the current world's spawn point", null, PermissionType.ADMINS_ONLY);
 		centerCommand = netherCommand.getSubCommand("center", "Re-center an area or world", "<world | area> <name> <X> <Y> <Z>", PermissionType.ADMINS_ONLY); 
 		centerWorldCommand = centerCommand.getSubCommand("world", "Re-center a world", "<name> <X> <Y> <Z>", PermissionType.ADMINS_ONLY); 
 		listCommand = netherCommand.getSubCommand("list", "List worlds, areas and portals", null, PermissionType.ADMINS_ONLY);
 		listWorldsCommand = listCommand.getSubCommand("worlds", "List all known worlds", null, PermissionType.ADMINS_ONLY);
-		
+
 		setHomeCommand = netherCommand.getSubCommand("sethome", "Set your home world and location", null); 
 		goHomeCommand = netherCommand.getSubCommand("home", "Go to your home world and location", null);
 		compassCommand = netherCommand.getSubCommand("compass", "Get your current location", null);
+		
+		spawnCommand = netherCommand.getSubCommand("spawn", "Return you to spawn", null);
+
+		// This one is a little weird, and bears specific permissions testing.
+		// I want "/spawn" to be publicly available, but "spawn set" to be admin-only. Should work.
+		setSpawnCommand = spawnCommand.getSubCommand("set", "Set the current world's spawn point", null, PermissionType.ADMINS_ONLY);
+		cleanSpawnCommand = spawnCommand.getSubCommand("clean", "Get rid of any lava in the spawn area", "<world>", PermissionType.ADMINS_ONLY);
 		
 		areaCommand.bind("onCreateArea");
 		worldCommand.bind("onCreateWorld");
@@ -123,6 +137,8 @@ public class NetherGatePlugin extends JavaPlugin
 		centerWorldCommand.bind("onCenterWorld");
 		listWorldsCommand.bind("onListWorlds");
 		compassCommand.bind("onCompass");
+		spawnCommand.bind("onGoSpawn");
+		cleanSpawnCommand.bind("onCleanSpawn");
 		
 		creationFailedMessage = utilities.getMessage("creationFailed", "Nether creation failed- is there enough room below you?");
 		creationSuccessMessage = utilities.getMessage("creationSuccess", "Created new Nether area");
@@ -148,9 +164,17 @@ public class NetherGatePlugin extends JavaPlugin
 		centeredWorldMessage = utilities.getMessage("centerWorld", "World %s centered around (%d,%d,%d)");
 		listWorldMessage = utilities.getMessage("listWorlds", "%s (%s) : %dx -> %s");
 		compassMessage = utilities.getMessage("compass", "%d,%d,%d in %s");
+		playerCommandMessage = utilities.getMessage("playerCommand", "Hm- not too sure about that, server boy!");
+		spawnGoMessage = utilities.getMessage("goSpawn", "Returning you to spawn in %s");
+		spawnGoFailedMessage = utilities.getMessage("goSpawnFailed", "Failed to go to spawn");
+		cleanSpawnMessage = utilities.getMessage("createSpawn", "Cleaned up %d lava blocks in %s");
+		cleanSpawnFailedMessage = utilities.getMessage("createSpawnFailed", "Failed to clean spawn in %s");
+		requiresWorldMessage = utilities.getMessage("requiresWorld", "The world parameter is required");
+		
+		return true;
 	}
 	
-	public boolean onDeleteWorld(Player player, String[] parameters)
+	public boolean onDeleteWorld(CommandSender sender, String[] parameters)
 	{
 		if (parameters.length < 1)
 		{
@@ -168,7 +192,7 @@ public class NetherGatePlugin extends JavaPlugin
 		
 		if (worldData == null)
 		{
-			noWorldMessage.sendTo(player, worldName);
+			noWorldMessage.sendTo(sender, worldName);
 			return true;
 		}
 		
@@ -187,13 +211,19 @@ public class NetherGatePlugin extends JavaPlugin
 		
 		persistence.remove(worldData);
 		
-		deletedWorldMessage.sendTo(player, worldName);
+		deletedWorldMessage.sendTo(sender, worldName);
 		
 		return true;
 	}
 	
-	public boolean onCompass(Player player, String[] parameters)
+	public boolean onCompass(CommandSender sender, String[] parameters)
 	{
+		if (!(sender instanceof Player))
+		{
+			playerCommandMessage.sendTo(sender);
+			return true;
+		}
+		Player player = (Player)sender;
 		NetherWorld currentWorld = manager.getCurrentWorld(player.getWorld());
 		if (currentWorld == null)
 		{
@@ -208,10 +238,9 @@ public class NetherGatePlugin extends JavaPlugin
 	}
 	
 	// "%s (%s) : %dx -> %s"
-	public boolean onListWorlds(Player player, String[] parameters)
+	public boolean onListWorlds(CommandSender sender, String[] parameters)
 	{
-		// Make sure current world is registered
-		manager.getCurrentWorld(player.getWorld());
+		manager.loadWorlds();
 		
 		List<NetherWorld> allWorlds = new ArrayList<NetherWorld>();
 		persistence.getAll(allWorlds, NetherWorld.class);
@@ -232,13 +261,13 @@ public class NetherGatePlugin extends JavaPlugin
 			{
 				targetName = targetWorld.getWorld().getName();
 			}
-			listWorldMessage.sendTo(player, worldName, envType, (int)scale, targetName);
+			listWorldMessage.sendTo(sender, worldName, envType, (int)scale, targetName);
 		}
 		
 		return true;
 	}
 	
-	public boolean onScaleWorld(Player player, String[] parameters)
+	public boolean onScaleWorld(CommandSender sender, String[] parameters)
 	{
 		if (parameters.length < 2)
 		{
@@ -256,7 +285,7 @@ public class NetherGatePlugin extends JavaPlugin
 		
 		if (worldData == null)
 		{
-			noWorldMessage.sendTo(player, worldName);
+			noWorldMessage.sendTo(sender, worldName);
 			return true;
 		}
 		
@@ -268,14 +297,14 @@ public class NetherGatePlugin extends JavaPlugin
 		}
 		catch(Throwable ex)
 		{
-			invalidNumberMessage.sendTo(player, scaleText);
+			invalidNumberMessage.sendTo(sender, scaleText);
 			return true;
 		}
 		
 		if (scale <= 0.01)
 		{
 			scale = 0;
-			disableScaleMessage.sendTo(player, worldName);
+			disableScaleMessage.sendTo(sender, worldName);
 		}
 				
 		worldData.setScale(scale);
@@ -283,13 +312,13 @@ public class NetherGatePlugin extends JavaPlugin
 		
 		if (scale != 0)
 		{
-			scaledWorldMessage.sendTo(player, worldName, scale);
+			scaledWorldMessage.sendTo(sender, worldName, scale);
 		}
 		
 		return true;
 	}
 	
-	public boolean onCenterWorld(Player player, String[] parameters)
+	public boolean onCenterWorld(CommandSender sender, String[] parameters)
 	{
 		if (parameters.length < 4)
 		{
@@ -307,7 +336,7 @@ public class NetherGatePlugin extends JavaPlugin
 		
 		if (worldData == null)
 		{
-			noWorldMessage.sendTo(player, worldName);
+			noWorldMessage.sendTo(sender, worldName);
 			return true;
 		}
 		
@@ -325,7 +354,7 @@ public class NetherGatePlugin extends JavaPlugin
 		}
 		catch(Throwable ex)
 		{
-			invalidNumberMessage.sendTo(player, currentCheck);
+			invalidNumberMessage.sendTo(sender, currentCheck);
 			return true;
 		}
 		
@@ -333,12 +362,12 @@ public class NetherGatePlugin extends JavaPlugin
 		worldData.setCenterOffset(newCenter);
 		persistence.put(worldData);
 	
-		centeredWorldMessage.sendTo(player, worldName, x, y, z);
+		centeredWorldMessage.sendTo(sender, worldName, x, y, z);
 		
 		return true;
 	}
 	
-	public boolean onTargetWorld(Player player, String[] parameters)
+	public boolean onTargetWorld(CommandSender sender, String[] parameters)
 	{
 		if (parameters.length < 2)
 		{
@@ -358,7 +387,7 @@ public class NetherGatePlugin extends JavaPlugin
 		
 		if (fromWorld == null)
 		{
-			noWorldMessage.sendTo(player, fromWorldName);
+			noWorldMessage.sendTo(sender, fromWorldName);
 			return true;
 		}
 		
@@ -370,20 +399,26 @@ public class NetherGatePlugin extends JavaPlugin
 		
 		if (toWorld == null)
 		{
-			noWorldMessage.sendTo(player, toWorldName);
+			noWorldMessage.sendTo(sender, toWorldName);
 			return true;
 		}
 				
 		fromWorld.setTargetWorld(toWorld);
 		persistence.put(fromWorld);
 		
-		retargtedWorldMessage.sendTo(player, fromWorldName, toWorldName);
+		retargtedWorldMessage.sendTo(sender, fromWorldName, toWorldName);
 		
 		return true;
 	}
 	
-	public boolean onSetSpawn(Player player, String[] parameters)
+	public boolean onSetSpawn(CommandSender sender, String[] parameters)
 	{
+		if (!(sender instanceof Player))
+		{
+			playerCommandMessage.sendTo(sender);
+			return true;
+		}
+		Player player = (Player)sender;
 		String worldName = null;
 		NetherWorld targetWorld = null;
 		if (parameters.length > 0)
@@ -425,27 +460,30 @@ public class NetherGatePlugin extends JavaPlugin
 		
 		worldData.update(world);
 		persistence.put(worldData);
+	
 		
-		// TODO!
-		/*
 		CraftWorld cWorld = (CraftWorld)world;
 		int x = player.getLocation().getBlockX();
 		int y = player.getLocation().getBlockY();
 		int z = player.getLocation().getBlockZ();
-	
+		
+
 		WorldServer wServer = cWorld.getHandle();
-		cWorld.getHandle().spawnX = player.getLocation().getBlockX();
-		cWorld.getHandle().spawnY = player.getLocation().getBlockY();
-		cWorld.getHandle().spawnZ = player.getLocation().getBlockZ();
-		*/
-		//spawnSetMessage.sendTo(player, worldData.getName(), x, y, z);
-		player.sendMessage("Sorry- broken by 1.3! Will fix soon!");
+		wServer.q.a(x, y, z);
+		
+		spawnSetMessage.sendTo(player, worldData.getName(), x, y, z);
 		
 		return true;
 	}
 	
-	public boolean onSetHome(Player player, String[] parameters)
+	public boolean onSetHome(CommandSender sender, String[] parameters)
 	{
+		if (!(sender instanceof Player))
+		{
+			playerCommandMessage.sendTo(sender);
+			return true;
+		}
+		Player player = (Player)sender;
 		NetherWorld currentWorld = manager.getCurrentWorld(player.getWorld());
 		
 		if (currentWorld == null || currentWorld.getWorld() == null)
@@ -474,8 +512,14 @@ public class NetherGatePlugin extends JavaPlugin
 		return true;
 	}
 	
-	public boolean onGoHome(Player player, String[] parameters)
+	public boolean onGoHome(CommandSender sender, String[] parameters)
 	{
+		if (!(sender instanceof Player))
+		{
+			playerCommandMessage.sendTo(sender);
+			return true;
+		}
+		Player player = (Player)sender;
 		NetherPlayer playerData = manager.getPlayerData(player);
 		if (playerData == null)
 		{
@@ -510,8 +554,135 @@ public class NetherGatePlugin extends JavaPlugin
 		return true;
 	}
 	
-	public boolean onGo(Player player, String[] parameters)
+	public boolean onGoSpawn(CommandSender sender, String[] parameters)
 	{
+		if (!(sender instanceof Player))
+		{
+			playerCommandMessage.sendTo(sender);
+			return true;
+		}
+		Player player = (Player)sender;
+		NetherPlayer playerData = manager.getPlayerData(player);
+		if (playerData == null)
+		{
+			spawnGoFailedMessage.sendTo(player);
+			return true;
+		}
+		
+		NetherWorld currentWorld = manager.getCurrentWorld(player.getWorld());
+		if (currentWorld == null || currentWorld.getWorld() == null || currentWorld.getWorld().getSpawn() == null)
+		{
+			spawnGoFailedMessage.sendTo(player);
+			return true;
+		}
+		BlockVector spawn = currentWorld.getWorld().getSpawn();
+		if (!manager.startTeleport(player, currentWorld, new Location(player.getWorld(), spawn.getBlockX(), spawn.getBlockY(), spawn.getBlockZ())))
+		{
+			spawnGoFailedMessage.sendTo(player);
+		}
+		else
+		{	
+			spawnGoMessage.sendTo(player, player.getWorld().getName());
+		}
+			
+		return true;
+	}
+	
+	public boolean onCleanSpawn(CommandSender sender, String[] parameters)
+	{
+		manager.loadWorlds();
+		
+		World targetWorld = null;
+		String worldName = "unknown";
+		if (parameters.length > 0)
+		{
+			worldName = parameters[0];
+			WorldData requestedWorld = persistence.get(worldName, WorldData.class);
+			if (requestedWorld != null)
+			{
+				targetWorld = requestedWorld.getWorld();
+			}
+		}
+		else
+		{
+			if (!(sender instanceof Player))
+			{
+				requiresWorldMessage.sendTo(sender);
+				return true;
+			}
+			Player player = (Player)sender;
+			targetWorld = player.getWorld();
+			worldName = targetWorld.getName();
+		}
+		
+		if (targetWorld == null)
+		{
+			noWorldMessage.sendTo(sender, worldName);
+			return true;
+		}
+		
+		Location spawn = targetWorld.getSpawnLocation();
+		if (spawn == null)
+		{
+			cleanSpawnFailedMessage.sendTo(sender, worldName);
+		}
+			
+		int blocksCleaned = 0;
+		Block spawnBlock = targetWorld.getBlockAt(spawn);
+
+		for (int dx = -8; dx < 8; dx++)
+		{
+			for (int dz = -8; dz < 8; dz++)
+			{
+				int dy = -1;
+				Block current = spawnBlock.getRelative(dx, dy, dz);
+				// Go down until we hit something solid
+				while (current.getType() == Material.AIR && dy > -64)
+				{
+					current = current.getFace(BlockFace.DOWN);
+					dy--;
+				}
+				
+				// Make any ground-level lava blocks obsidian
+				if (isLava(current.getType()))
+				{
+					current.setType(Material.OBSIDIAN);
+					blocksCleaned++;
+				}
+				
+				// Go up and look for more lava!
+				// Note that spilling may occur- you may still have to do manual cleanup!
+				while (dy < 120)
+				{
+					current = current.getFace(BlockFace.UP);
+					if (isLava(current.getType()))
+					{
+						current.setType(Material.AIR);
+						blocksCleaned++;
+					}
+					dy++;
+				}
+			}
+		}
+		
+		cleanSpawnMessage.sendTo(sender, blocksCleaned, worldName);
+		
+		return true;
+	}
+	
+	public static boolean isLava(Material mat)
+	{
+		return (mat == Material.LAVA || mat == Material.STATIONARY_LAVA);
+	}
+	
+	public boolean onGo(CommandSender sender, String[] parameters)
+	{
+		if (!(sender instanceof Player))
+		{
+			playerCommandMessage.sendTo(sender);
+			return true;
+		}
+		Player player = (Player)sender;
 		String worldName = null;
 		if (parameters.length > 0)
 		{
@@ -538,14 +709,17 @@ public class NetherGatePlugin extends JavaPlugin
 		return true;
 	}
 	
-	public boolean onCreateWorld(Player player, String[] parameters)
+	public boolean onCreateWorld(CommandSender sender, String[] parameters)
 	{
-		// First, make sure this world is registered!
-		World currentWorld = player.getWorld();
-		
+		World currentWorld = null;
+		if (sender instanceof Player)
+		{
+			Player player = (Player)sender;
+			currentWorld = player.getWorld();
+		}
 		if (parameters.length < 0)
 		{
-			worldCommand.sendHelp(player, "Use: ", true, true);
+			worldCommand.sendHelp(sender, "Use: ", true, true);
 			return true;
 		}
 		
@@ -563,18 +737,24 @@ public class NetherGatePlugin extends JavaPlugin
 		NetherWorld world = manager.createWorld(worldName, worldType, currentWorld);
 		if (world == null)
 		{
-			worldCreateFailedMessage.sendTo(player);
+			worldCreateFailedMessage.sendTo(sender);
 		}
 		else
 		{
-			worldCreateMessage.sendTo(player, world.getWorld().getName());
+			worldCreateMessage.sendTo(sender, world.getWorld().getName());
 		}
 		
 		return true;
 	}
 	
-	public boolean onKit(Player player, String[] parameters)
+	public boolean onKit(CommandSender sender, String[] parameters)
 	{
+		if (!(sender instanceof Player))
+		{
+			playerCommandMessage.sendTo(sender);
+			return true;
+		}
+		Player player = (Player)sender;
 		PlayerInventory inventory = player.getInventory();
 		
 		// Give a bit of obsidian
@@ -631,9 +811,10 @@ public class NetherGatePlugin extends JavaPlugin
 		return true;
 	}
 	
-	public boolean onCreateArea(Player player, String[] parameters)
+	public boolean onCreateArea(CommandSender sender, String[] parameters)
 	{
 		// Check for an existing Nether area
+		/*
 		Location location = player.getLocation();
 		PortalArea nether = manager.getNether(new BlockVector(location.getBlockX(), location.getBlockY(), location.getBlockZ()));
 		if (nether != null)
@@ -650,6 +831,8 @@ public class NetherGatePlugin extends JavaPlugin
 		{
 			creationSuccessMessage.sendTo(player);
 		}
+		*/
+		sender.sendMessage("Not implemented yet!");
 		
 		return true;
 	}
@@ -673,6 +856,7 @@ public class NetherGatePlugin extends JavaPlugin
 	protected PluginCommand scaleCommand;
 	protected PluginCommand scaleWorldCommand;
 	protected PluginCommand setSpawnCommand;
+	protected PluginCommand spawnCommand;
 	protected PluginCommand setHomeCommand;
 	protected PluginCommand goHomeCommand;
 	protected PluginCommand centerWorldCommand;
@@ -680,6 +864,7 @@ public class NetherGatePlugin extends JavaPlugin
 	protected PluginCommand listWorldsCommand;
 	protected PluginCommand listCommand;
 	protected PluginCommand compassCommand;
+	protected PluginCommand cleanSpawnCommand;
 	
 	protected Message creationFailedMessage;
 	protected Message creationSuccessMessage;
@@ -696,6 +881,8 @@ public class NetherGatePlugin extends JavaPlugin
 	protected Message centeredWorldMessage;
 	protected Message invalidNumberMessage;
 	protected Message disableScaleMessage;
+	protected Message spawnGoMessage;
+	protected Message spawnGoFailedMessage;
 	protected Message spawnSetMessage;
 	protected Message spawnSetFailedMessage;
 	protected Message homeSetMessage;
@@ -705,6 +892,10 @@ public class NetherGatePlugin extends JavaPlugin
 	protected Message noHomeMessage;
 	protected Message listWorldMessage;
 	protected Message compassMessage;
+	protected Message playerCommandMessage;
+	protected Message cleanSpawnMessage;
+	protected Message cleanSpawnFailedMessage;
+	protected Message requiresWorldMessage;
 	
 	protected NetherManager manager = new NetherManager();
 	protected NetherPlayerListener playerListener = new NetherPlayerListener(manager);

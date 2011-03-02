@@ -84,6 +84,10 @@ public class NetherPlayer
 	
 	public void setState(TeleportState state)
 	{
+		if (state == TeleportState.TELEPORTING || state == TeleportState.TELEPORTED)
+		{
+			shieldTimer = System.currentTimeMillis() + defaultShieldInterval;
+		}
 		this.state = state;
 	}
 
@@ -156,10 +160,24 @@ public class NetherPlayer
 	{
 		this.sourcePortal = sourcePortal;
 	}
+	
+	public boolean areShieldsUp()
+	{
+		if (shieldTimer == null) return false;
+	
+		if (System.currentTimeMillis() > shieldTimer)
+		{
+			shieldTimer = null;
+		}
+		
+		return true;
+	}
 
-	protected PlayerData 		player;
 	protected LocationData		home;
 	protected BlockVector		lastLocation;
+	
+	// Transient
+	protected PlayerData 		player;
 	protected TeleportState 	state;
 	protected NetherWorld		targetWorld;
 	protected NetherWorld		sourceWorld;
@@ -168,4 +186,7 @@ public class NetherPlayer
 	protected Portal			targetPortal;
 	protected Portal			sourcePortal;
 	protected BlockVector		targetLocation;
+	protected Long				shieldTimer;
+	
+	static final long defaultShieldInterval = 10000;
 }

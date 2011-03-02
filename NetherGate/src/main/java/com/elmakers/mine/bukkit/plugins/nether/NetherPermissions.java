@@ -7,10 +7,10 @@ class NetherPermissions
 		
 	}
 	
-	public static String autoCreate = "NetherGate.autoCreate";
-	public static String autoCreatePortal = "NetherGate.autoCreate.portal";
-	public static String autoCreatePlatform = "NetherGate.autoCreate.platform";
-	public static String autoCreateFrame ="NetherGate.autoCreate.frame";
-	public static String portalUse = "NetherGate.portalUse";
-	public static String fillAir = "NetherGate.autoCreate.airPocket";
+	public static String autoCreate = "NetherGate.portal.create";
+	public static String autoCreatePortal = "NetherGate.portal.create.portal";
+	public static String autoCreatePlatform = "NetherGate.portal.create.platform";
+	public static String autoCreateFrame ="NetherGate.portal.create.frame";
+	public static String fillAir = "NetherGate.portal.create.airPocket";
+	public static String portalUse = "NetherGate.portal.use";
 }
