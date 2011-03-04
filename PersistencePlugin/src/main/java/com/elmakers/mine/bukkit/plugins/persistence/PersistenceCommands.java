@@ -20,11 +20,11 @@ import com.elmakers.mine.craftbukkit.persistence.core.Schema;
 
 public class PersistenceCommands
 {
-	public void initialize(PersistencePlugin plugin, Persistence persistence)
+	public void initialize(PersistencePlugin plugin, Persistence persistence, PluginUtilities utilities)
 	{
 		PersistenceDefaults d = new PersistenceDefaults();
 		this.persistence = persistence;
-		utilities = persistence.getUtilities(plugin);	
+		this.utilities = utilities;
 
 		// Initialize Messages
 		

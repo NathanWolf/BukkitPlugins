@@ -4,6 +4,7 @@
 
  - Bring back tunnel, torches disabled.
  - Update permissions support for Persistence 0.55, drop Groups
+ - Simplify the spells list 
 
 ## 0.98
 

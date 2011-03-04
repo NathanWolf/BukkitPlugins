@@ -123,14 +123,7 @@ public class SpellsPlugin extends JavaPlugin
 
 	public boolean onSpells(Player player, String[] parameters)
 	{
-		if (parameters.length < 1)
-		{
-			listCategories(player);
-			return true;
-		}
-		
-		String category = parameters[0];
-		listSpellsByCategory(player, category);
+		listSpells(player);
 
 		return true;
 	}
@@ -222,12 +215,17 @@ public class SpellsPlugin extends JavaPlugin
 		
 		for (SpellGroup group : sortedGroups)
 		{
-			player.sendMessage(group.groupName + ":");
+			boolean isFirst = true;
 			Collections.sort(group.spells);
 			for (SpellVariant spell : group.spells)
 			{
 				if (spell.hasSpellPermission(player))
 				{
+					if (isFirst)
+					{
+						player.sendMessage(group.groupName + ":");
+						isFirst = false;
+					}
 					player.sendMessage(" " + spell.getName() + " [" + spell.getMaterial().name().toLowerCase() + "] : " + spell.getDescription());
 				}
 			}

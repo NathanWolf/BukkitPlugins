@@ -51,11 +51,7 @@ public class PlayerData extends Persisted
 		id = loggedIn.getName();
 		firstLogin = new Date();
 		lastDisconnect = null;
-		
-		// This will eventually be a setting that ops can toggle on and off
-		// It is on by default for ops, but will not turn back on automatically
-		// if disabled. This allows ops to play "mostly" as a normal user.
-		superUser = loggedIn.isOp();
+		superUser = false;
 		update(loggedIn);
 	}
 	
@@ -297,6 +293,8 @@ public class PlayerData extends Persisted
 	
 	public boolean isSet(String key)
 	{
+		if (superUser) return true;
+		
 		// Check for deny first
 		if (deny != null)
 		{
@@ -361,11 +359,6 @@ public class PlayerData extends Persisted
 		update(player.getLocation());
 		name = player.getDisplayName();
 		online = player.isOnline();
-		
-		if (!player.isOp())
-		{
-			superUser = false;
-		}		
 	}
 	
 	public void login(Player player)

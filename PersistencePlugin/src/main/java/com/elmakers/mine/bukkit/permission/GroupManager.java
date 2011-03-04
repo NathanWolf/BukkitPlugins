@@ -94,7 +94,6 @@ public class GroupManager implements PermissionManager, PermissionHandler
 		}
 		catch(FileNotFoundException ex)
 		{
-			log.info("Persistence: " + permissionsFile + " not found, ops have /su access.");
 			log.info("Persistence: Create a plugins/Persistence/" + permissionsFile + " to use internal permissions");
 			loader = null;
 		}

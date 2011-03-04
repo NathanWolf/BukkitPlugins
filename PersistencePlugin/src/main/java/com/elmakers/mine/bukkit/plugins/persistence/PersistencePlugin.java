@@ -12,6 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.elmakers.mine.bukkit.permission.GroupManager;
 import com.elmakers.mine.bukkit.permission.PermissionManager;
+import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.utilities.PluginUtilities;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
@@ -56,7 +57,10 @@ public class PersistencePlugin extends JavaPlugin
 	 */
 	public Persistence getPersistence()
 	{
-		persistence = Persistence.getInstance();
+		if (persistence == null)
+		{
+			persistence = Persistence.getInstance();
+		}
 		return persistence;
 	}
 
@@ -129,14 +133,11 @@ public class PersistencePlugin extends JavaPlugin
 	
 	protected void initialize()
 	{
-		// We use persistence internally, so go ahead and initialize it.
-		persistence = getPersistence();
-		utilities = persistence.getUtilities(this);	
-		
-		permissions = new GroupManager(getServer(), utilities, persistence, getDataFolder());
-		
-		handler.initialize(this, persistence);
-		listener.initialize(persistence, handler);
+		// Initialize permissions, if it hasn't been already
+		getPermissions();
+			
+		handler.initialize(this, getPersistence(), getUtilities());
+		listener.initialize(getPersistence(), handler);
 		
 		PluginManager pm = getServer().getPluginManager();
 		
@@ -144,8 +145,23 @@ public class PersistencePlugin extends JavaPlugin
 		pm.registerEvent(Type.PLAYER_JOIN, listener, Priority.Normal, this);
 	}
 	
+	protected PluginUtilities getUtilities()
+	{
+		if (utilities == null)
+		{
+			utilities = persistence.getUtilities(this);	
+		}
+		
+		return utilities;
+	}
+	
 	public PermissionManager getPermissions()
 	{
+		if (permissions == null)
+		{
+			permissions = new GroupManager(getServer(), getUtilities(), getPersistence(), getDataFolder());
+			PlayerData.setPermissionHandler(permissions);
+		}
 		return permissions;
 	}
 	
