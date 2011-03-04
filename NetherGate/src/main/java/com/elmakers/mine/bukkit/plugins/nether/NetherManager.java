@@ -224,6 +224,18 @@ public class NetherManager
 		this.persistence = persistence;
 		
 		load();
+		
+		// HACK!
+		loadWorlds();
+	
+		// HACK- reset all world scales, disable fast travel :P
+		List<NetherWorld> allWorlds = new ArrayList<NetherWorld>();
+		persistence.getAll(allWorlds, NetherWorld.class);
+		for (NetherWorld resetWorld : allWorlds)
+		{
+			resetWorld.setScale(0);
+			resetWorld.setCenterOffset(null);
+		}
 	}
 	
 	/*
@@ -372,7 +384,6 @@ public class NetherManager
 		
 		return new BlockVector(transformed);
 	}
-
 
 	protected void onPlayerMove(Player player)
 	{

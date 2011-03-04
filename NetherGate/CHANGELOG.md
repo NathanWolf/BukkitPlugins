@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.51
+
+- Forcibly disable fast-travel on startup, for now.
+
 # 0.50
 
  - Make you temporarily invincible during TP
