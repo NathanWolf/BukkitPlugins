@@ -38,6 +38,16 @@ public class DataRow
 	}
 	
 	/**
+	 * Get the table for this row.
+	 * 
+	 * @return The table this row comes from
+	 */
+	public DataTable getTable()
+	{
+		return table;
+	}
+	
+	/**
 	 * Retrieve all of the fields in this row.
 	 * 
 	 * @return The internal list of fields

@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.54
+
+ - Add error message for trying to set a primitive type to null
+ - Fix a containment bug that was causing the above to happen
+ - Start work on custom exception throwing
+
 # 0.53
 
  - Some fixes to the built-in security framework. Groups.jar is now needed for

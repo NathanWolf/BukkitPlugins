@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.elmakers.mine.bukkit.persistence.FieldInfo;
+import com.elmakers.mine.bukkit.persistence.exception.InvalidDataException;
+import com.elmakers.mine.bukkit.persistence.exception.InvalidPersistedClassException;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
 import com.elmakers.mine.craftbukkit.persistence.data.DataField;
 import com.elmakers.mine.craftbukkit.persistence.data.DataRow;
@@ -35,7 +37,15 @@ public class PersistedList extends PersistedField implements PersistedReference
 		
 		if (isContained())
 		{
-			referenceType = new PersistedClass(copy.referenceType, this);
+			try
+			{
+				referenceType = new PersistedClass(copy.referenceType, this);
+			}
+			catch (InvalidPersistedClassException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		else
 		{
@@ -63,11 +73,19 @@ public class PersistedList extends PersistedField implements PersistedReference
 	}
 	
 	@Override
-	public void bind()
+	public void bind() throws InvalidPersistedClassException
 	{
         if (listDataType == DataType.OBJECT)
         {
-        	referenceType = Persistence.getInstance().getPersistedClass(listType);
+        	try
+			{
+				referenceType = Persistence.getInstance().getPersistedClass(listType);
+			}
+			catch (InvalidPersistedClassException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         	if (referenceType == null) return;
         	
     		if (isContained())
@@ -87,7 +105,7 @@ public class PersistedList extends PersistedField implements PersistedReference
         }
 	}
 
-	public void load(DataTable subTable, List<Object> instances)
+	public void load(DataTable subTable, List<Object> instances) throws InvalidDataException
 	{
 		load(subTable, instances, null);
 	}
@@ -237,7 +255,7 @@ public class PersistedList extends PersistedField implements PersistedReference
 		deferStackDepth++;
 	}
 	
-	public void load(DataTable subTable, List<Object> instances, PersistedField container)
+	public void load(DataTable subTable, List<Object> instances, PersistedField container) throws InvalidDataException
 	{
 		// Load data for all lists in all instances at once, mapping to
 		// correct instances based on the id column.
@@ -289,8 +307,18 @@ public class PersistedList extends PersistedField implements PersistedReference
 				}
 				else if (isContained())
 				{
-					Object newInstance = referenceType.createInstance(row);
-					list.add(newInstance);
+					Object newInstance = null;
+					try
+					{
+						newInstance = referenceType.createInstance(row);
+					}
+					catch (InvalidDataException e)
+					{
+					}
+					if (newInstance != null)
+					{
+						list.add(newInstance);
+					}
 				}
 				else
 				{
@@ -364,7 +392,15 @@ public class PersistedList extends PersistedField implements PersistedReference
 				}
 			}
 			
-			ref.referenceList.set(instance, references);
+			try
+			{
+				ref.referenceList.set(instance, references);
+			}
+			catch (InvalidDataException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		deferredInstanceMap.clear();
 	}

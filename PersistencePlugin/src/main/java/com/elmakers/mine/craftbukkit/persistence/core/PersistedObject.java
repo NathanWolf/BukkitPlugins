@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.elmakers.mine.bukkit.persistence.FieldInfo;
+import com.elmakers.mine.bukkit.persistence.exception.InvalidDataException;
+import com.elmakers.mine.bukkit.persistence.exception.InvalidPersistedClassException;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
 import com.elmakers.mine.craftbukkit.persistence.data.DataField;
 import com.elmakers.mine.craftbukkit.persistence.data.DataRow;
@@ -20,7 +22,15 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 		
 		if (isContained())
 		{
-			referenceType = new PersistedClass(copy.referenceType, this);
+			try
+			{
+				referenceType = new PersistedClass(copy.referenceType, this);
+			}
+			catch (InvalidPersistedClassException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		else
 		{
@@ -45,9 +55,17 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 	}
 	
 	@Override
-	public void bind()
+	public void bind() throws InvalidPersistedClassException
 	{
-		referenceType = Persistence.getInstance().getPersistedClass(getType());
+		try
+		{
+			referenceType = Persistence.getInstance().getPersistedClass(getType());
+		}
+		catch (InvalidPersistedClassException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		if (referenceType == null)
 		{			
@@ -121,7 +139,7 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 		}
 	}
 
-	public void save(DataRow row, Object o)
+	public void save(DataRow row, Object o) throws InvalidDataException
 	{
 		if (referenceType == null) return;	
 		
@@ -146,13 +164,20 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 		row.add(field);
 	}
 	
-	public void load(DataRow row, Object o)
+	public void load(DataRow row, Object o) throws InvalidDataException
 	{
 		if (referenceType == null) return;	
 		
 		if (isContained())
 		{
-			Object newInstance = referenceType.createInstance(row);
+			Object newInstance = null;
+			try
+			{
+				referenceType.createInstance(row);
+			}
+			catch (InvalidDataException e)
+			{
+			}
 			set(o, newInstance);
 			return;
 		}
@@ -191,7 +216,15 @@ public class PersistedObject extends PersistedField implements PersistedReferenc
 		for (DeferredReference ref : undefer)
 		{
 			Object reference = ref.referenceField.referenceType.get(ref.referenceId);
-			ref.referenceField.set(ref.object, reference);
+			try
+			{
+				ref.referenceField.set(ref.object, reference);
+			}
+			catch (InvalidDataException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 			// Re-add to cache so that we can cache by the new id
 			// Unless this is a contained object, in which case it has no id!

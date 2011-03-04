@@ -18,6 +18,7 @@ import com.elmakers.mine.bukkit.persistence.MigrationInfo;
 import com.elmakers.mine.bukkit.persistence.annotation.Migrate;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.persistence.dao.CommandSenderData;
+import com.elmakers.mine.bukkit.persistence.exception.InvalidPersistedClassException;
 import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.utilities.PluginUtilities;
 import com.elmakers.mine.craftbukkit.persistence.core.PersistedClass;
@@ -91,7 +92,16 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	 */
 	public <T> void getAll(List<T> objects, Class<T> objectType)
 	{	
-		PersistedClass persistedClass = getPersistedClass(objectType);
+		PersistedClass persistedClass = null;
+		try
+		{
+			persistedClass = getPersistedClass(objectType);
+		}
+		catch (InvalidPersistedClassException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (persistedClass == null)
 		{
 			return;
@@ -107,7 +117,16 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	 */
 	public void remove(Object removeObject)
 	{
-		PersistedClass persistedClass = getPersistedClass(removeObject.getClass());
+		PersistedClass persistedClass = null;
+		try
+		{
+			persistedClass = getPersistedClass(removeObject.getClass());
+		}
+		catch (InvalidPersistedClassException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (persistedClass == null)
 		{
 			return;
@@ -139,7 +158,16 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	 */
 	public <T> void putAll(List<T> objects, Class<T> objectType)
 	{
-		PersistedClass persistedClass = getPersistedClass(objectType);
+		PersistedClass persistedClass = null;
+		try
+		{
+			persistedClass = getPersistedClass(objectType);
+		}
+		catch (InvalidPersistedClassException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (persistedClass == null)
 		{
 			return;
@@ -164,7 +192,16 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	@SuppressWarnings("unchecked")
 	public <T> T get(Object id, Class<T> objectType)
 	{
-		PersistedClass persistedClass = getPersistedClass(objectType);
+		PersistedClass persistedClass = null;
+		try
+		{
+			persistedClass = getPersistedClass(objectType);
+		}
+		catch (InvalidPersistedClassException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (persistedClass == null)
 		{
 			return null;
@@ -190,7 +227,16 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	{
 		if (persist == null) return false;
 		
-		PersistedClass persistedClass = getPersistedClass(persist.getClass());
+		PersistedClass persistedClass = null;
+		try
+		{
+			persistedClass = getPersistedClass(persist.getClass());
+		}
+		catch (InvalidPersistedClassException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (persistedClass == null)
 		{
 			return false;
@@ -291,6 +337,7 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	 * @return The persisted class definition, or null if failure
 	 */
 	public PersistedClass getPersistedClass(Class<? extends Object> persistClass)
+		throws InvalidPersistedClassException
 	{		
 		/*
 		 * Look for Class annotations
@@ -306,8 +353,7 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 			
 			if (entityAnnotation == null)
 			{
-				log.warning("Persistence: class " + persistClass.getName() + " does not have the @PersistClass annotation.");
-				return null;
+				throw new InvalidPersistedClassException(persistClass, "Class does not have the @PersistClass annotation");
 			}
 
 			persistedClass = getPersistedClass(persistClass, new EntityInfo(entityAnnotation));
@@ -322,7 +368,7 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 		return persistedClass;
 	}
 	
-	protected PersistedClass createPersistedClass(Class<? extends Object> persistType, EntityInfo entityInfo)
+	protected PersistedClass createPersistedClass(Class<? extends Object> persistType, EntityInfo entityInfo) throws InvalidPersistedClassException
 	{
 		PersistedClass persistedClass = new PersistedClass(entityInfo, server);
 		if (!persistedClass.bind(persistType))
@@ -380,7 +426,15 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 				persistedClass = persistedClassMap.get(persistType);
 				if (persistedClass == null)
 				{
-					persistedClass = createPersistedClass(persistType, entityInfo);
+					try
+					{
+						persistedClass = createPersistedClass(persistType, entityInfo);
+					}
+					catch (InvalidPersistedClassException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -437,15 +491,23 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 		
 		// Create the class definition
 		PersistedClass persistVector = getPersistedClass(BlockVector.class, vectorInfo);
-		persistVector.persistField("hashCode", vectorId);
-		
-		persistVector.persistField("x", fieldX);
-		persistVector.persistField("y", fieldY);
-		persistVector.persistField("z", fieldZ);
-		
-		persistVector.validate();
+		try
+		{
+			persistVector.persistField("hashCode", vectorId);
+	
+			persistVector.persistField("x", fieldX);
+			persistVector.persistField("y", fieldY);
+			persistVector.persistField("z", fieldZ);
 			
-		// TODO: Materials
+			persistVector.validate();
+		}
+		catch (InvalidPersistedClassException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		// TODO: Materials (? .. currently in Gameplay!)
 	}
 		
 

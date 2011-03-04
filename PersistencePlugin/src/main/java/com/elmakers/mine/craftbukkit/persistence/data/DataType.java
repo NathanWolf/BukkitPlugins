@@ -205,6 +205,21 @@ public enum DataType
 		return dataType;
 	}
 	
+	public static boolean isPrimitive(Class<?> targetClass)
+	{
+		if (targetClass == null) return false;
+		
+		return
+		(
+			boolean.class.isAssignableFrom(targetClass)
+		||	float.class.isAssignableFrom(targetClass)
+		||	int.class.isAssignableFrom(targetClass)
+		||	byte.class.isAssignableFrom(targetClass)
+		||	long.class.isAssignableFrom(targetClass)
+		||	double.class.isAssignableFrom(targetClass)
+		);
+	}
+	
 	public static Object convertValue(Object value, Class<?> targetClass)
 	{
 		if (value == null) 
