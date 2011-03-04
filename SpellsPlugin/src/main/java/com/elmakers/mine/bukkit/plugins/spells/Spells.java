@@ -633,12 +633,12 @@ public class Spells
 		addSpell(new FireSpell());
 		addSpell(new LavaSpell());
 		addSpell(new InvincibleSpell());
+		addSpell(new TunnelSpell());
 		
 		// wip
 		// addSpell(new TowerSpell());
 		// addSpell(new ExtendSpell());
 		// addSpell(new StairsSpell());
-		// addSpell(new TunnelSpell());
 		
 		// NetherGate spells
 		if (nether != null)

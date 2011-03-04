@@ -71,6 +71,7 @@ public class TunnelSpell extends Spell
 					if (isDestructible(targetBlock))
 					{
 						// Put torches on the left and right wall 
+						/*
 						boolean useTorch = 
 						(
 								torchFrequency > 0 
@@ -78,6 +79,8 @@ public class TunnelSpell extends Spell
 						&& 		(h == 1)
 						&& 		(d % torchFrequency == 0)
 						);
+						*/
+						boolean useTorch = false; // TODO!
 						tunneledBlocks.add(targetBlock);
 						if (useTorch)
 						{
@@ -147,7 +150,7 @@ public class TunnelSpell extends Spell
 	@Override
 	public String getCategory()
 	{
-		return "wip";
+		return "mining";
 	}
 
 	@Override

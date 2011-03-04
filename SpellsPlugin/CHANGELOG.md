@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.99
+
+ - Bring back tunnel, torches disabled.
+
 ## 0.98
 
  - But blast paramaters back in :)
