@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.30
+
+ - Removed PLAYER_COMMAND support, 'cause it's gone.
+
 ## 0.29
 
  - HOORAY! Default constructors!
