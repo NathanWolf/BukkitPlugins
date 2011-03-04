@@ -7,7 +7,6 @@ import java.util.List;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import com.elmakers.mine.bukkit.permissions.Security;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistClass;
 import com.elmakers.mine.bukkit.persistence.annotation.PersistField;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
@@ -203,35 +202,33 @@ public class PluginCommand implements Comparable<PluginCommand>
 	public boolean checkPermission(CommandSender sender)
 	{
 		Player player = null;
+		PlayerData playerData = null;
 		if (sender instanceof Player)
 		{
 			player = (Player)sender;
+			playerData = Persistence.getInstance().get(player.getName(), PlayerData.class);
 		}
 
 		if (permissionType == PermissionType.PLAYER_ONLY)
 		{
-			if (player != null) return false;
+			if (player == null || playerData == null) return false;
 		}
 		else
 		{
+			// Always allow for non-player senders now
+			// TODO: Permissable interface check?
 			if (player == null) return true;
 		}
+		
 		switch (permissionType)
 		{
 			case ALLOW_ALL: return true;
 			case OPS_ONLY:
-				if (player == null) return false;
 				return player.isOp();
 			case DEFAULT:
-				if (permissionNode != null && permissionNode.length() > 0 && security != null)
+				if (permissionNode != null && permissionNode.length() > 0)
 				{
-					return security.hasPermission(player, permissionNode);
-				}
-				break;
-			case ADMINS_ONLY:
-				if (permissionNode != null && permissionNode.length() > 0 && security != null)
-				{
-					return security.hasPermission(player, permissionNode);
+					return playerData.isSet(permissionNode);
 				}
 				break;
 		}
@@ -490,11 +487,6 @@ public class PluginCommand implements Comparable<PluginCommand>
 	{
 		return permissionType;
 	}
-	
-	public static void setSecurity(Security security)
-	{
-		PluginCommand.security = security;
-	}
 
 	private List<PluginCommand>	children;	
 	private PermissionType		permissionType;
@@ -512,6 +504,4 @@ public class PluginCommand implements Comparable<PluginCommand>
 	// Transient data
 	private HashMap<String, PluginCommand>	childMap	= new HashMap<String, PluginCommand>();
 	private static final String				indent		= "  ";
-	private static Security					security = null;
-
 }

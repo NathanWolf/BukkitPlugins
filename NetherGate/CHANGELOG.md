@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.52
+
+ - Update permissions support for Persistence 0.55, drop Groups
+
 # 0.51
 
 - Forcibly disable fast-travel on startup, for now.

@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import net.minecraft.server.WorldServer;
-
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -28,7 +26,6 @@ import org.bukkit.util.BlockVector;
 
 import com.elmakers.mine.bukkit.persistence.dao.LocationData;
 import com.elmakers.mine.bukkit.persistence.dao.Message;
-import com.elmakers.mine.bukkit.persistence.dao.PermissionType;
 import com.elmakers.mine.bukkit.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.persistence.dao.WorldData;
 import com.elmakers.mine.bukkit.plugins.nether.dao.NetherPlayer;
@@ -96,33 +93,30 @@ public class NetherGatePlugin extends JavaPlugin
 	    utilities = persistence.getUtilities(this);
 	    manager.initialize(getServer(), persistence, utilities);
 	    
-		netherCommand = utilities.getGeneralCommand("nether", "Manage portal areas and worlds", null, PermissionType.ADMINS_ONLY);
-		createCommand = netherCommand.getSubCommand("create", "Create a portal area or world", null, PermissionType.ADMINS_ONLY);
-		worldCommand = createCommand.getSubCommand("world", "Create a new world", "<name>", PermissionType.ADMINS_ONLY);
-		areaCommand = createCommand.getSubCommand("area", "Create a new PortalArea underground", "<name>", PermissionType.ADMINS_ONLY);
-		kitCommand = netherCommand.getSubCommand("kit", "Give yourself a portal kit", null, PermissionType.ADMINS_ONLY);
-		goCommand = netherCommand.getSubCommand("go", "TP to an area or world", "[name]", PermissionType.ADMINS_ONLY);
-		deleteCommand = netherCommand.getSubCommand("delete", "Delete an area or world", null, PermissionType.ADMINS_ONLY);
-		deleteWorldCommand = deleteCommand.getSubCommand("world", "Delete an world", "<name>", PermissionType.ADMINS_ONLY);
-		targetCommand = netherCommand.getSubCommand("target", "Re-target worlds or areas", null, PermissionType.ADMINS_ONLY);
-		targetWorldCommand = targetCommand.getSubCommand("world", "Re-target a world", "<from> <to>", PermissionType.ADMINS_ONLY);
-		scaleCommand = netherCommand.getSubCommand("scale", "Re-scale an area or world", "<world | area> <name> <scale>", PermissionType.ADMINS_ONLY); 
-		scaleWorldCommand = scaleCommand.getSubCommand("world", "Re-scale a world", "<name> <scale>", PermissionType.ADMINS_ONLY); 
-		centerCommand = netherCommand.getSubCommand("center", "Re-center an area or world", "<world | area> <name> <X> <Y> <Z>", PermissionType.ADMINS_ONLY); 
-		centerWorldCommand = centerCommand.getSubCommand("world", "Re-center a world", "<name> <X> <Y> <Z>", PermissionType.ADMINS_ONLY); 
-		listCommand = netherCommand.getSubCommand("list", "List worlds, areas and portals", null, PermissionType.ADMINS_ONLY);
-		listWorldsCommand = listCommand.getSubCommand("worlds", "List all known worlds", null, PermissionType.ADMINS_ONLY);
+		netherCommand = utilities.getGeneralCommand("nether", "Manage portal areas and worlds", null);
+		createCommand = netherCommand.getSubCommand("create", "Create a portal area or world", null);
+		worldCommand = createCommand.getSubCommand("world", "Create a new world", "<name>");
+		areaCommand = createCommand.getSubCommand("area", "Create a new PortalArea underground", "<name>");
+		kitCommand = netherCommand.getSubCommand("kit", "Give yourself a portal kit", null);
+		goCommand = netherCommand.getSubCommand("go", "TP to an area or world", "[name]");
+		deleteCommand = netherCommand.getSubCommand("delete", "Delete an area or world", null);
+		deleteWorldCommand = deleteCommand.getSubCommand("world", "Delete an world", "<name>");
+		targetCommand = netherCommand.getSubCommand("target", "Re-target worlds or areas", null);
+		targetWorldCommand = targetCommand.getSubCommand("world", "Re-target a world", "<from> <to>");
+		scaleCommand = netherCommand.getSubCommand("scale", "Re-scale an area or world", "<world | area> <name> <scale>"); 
+		scaleWorldCommand = scaleCommand.getSubCommand("world", "Re-scale a world", "<name> <scale>"); 
+		centerCommand = netherCommand.getSubCommand("center", "Re-center an area or world", "<world | area> <name> <X> <Y> <Z>"); 
+		centerWorldCommand = centerCommand.getSubCommand("world", "Re-center a world", "<name> <X> <Y> <Z>"); 
+		listCommand = netherCommand.getSubCommand("list", "List worlds, areas and portals", null);
+		listWorldsCommand = listCommand.getSubCommand("worlds", "List all known worlds", null);
 
 		setHomeCommand = netherCommand.getSubCommand("sethome", "Set your home world and location", null); 
 		goHomeCommand = netherCommand.getSubCommand("home", "Go to your home world and location", null);
 		compassCommand = netherCommand.getSubCommand("compass", "Get your current location", null);
 		
 		spawnCommand = netherCommand.getSubCommand("spawn", "Return you to spawn", null);
-
-		// This one is a little weird, and bears specific permissions testing.
-		// I want "/spawn" to be publicly available, but "spawn set" to be admin-only. Should work.
-		setSpawnCommand = spawnCommand.getSubCommand("set", "Set the current world's spawn point", null, PermissionType.ADMINS_ONLY);
-		cleanSpawnCommand = spawnCommand.getSubCommand("clean", "Get rid of any lava in the spawn area", "<world>", PermissionType.ADMINS_ONLY);
+		setSpawnCommand = spawnCommand.getSubCommand("set", "Set the current world's spawn point", null);
+		cleanSpawnCommand = spawnCommand.getSubCommand("clean", "Get rid of any lava in the spawn area", "<world>");
 		
 		areaCommand.bind("onCreateArea");
 		worldCommand.bind("onCreateWorld");
@@ -466,10 +460,8 @@ public class NetherGatePlugin extends JavaPlugin
 		int x = player.getLocation().getBlockX();
 		int y = player.getLocation().getBlockY();
 		int z = player.getLocation().getBlockZ();
-		
 
-		WorldServer wServer = cWorld.getHandle();
-		wServer.q.a(x, y, z);
+		cWorld.setSpawnLocation(x, y, z);
 		
 		spawnSetMessage.sendTo(player, worldData.getName(), x, y, z);
 		

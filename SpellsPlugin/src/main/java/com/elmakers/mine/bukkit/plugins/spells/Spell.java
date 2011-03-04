@@ -17,8 +17,10 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 import org.bukkit.World;
 
+import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.plugins.spells.utilities.PluginProperties;
 import com.elmakers.mine.bukkit.utilities.PluginUtilities;
+import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 /**
  * 
@@ -851,7 +853,10 @@ public abstract class Spell implements Comparable<Spell>
 	
 	public boolean hasSpellPermission(Player player)
 	{
-		return utilities.getSecurity().hasPermission(player, getPermissionNode());
+		if (player == null) return false;
+		PlayerData playerData = Persistence.getInstance().get(player.getName(), PlayerData.class);
+		if (playerData == null) return false;
+		return playerData.isSet(getPermissionNode());
 	}
 	
 	public boolean otherSpellHasPermission(String spellName)

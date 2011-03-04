@@ -488,9 +488,9 @@ public class NetherManager
 		if (targetWorld == null) return false;
 		
 		NetherPlayer playerData = getPlayerData(player);
-		if (playerData == null) return false;
+		if (playerData == null || playerData.getPlayer() == null) return false;
 		
-		if (!utilities.getSecurity().hasPermission(player, "NetherGate.portal.use")) 
+		if (!playerData.getPlayer().isSet("NetherGate.portal.use")) 
 		{
 			cancelTeleport(playerData);
 			return false;
@@ -665,9 +665,9 @@ public class NetherManager
 				log.info(message);
 			}
 			// Get player permissions
-			boolean buildPortal = utilities.getSecurity().hasPermission(player, NetherPermissions.autoCreatePortal);
-			boolean buildPlatform = utilities.getSecurity().hasPermission(player, NetherPermissions.autoCreatePlatform);
-			boolean fillAir = utilities.getSecurity().hasPermission(player, NetherPermissions.fillAir);			
+			boolean buildPortal = playerData.getPlayer().isSet(NetherPermissions.autoCreatePortal);
+			boolean buildPlatform = playerData.getPlayer().isSet(NetherPermissions.autoCreatePlatform);
+			boolean fillAir = playerData.getPlayer().isSet(NetherPermissions.fillAir);			
 			
 			// Check for portal connections
 			Portal sourcePortal = playerData.getSourcePortal();

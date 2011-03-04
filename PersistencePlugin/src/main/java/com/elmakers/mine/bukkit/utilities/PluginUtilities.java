@@ -21,7 +21,6 @@ import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.persistence.dao.PluginData;
 import com.elmakers.mine.bukkit.persistence.dao.WorldData;
-import com.elmakers.mine.craftbukkit.permissions.Security;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 /** 
@@ -54,9 +53,6 @@ public class PluginUtilities
 			plugin = new PluginData(requestingPlugin);
 			persistence.put(plugin);
 		}
-		
-		// TODO : (remove this) : Initialize PluginCommand.security - this should be temporary.
-		PluginCommand.setSecurity(getSecurity());
 		
 		// Let the plugin bind its transient command and message instances
 		List<Message> allMessages = new ArrayList<Message>();
@@ -423,21 +419,10 @@ public class PluginUtilities
 		}
 		return persistence;
 	}
-	
-	// TODO : These should go in Server!
-	public Security getSecurity()
-	{
-		if (security == null)
-		{
-			security = new Security();
-		}
-		return security;
-	}
 
-	private Security security;
-	private Persistence persistence;
-	private Plugin owner;
-	private PluginData plugin;
-	private CommandSenderData playerSender;
-	private static final Logger log = Persistence.getLogger();
+	private Persistence			persistence;
+	private Plugin				owner;
+	private PluginData			plugin;
+	private CommandSenderData	playerSender;
+	private static final Logger	log	= Persistence.getLogger();
 }

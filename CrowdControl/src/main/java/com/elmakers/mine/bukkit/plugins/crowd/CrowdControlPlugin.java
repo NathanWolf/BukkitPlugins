@@ -18,7 +18,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.elmakers.mine.bukkit.borrowed.CreatureType;
 import com.elmakers.mine.bukkit.persistence.dao.Message;
-import com.elmakers.mine.bukkit.persistence.dao.PermissionType;
 import com.elmakers.mine.bukkit.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.persistence.dao.WorldData;
 import com.elmakers.mine.bukkit.plugins.crowd.dao.ControlRule;
@@ -81,13 +80,13 @@ public class CrowdControlPlugin extends JavaPlugin
 	    listener.initialize(persistence, controller);
 	    controller.initialize();
 	    
-	    crowdCommand = utilities.getGeneralCommand(d.crowdCommand[0], d.crowdCommand[1], d.crowdCommand[2], PermissionType.ADMINS_ONLY);
-	    crowdControlCommand = crowdCommand.getSubCommand(d.crowdControlCommand[0], d.crowdControlCommand[1], d.crowdControlCommand[2], PermissionType.ADMINS_ONLY);
-	    crowdReleaseCommand = crowdCommand.getSubCommand(d.crowdReleaseCommand[0], d.crowdReleaseCommand[1], d.crowdReleaseCommand[2], PermissionType.ADMINS_ONLY);
-	    nukeCommand = crowdCommand.getSubCommand(d.nukeCommand[0], d.nukeCommand[1], d.nukeCommand[2], PermissionType.ADMINS_ONLY);
-	    listCommand = crowdCommand.getSubCommand(d.listCommand[0], d.listCommand[1], d.listCommand[2], PermissionType.ADMINS_ONLY);
-		listRulesCommand = listCommand.getSubCommand(d.listRulesCommand[0], d.listRulesCommand[1], d.listRulesCommand[2], PermissionType.ADMINS_ONLY);
-	    listPopulationCommand = listCommand.getSubCommand(d.listPopulationCommand[0], d.listPopulationCommand[1], d.listPopulationCommand[2], PermissionType.ADMINS_ONLY);
+	    crowdCommand = utilities.getGeneralCommand(d.crowdCommand[0], d.crowdCommand[1], d.crowdCommand[2]);
+	    crowdControlCommand = crowdCommand.getSubCommand(d.crowdControlCommand[0], d.crowdControlCommand[1], d.crowdControlCommand[2]);
+	    crowdReleaseCommand = crowdCommand.getSubCommand(d.crowdReleaseCommand[0], d.crowdReleaseCommand[1], d.crowdReleaseCommand[2]);
+	    nukeCommand = crowdCommand.getSubCommand(d.nukeCommand[0], d.nukeCommand[1], d.nukeCommand[2]);
+	    listCommand = crowdCommand.getSubCommand(d.listCommand[0], d.listCommand[1], d.listCommand[2]);
+		listRulesCommand = listCommand.getSubCommand(d.listRulesCommand[0], d.listRulesCommand[1], d.listRulesCommand[2]);
+	    listPopulationCommand = listCommand.getSubCommand(d.listPopulationCommand[0], d.listPopulationCommand[1], d.listPopulationCommand[2]);
 		
 	    crowdControlCommand.bind("onControlCrowd");
 	    crowdReleaseCommand.bind("onReleaseCrowd");

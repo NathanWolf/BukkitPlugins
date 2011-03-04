@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.55
+
+ - Re-integrate users/groups, bukkit permissions.
+ - Allow for additional permission handlers, create PermissionSupport plugin for Permissions support
+
 # 0.54
 
  - Add error message for trying to set a primitive type to null

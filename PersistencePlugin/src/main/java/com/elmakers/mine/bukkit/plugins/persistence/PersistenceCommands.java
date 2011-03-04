@@ -9,7 +9,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.elmakers.mine.bukkit.persistence.dao.Message;
-import com.elmakers.mine.bukkit.persistence.dao.PermissionType;
 import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.persistence.dao.PluginData;
@@ -21,7 +20,6 @@ import com.elmakers.mine.craftbukkit.persistence.core.Schema;
 
 public class PersistenceCommands
 {
-
 	public void initialize(PersistencePlugin plugin, Persistence persistence)
 	{
 		PersistenceDefaults d = new PersistenceDefaults();
@@ -47,20 +45,15 @@ public class PersistenceCommands
 		suDisabledMessage = utilities.getMessage("suDisabled", d.suDisabledMessage);
 		
 		// Initialize Commands
-		persistCommand = utilities.getGeneralCommand(d.persistCommand[0], d.persistCommand[1], d.persistCommand[2], PermissionType.ADMINS_ONLY);
-		saveSubCommand = persistCommand.getSubCommand(d.saveSubCommand[0], d.saveSubCommand[1], d.saveSubCommand[2], PermissionType.ADMINS_ONLY);
-		describeSubCommand = persistCommand.getSubCommand(d.describeSubCommand[0], d.describeSubCommand[1], d.describeSubCommand[2], PermissionType.ADMINS_ONLY);
-		listSubCommand = persistCommand.getSubCommand(d.listSubCommand[0], d.listSubCommand[1], d.listSubCommand[2], PermissionType.ADMINS_ONLY);
-		reloadSubCommand = persistCommand.getSubCommand(d.reloadSubCommand[0], d.reloadSubCommand[1], d.reloadSubCommand[2], PermissionType.ADMINS_ONLY);
-		resetSubCommand = persistCommand.getSubCommand(d.resetSubCommand[0], d.resetSubCommand[1], d.resetSubCommand[2], PermissionType.ADMINS_ONLY);
-		
+		persistCommand = utilities.getGeneralCommand(d.persistCommand[0], d.persistCommand[1], d.persistCommand[2]);
+		saveSubCommand = persistCommand.getSubCommand(d.saveSubCommand[0], d.saveSubCommand[1], d.saveSubCommand[2]);
+		describeSubCommand = persistCommand.getSubCommand(d.describeSubCommand[0], d.describeSubCommand[1], d.describeSubCommand[2]);
+		listSubCommand = persistCommand.getSubCommand(d.listSubCommand[0], d.listSubCommand[1], d.listSubCommand[2]);
+		reloadSubCommand = persistCommand.getSubCommand(d.reloadSubCommand[0], d.reloadSubCommand[1], d.reloadSubCommand[2]);
+		resetSubCommand = persistCommand.getSubCommand(d.resetSubCommand[0], d.resetSubCommand[1], d.resetSubCommand[2]);
+		suCommand = utilities.getPlayerCommand(d.suCommand[0], d.suCommand[1], d.suCommand[2]);	
 		helpCommand = utilities.getGeneralCommand(d.helpCommand[0], d.helpCommand[1], d.helpCommand[2]);
-		
-		// Player commands
-		// TODO - not sure this is going to work right when switching back and forth between built-in and bukkit permissions .. ?
-		PermissionType suType = Persistence.getOpsCanSU() ? PermissionType.OPS_ONLY : PermissionType.ADMINS_ONLY;
-		suCommand = utilities.getPlayerCommand(d.suCommand[0], d.suCommand[1], d.suCommand[2], suType);
-		
+	
 		for (String usage : d.describeUsage)
 		{
 			describeSubCommand.addUsage(usage);

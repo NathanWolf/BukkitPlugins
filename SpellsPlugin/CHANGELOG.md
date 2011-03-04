@@ -3,6 +3,7 @@
 ## 0.99
 
  - Bring back tunnel, torches disabled.
+ - Update permissions support for Persistence 0.55, drop Groups
 
 ## 0.98
 

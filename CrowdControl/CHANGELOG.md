@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.18
+
+ - Update permissions support for Persistence 0.55, drop Groups
+
 # 0.17
 
  - Swap percent and replace parameters for "control"- I think this is cleaner.

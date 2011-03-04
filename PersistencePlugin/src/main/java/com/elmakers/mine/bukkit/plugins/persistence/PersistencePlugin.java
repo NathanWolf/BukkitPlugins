@@ -10,6 +10,9 @@ import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.elmakers.mine.bukkit.permission.GroupManager;
+import com.elmakers.mine.bukkit.permission.PermissionManager;
+import com.elmakers.mine.bukkit.utilities.PluginUtilities;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 /** 
@@ -128,6 +131,9 @@ public class PersistencePlugin extends JavaPlugin
 	{
 		// We use persistence internally, so go ahead and initialize it.
 		persistence = getPersistence();
+		utilities = persistence.getUtilities(this);	
+		
+		permissions = new GroupManager(getServer(), utilities, persistence, getDataFolder());
 		
 		handler.initialize(this, persistence);
 		listener.initialize(persistence, handler);
@@ -138,14 +144,21 @@ public class PersistencePlugin extends JavaPlugin
 		pm.registerEvent(Type.PLAYER_JOIN, listener, Priority.Normal, this);
 	}
 	
+	public PermissionManager getPermissions()
+	{
+		return permissions;
+	}
+	
 	/*
 	 * Private data
 	 */
-	
-	private static PersistencePlugin pluginInstance = null;
-	private final PersistenceListener listener = new PersistenceListener();
-	private final PersistenceCommands handler = new PersistenceCommands();
-	private Persistence persistence = null;
-	private static final Logger log = Logger.getLogger("Minecraft");
+
+	private static PersistencePlugin	pluginInstance	= null;
+	private final PersistenceListener	listener		= new PersistenceListener();
+	private final PersistenceCommands	handler			= new PersistenceCommands();
+	private Persistence					persistence		= null;
+	private GroupManager				permissions		= null;
+	private PluginUtilities				utilities		= null;
+	private static final Logger			log				= Logger.getLogger("Minecraft");
 	
 }
