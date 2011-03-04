@@ -76,9 +76,7 @@ public class GroupManager implements PermissionManager, PermissionHandler
 	}
 	
 	public void initializePermissions()
-	{
-		log.info("Persistence: Loaded permission profiles from " + permissionsFile);
-		
+	{		
 		// Set up player profiles for permissions
 		FileReader loader = null;
 		try
@@ -89,11 +87,15 @@ public class GroupManager implements PermissionManager, PermissionHandler
 			{
 				log.info("Persistence: There's an error with permissions.yml - hopefully more info about that above.");
 			}
+			else
+			{
+				log.info("Persistence: Loaded permission profiles from " + permissionsFile);
+			}
 		}
 		catch(FileNotFoundException ex)
 		{
 			log.info("Persistence: " + permissionsFile + " not found, ops have /su access.");
-			log.info("Persistence: Create a plugins/Persistence/" + permissionsFile + " to use bukkit.permissions");
+			log.info("Persistence: Create a plugins/Persistence/" + permissionsFile + " to use internal permissions");
 			loader = null;
 		}
 	}

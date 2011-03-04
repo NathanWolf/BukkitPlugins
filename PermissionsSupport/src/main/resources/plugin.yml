@@ -1,0 +1,6 @@
+name: PermissionsSupport
+main: com.elmakers.mine.bukkit.plugins.permissions.PermissionsSupportPlugin
+version: 0.10
+website: http://mine.elmakers.com
+author: NathanWolf
+description : A support plugin for Permissions backwards-compatibility
