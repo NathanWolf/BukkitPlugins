@@ -8,3 +8,92 @@ commands:
   nether:
     description: Administer Nether areas
     usage: Use /phelp nether for help
+permissions:
+  NetherGate:
+    description: NetherGate permissions
+    type: map
+    map:
+      commands:
+        description: NetherGate console command permissions
+        type: map
+        map:
+          nether:
+            description: If true, they can use nether commands
+            type: map
+            map:
+              area:
+                description: Can manage areas
+                type: map
+                map:
+                  create:
+                    description: Can create worlds
+                    type: boolean
+                    default: false
+              world:
+                description: Can manage worlds
+                type: map
+                map:
+                  go:
+                    description: Can go directly to any world
+                    type: boolean
+                    default: false
+                  create:
+                    description: Can create worlds
+                    type: boolean
+                    default: false
+                  target:
+                    description: Can target worlds
+                    type: boolean
+                    default: false
+                  center:
+                    description: Can re-center worlds
+                    type: boolean
+                    default: false
+              spawn:
+                description: Can manage world spawns
+                type: map
+                map:
+                  set:
+                    description: Can set the spawn location
+                    type: boolean
+                    default: false
+                  go:
+                    description: Can go to spawn
+                    type: boolean
+                    default: true
+              home:
+                description: Can access home commands
+                type: map
+                map:
+                  set:
+                    description: Can set a home location
+                    type: boolean
+                    default: true
+                  go:
+                    description: Can go to their home
+                    type: boolean
+                    default: true
+      portal:
+        description: NetherGate portal permissions
+        type: map
+        map:
+          use:
+            description: If true, they can use a portal
+            type: boolean
+            default: true
+          create:
+            description: If true, they get portals auto-created
+            type: map
+            map:
+              portal:
+                type: boolean
+                default: false
+              platform:
+                type: boolean
+                default: true
+              frame:
+                type: boolean
+                default: false
+              airPocket:
+                type: boolean
+                default: true

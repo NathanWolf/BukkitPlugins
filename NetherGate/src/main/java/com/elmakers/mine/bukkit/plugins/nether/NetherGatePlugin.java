@@ -94,45 +94,47 @@ public class NetherGatePlugin extends JavaPlugin
 	    manager.initialize(getServer(), persistence, utilities);
 	    
 		netherCommand = utilities.getGeneralCommand("nether", "Manage portal areas and worlds", null);
-		createCommand = netherCommand.getSubCommand("create", "Create a portal area or world", null);
-		worldCommand = createCommand.getSubCommand("world", "Create a new world", "<name>");
-		areaCommand = createCommand.getSubCommand("area", "Create a new PortalArea underground", "<name>");
-		kitCommand = netherCommand.getSubCommand("kit", "Give yourself a portal kit", null);
-		goCommand = netherCommand.getSubCommand("go", "TP to an area or world", "[name]");
-		deleteCommand = netherCommand.getSubCommand("delete", "Delete an area or world", null);
-		deleteWorldCommand = deleteCommand.getSubCommand("world", "Delete an world", "<name>");
-		targetCommand = netherCommand.getSubCommand("target", "Re-target worlds or areas", null);
-		targetWorldCommand = targetCommand.getSubCommand("world", "Re-target a world", "<from> <to>");
-		scaleCommand = netherCommand.getSubCommand("scale", "Re-scale an area or world", "<world | area> <name> <scale>"); 
-		scaleWorldCommand = scaleCommand.getSubCommand("world", "Re-scale a world", "<name> <scale>"); 
-		centerCommand = netherCommand.getSubCommand("center", "Re-center an area or world", "<world | area> <name> <X> <Y> <Z>"); 
-		centerWorldCommand = centerCommand.getSubCommand("world", "Re-center a world", "<name> <X> <Y> <Z>"); 
-		listCommand = netherCommand.getSubCommand("list", "List worlds, areas and portals", null);
-		listWorldsCommand = listCommand.getSubCommand("worlds", "List all known worlds", null);
+		areaCommand = netherCommand.getSubCommand("area", "Manage portal areas", null);
+		areaCreateCommand = netherCommand.getSubCommand("create", "Create a portal area", "not yet implemented!");
+		
+		worldCommand = netherCommand.getSubCommand("world", "Manage worlds", null);
 
-		setHomeCommand = netherCommand.getSubCommand("sethome", "Set your home world and location", null); 
-		goHomeCommand = netherCommand.getSubCommand("home", "Go to your home world and location", null);
+		worldCreateCommand = worldCommand.getSubCommand("create", "Create a portal area or world", "<nether|normal> <worldname>");
+		worldGoCommand = worldCommand.getSubCommand("go", "TP to a world", "[world]");
+		worldDeleteCommand = worldCommand.getSubCommand("delete", "Delete an world", "<name>");
+		worldTargetCommand = worldCommand.getSubCommand("target", "Re-target a world", "<from> <to>");
+		worldScaleCommand = worldCommand.getSubCommand("scale", "Re-scale a world", "<name> <scale>"); 
+		worldCenterCommand = worldCommand.getSubCommand("center", "Re-center a world", "<name> <X> <Y> <Z>"); 
+		worldListCommand = worldCommand.getSubCommand("list", "List all known worlds", null);
+		
+		kitCommand = netherCommand.getSubCommand("kit", "Give yourself a portal kit", null);
+
+		homeCommand = netherCommand.getSubCommand("home", "Manage your home", null); 
+		homeSetCommand = netherCommand.getSubCommand("set", "Set your home world and location", null); 
+		homeGoCommand = netherCommand.getSubCommand("go", "Go to your home world and location", null);
+	
 		compassCommand = netherCommand.getSubCommand("compass", "Get your current location", null);
 		
-		spawnCommand = netherCommand.getSubCommand("spawn", "Return you to spawn", null);
-		setSpawnCommand = spawnCommand.getSubCommand("set", "Set the current world's spawn point", null);
-		cleanSpawnCommand = spawnCommand.getSubCommand("clean", "Get rid of any lava in the spawn area", "<world>");
+		spawnCommand = netherCommand.getSubCommand("spawn", "Manage world spawn locations", null);
+		spawnSetCommand = spawnCommand.getSubCommand("set", "Set the current world's spawn point", null);
+		spawnCleanCommand = spawnCommand.getSubCommand("clean", "Get rid of any lava in the spawn area", "<world>");
+		spawnGoCommand = spawnCommand.getSubCommand("go", "Return you to spawn in the current world", null);
 		
 		areaCommand.bind("onCreateArea");
-		worldCommand.bind("onCreateWorld");
-		goCommand.bind("onGo");
+		worldCreateCommand.bind("onCreateWorld");
+		worldGoCommand.bind("onGo");
 		kitCommand.bind("onKit");
-		deleteWorldCommand.bind("onDeleteWorld");
-		targetWorldCommand.bind("onTargetWorld");
-		scaleWorldCommand.bind("onScaleWorld");
-		setSpawnCommand.bind("onSetSpawn");
-		goHomeCommand.bind("onGoHome");
-		setHomeCommand.bind("onSetHome");
-		centerWorldCommand.bind("onCenterWorld");
-		listWorldsCommand.bind("onListWorlds");
+		worldDeleteCommand.bind("onDeleteWorld");
+		worldTargetCommand.bind("onTargetWorld");
+		worldScaleCommand.bind("onScaleWorld");
+		spawnSetCommand.bind("onSetSpawn");
+		homeGoCommand.bind("onGoHome");
+		homeSetCommand.bind("onSetHome");
+		worldCenterCommand.bind("onCenterWorld");
+		worldListCommand.bind("onListWorlds");
 		compassCommand.bind("onCompass");
-		spawnCommand.bind("onGoSpawn");
-		cleanSpawnCommand.bind("onCleanSpawn");
+		spawnGoCommand.bind("onGoSpawn");
+		spawnCleanCommand.bind("onCleanSpawn");
 		
 		creationFailedMessage = utilities.getMessage("creationFailed", "Nether creation failed- is there enough room below you?");
 		creationSuccessMessage = utilities.getMessage("creationSuccess", "Created new Nether area");
@@ -709,23 +711,28 @@ public class NetherGatePlugin extends JavaPlugin
 			Player player = (Player)sender;
 			currentWorld = player.getWorld();
 		}
-		if (parameters.length < 0)
+		
+		if (parameters.length < 2)
 		{
-			worldCommand.sendHelp(sender, "Use: ", true, true);
-			return true;
+			return false;
 		}
 		
-		String worldName = parameters[0];
+		String worldName = parameters[1];
 		Environment worldType = Environment.NETHER;
 			
-		for (int i = 1; i < parameters.length; i++)
+		if (parameters[0].equalsIgnoreCase("normal"))
 		{
-			if (parameters[i].equalsIgnoreCase("normal"))
-			{
-				worldType = Environment.NORMAL;
-			}
+			worldType = Environment.NORMAL;
 		}
-
+		else if (parameters[0].equalsIgnoreCase("nether"))
+		{
+			worldType = Environment.NETHER;
+		}
+		else
+		{
+			return false;
+		}
+		
 		NetherWorld world = manager.createWorld(worldName, worldType, currentWorld);
 		if (world == null)
 		{
@@ -754,6 +761,7 @@ public class NetherGatePlugin extends JavaPlugin
 		// on the right, if possible
 		ItemStack itemStack = new ItemStack(Material.OBSIDIAN, 32);
 		ItemStack[] items = inventory.getContents();
+		int obisidianIndex = -1;
 		boolean inActive = false;
 		for (int i = 8; i >= 0; i--)
 		{
@@ -761,6 +769,7 @@ public class NetherGatePlugin extends JavaPlugin
 			{
 				inventory.setItem(i, itemStack);
 				inActive = true;
+				obisidianIndex = i;
 				break;
 			}
 		}
@@ -786,7 +795,7 @@ public class NetherGatePlugin extends JavaPlugin
 			inActive = false;
 			for (int i = 8; i >= 0; i--)
 			{
-				if (items[i] == null || items[i].getType() == Material.AIR)
+				if (i != obisidianIndex && (items[i] == null || items[i].getType() == Material.AIR))
 				{
 					inventory.setItem(i, pickAxeItem);
 					inActive = true;
@@ -836,27 +845,31 @@ public class NetherGatePlugin extends JavaPlugin
 	}
 
 	protected PluginCommand netherCommand;
-	protected PluginCommand createCommand;
-	protected PluginCommand worldCommand;
+
 	protected PluginCommand areaCommand;
-	protected PluginCommand goCommand;
-	protected PluginCommand kitCommand;
-	protected PluginCommand targetCommand;
-	protected PluginCommand targetWorldCommand;
-	protected PluginCommand deleteCommand;
-	protected PluginCommand deleteWorldCommand;
-	protected PluginCommand scaleCommand;
-	protected PluginCommand scaleWorldCommand;
-	protected PluginCommand setSpawnCommand;
+	protected PluginCommand areaCreateCommand;
+	
+	protected PluginCommand worldCommand;
+	protected PluginCommand worldCreateCommand;
+	protected PluginCommand worldGoCommand;
+	protected PluginCommand worldTargetCommand;
+	protected PluginCommand worldDeleteCommand;
+	protected PluginCommand worldScaleCommand;
+	protected PluginCommand worldCenterCommand;
+	protected PluginCommand worldListCommand;
+	
 	protected PluginCommand spawnCommand;
-	protected PluginCommand setHomeCommand;
-	protected PluginCommand goHomeCommand;
-	protected PluginCommand centerWorldCommand;
-	protected PluginCommand centerCommand;
-	protected PluginCommand listWorldsCommand;
-	protected PluginCommand listCommand;
+	protected PluginCommand spawnSetCommand;
+	protected PluginCommand spawnGoCommand;
+	protected PluginCommand spawnCleanCommand;
+
+	protected PluginCommand homeCommand;
+	protected PluginCommand homeSetCommand;
+	protected PluginCommand homeGoCommand;
+
+	
+	protected PluginCommand kitCommand;
 	protected PluginCommand compassCommand;
-	protected PluginCommand cleanSpawnCommand;
 	
 	protected Message creationFailedMessage;
 	protected Message creationSuccessMessage;

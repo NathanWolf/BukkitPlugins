@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.53
+
+ - Update plugin.yml with all NetherGate permissions, to support internal permissions
+ - Re-arrange all the console commands
+ - Fix kit
+
 # 0.52
 
  - Update permissions support for Persistence 0.55, drop Groups

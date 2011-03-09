@@ -388,8 +388,8 @@ public class NetherManager
 	protected void onPlayerMove(Player player)
 	{
 		NetherPlayer playerData = getPlayerData(player);
-		if (playerData == null) return;
-		
+		if (playerData == null || playerData.getPlayer() == null) return;
+
 		Location currentLoc = player.getLocation();
 		BlockVector lastLoc = playerData.getLastLocation();
 		if 
@@ -423,6 +423,12 @@ public class NetherManager
 		}
 		
 		if (playerData.getState() != NetherPlayer.TeleportState.NONE) return;
+		
+		if (!playerData.getPlayer().isSet("NetherGate.portal.use")) 
+		{
+			return;
+		}
+		
 		startAutoPortal(player);
 	}
 	
@@ -475,7 +481,15 @@ public class NetherManager
 	
 	protected boolean startAutoPortal(Player player)
 	{
-		return startTeleport(player, getNextWorld(player.getWorld()), player.getLocation(), PortalType.PORTAL_FRAME_AND_PLATFORM);
+		NetherPlayer playerData = getPlayerData(player);
+		if (playerData == null || playerData.getPlayer() == null) return false;
+		
+		boolean buildPortal = playerData.getPlayer().isSet(NetherPermissions.autoCreatePortal);
+		boolean buildFrame = playerData.getPlayer().isSet(NetherPermissions.autoCreateFrame);
+		boolean buildPlatform = playerData.getPlayer().isSet(NetherPermissions.autoCreatePlatform);
+		PortalType portalType = PortalType.getPortalType(buildPortal, buildFrame, buildPlatform);
+		
+		return startTeleport(player, getNextWorld(player.getWorld()), player.getLocation(), portalType);
 	}
 	
 	protected boolean startTeleport(Player player, NetherWorld targetWorld, Location targetLocation)
@@ -489,13 +503,7 @@ public class NetherManager
 		
 		NetherPlayer playerData = getPlayerData(player);
 		if (playerData == null || playerData.getPlayer() == null) return false;
-		
-		if (!playerData.getPlayer().isSet("NetherGate.portal.use")) 
-		{
-			cancelTeleport(playerData);
-			return false;
-		}
-		
+	
 		// Register the current world first, in case it's not already.
 		NetherWorld currentWorld = getCurrentWorld(player.getWorld());
 		if (currentWorld == null) return false;
@@ -665,7 +673,6 @@ public class NetherManager
 				log.info(message);
 			}
 			// Get player permissions
-			boolean buildPortal = playerData.getPlayer().isSet(NetherPermissions.autoCreatePortal);
 			boolean buildPlatform = playerData.getPlayer().isSet(NetherPermissions.autoCreatePlatform);
 			boolean fillAir = playerData.getPlayer().isSet(NetherPermissions.fillAir);			
 			
@@ -677,7 +684,7 @@ public class NetherManager
 				sourcePortal.initialize(this);
 				// Auto-bind if not bound, and you have permission to create at least the portal
 				Portal targetPortal = sourcePortal.getTarget();
-				if (targetPortal == null && buildPortal)
+				if (targetPortal == null)
 				{
 					targetPortal = new Portal(player, targetLocation, sourcePortal.getType(), this);
 					persistence.put(targetPortal);
