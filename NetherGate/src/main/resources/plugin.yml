@@ -69,6 +69,10 @@ permissions:
                     description: Can go to spawn
                     type: boolean
                     default: true
+                  clean:
+                    description: Can clean up spawn areas
+                    type: boolean
+                    default: true
               home:
                 description: Can access home commands
                 type: map
