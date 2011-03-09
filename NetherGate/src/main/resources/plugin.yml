@@ -21,6 +21,14 @@ permissions:
             description: If true, they can use nether commands
             type: map
             map:
+              kit:
+                description: Can receive a portalling kit
+                type: boolean
+                default: false
+              compass:
+                description: Can use the compass command
+                type: boolean
+                default: false           
               area:
                 description: Can manage areas
                 type: map
