@@ -124,6 +124,22 @@ public class PersistenceCommands
 		return true;
 	}
 	
+	protected void addCommands(CommandSender messageOutput, PluginCommand command, List<PluginCommand> allCommands)
+	{
+		if (command.checkPermission(messageOutput))
+		{
+			allCommands.add(command);
+		}
+		List<PluginCommand> children = command.getChildren();
+		if (children != null)
+		{
+			for (PluginCommand child : children)
+			{
+				addCommands(messageOutput, child, allCommands);
+			}
+		}
+	}
+	
 	public boolean onHelp(CommandSender messageOutput, String[] parameters)
 	{
 		List<PluginData> plugins = new ArrayList<PluginData>();
@@ -138,10 +154,7 @@ public class PersistenceCommands
 				List<PluginCommand> pluginCommands = plugin.getCommands();
 				for (PluginCommand command : pluginCommands)
 				{
-					if (command.checkPermission(messageOutput))
-					{
-						allCommands.add(command);
-					}
+					addCommands(messageOutput, command, allCommands);
 				}
 			}
 			

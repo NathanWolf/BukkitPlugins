@@ -1,6 +1,6 @@
 name: Persistence
 main: com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin
-version: 0.57
+version: 0.59
 website: http://mine.elmakers.com
 author: NathanWolf
 description : A generalized persistence engine for Bukkit.
@@ -14,12 +14,15 @@ commands:
   su:
     description: Toggle SuperUser status (ops-only)
     usage: Use "phelp" for help
-  group:
-    description: Create and manage player groups
   grant:
     description: Grant players and groups access
+    usage: Use "phelp" for help
+  group:
+    description: Manage groups
+    usage: Use "phelp" for help
   deny:
     description: Deny players and groups access
+    usage: Use "phelp" for help
 permissions:
   Persistence:
     description: Persistence permissions
@@ -30,9 +33,29 @@ permissions:
         type: map
         map:
           persist:
-            description: If true, they can use the persist command
-            type: boolean
-            default: false
+            description: Can manage persistence
+            type: map
+            map:
+              save:
+                description: Can save data
+                type: boolean
+                default: false
+              list:
+                description: Can list entities and schemas
+                type: boolean
+                default: false
+              describe:
+                description: Can describe entities and schemas
+                type: boolean
+                default: false
+              reload:
+                description: Can reload data
+                type: boolean
+                default: false
+              reset:
+                description: Can reset data
+                type: boolean
+                default: false
           phelp:
             description: If true, they can use the help command
             type: boolean
@@ -42,14 +65,42 @@ permissions:
             type: boolean
             default: false
           group:
-            description: Allows access to group management
-            type: boolean
-            default: false
+            description: May manage groups
+            type: map
+            map:
+              create:
+                description: May create groups
+                type: boolean
+                default: false
+              add:
+                description: May add players to groups
+                type: boolean
+                default: false
+              remove:
+                description: May remove players from groups
+                type: boolean
+                default: false
           grant:
             description: May grant permissions
-            type: boolean
-            default: false
+            type: map
+            map:
+              player:
+                description: May grant permissions to players
+                type: boolean
+                default: false
+              group:
+                description: May grant permissions to groups
+                type: boolean
+                default: false
           deny:
             description: May deny permissions
-            type: boolean
-            default: false
+            type: map
+            map:
+              player:
+                description: May deny permissions to players
+                type: boolean
+                default: false
+              group:
+                description: May deny permissions to groups
+                type: boolean
+                default: false

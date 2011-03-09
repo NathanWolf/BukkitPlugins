@@ -1,5 +1,11 @@
 # CHANGELOG
 
+# 0.59
+
+ - Fix permissions in config.yml
+ - Fix double-command registration in Persistence plugin
+ - Some phelp fixes for the new permission system
+
 # 0.58
 
  - Finish implementing internal permissions
