@@ -3,7 +3,8 @@ package com.elmakers.mine.bukkit.plugins.crowd;
 class CrowdControlDefaults
 {
 	public final String[] crowdCommand = {"crowd", "Manage creature spawning", null};
-	public final String[] crowdControlCommand = {"control", "Control creature spawning", "<type>[replace] [percent] [world]"};
+	public final String[] crowdControlCommand = {"control", "Control creature spawning", "<type>[percent] [world]"};
+	public final String[] crowdReplaceCommand = {"replace", "Control creature spawning", "<type> <replace> [percent] [world]"};
 	public final String[] crowdReleaseCommand = {"release", "Release a creature from control", "<type> [world]"};
 	public final String[] nukeCommand = {"nuke", "Kill all creatures of a specific type", "[type | all] [world]"};
 	public final String[] listCommand = {"list", "List rules or creatures, or both", "rules | population]"};

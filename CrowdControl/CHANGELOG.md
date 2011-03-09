@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.19
+
+ - Update config.yml to support internal permissions
+ - Separate out "control" and "replace" commands
+
 # 0.18
 
  - Update permissions support for Persistence 0.55, drop Groups

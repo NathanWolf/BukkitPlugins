@@ -82,6 +82,7 @@ public class CrowdControlPlugin extends JavaPlugin
 	    
 	    crowdCommand = utilities.getGeneralCommand(d.crowdCommand[0], d.crowdCommand[1], d.crowdCommand[2]);
 	    crowdControlCommand = crowdCommand.getSubCommand(d.crowdControlCommand[0], d.crowdControlCommand[1], d.crowdControlCommand[2]);
+	    crowdReplaceCommand = crowdCommand.getSubCommand(d.crowdReplaceCommand[0], d.crowdReplaceCommand[1], d.crowdReplaceCommand[2]);
 	    crowdReleaseCommand = crowdCommand.getSubCommand(d.crowdReleaseCommand[0], d.crowdReleaseCommand[1], d.crowdReleaseCommand[2]);
 	    nukeCommand = crowdCommand.getSubCommand(d.nukeCommand[0], d.nukeCommand[1], d.nukeCommand[2]);
 	    listCommand = crowdCommand.getSubCommand(d.listCommand[0], d.listCommand[1], d.listCommand[2]);
@@ -89,6 +90,7 @@ public class CrowdControlPlugin extends JavaPlugin
 	    listPopulationCommand = listCommand.getSubCommand(d.listPopulationCommand[0], d.listPopulationCommand[1], d.listPopulationCommand[2]);
 		
 	    crowdControlCommand.bind("onControlCrowd");
+	    crowdReplaceCommand.bind("onReplaceCrowd");
 	    crowdReleaseCommand.bind("onReleaseCrowd");
 	    nukeCommand.bind("onNuke");
 	    listRulesCommand.bind("onListRules");
@@ -214,7 +216,7 @@ public class CrowdControlPlugin extends JavaPlugin
 		return new WorldSearchResults(world, worldName);
 	}
 	
-	// <type> [percent] [replace] [world]
+	// <type> [percent] [world]
 	public boolean onControlCrowd(CommandSender sender, String[] parameters)
 	{
 		if (parameters.length < 1)
@@ -230,26 +232,85 @@ public class CrowdControlPlugin extends JavaPlugin
 			return true;
 		}
 		
-		WorldSearchResults search = findWorld(sender, parameters, 3);
+		float percent = 1;
+		if (parameters.length > 1)
+		{
+			try
+			{
+				percent = Float.parseFloat(parameters[2]);
+				if (percent > 1)
+				{
+					percent = (float)Integer.parseInt(parameters[2]) / 100;
+				}
+			} 
+			catch(NumberFormatException ex)
+			{
+			}
+		}
+		
+		WorldSearchResults search = findWorld(sender, parameters, 2);
 		ControlledWorld world = search.world;
 		if (world == null)
 		{
 			noWorldMessage.sendTo(sender, search.worldName);
 			return true;
 		}
-		
-		float percent = 1;
-		CreatureType targetType = null;
-		int currentRank = 1;
-		
-		if (parameters.length > 1)
+			
+		List<ControlRule> rules = world.getRules();
+		if (rules == null)
 		{
-			if (!parameters[1].equalsIgnoreCase("none"))
-			{
-				targetType = getCreatureType(parameters[1]);
-			}
+			rules = new ArrayList<ControlRule>();
 		}
 		
+		int currentRank = 1;
+		for (ControlRule rule : rules)
+		{
+			currentRank = rule.getRank() + 1;
+		}
+	
+		ControlRule newRule = new ControlRule(currentRank, mobType);
+		newRule.setPercentChance(percent);
+		rules.add(newRule);
+		world.setRules(rules);
+		persistence.put(world);
+		
+		if (percent >= 1)
+		{
+			crowdDisableMessage.sendTo(sender, mobType.getName(), search.worldName);
+		}
+		else
+		{
+			crowdChanceDisableMessage.sendTo(sender, mobType.getName(), (int)(percent * 100), search.worldName);
+		}
+	
+		return true;
+	}
+	
+	// <type> <replace> [percent]  [world]
+	public boolean onReplaceCrowd(CommandSender sender, String[] parameters)
+	{
+		if (parameters.length < 2)
+		{
+			return false;
+		}
+		
+		String mobName = parameters[0];
+		CreatureType mobType = getCreatureType(mobName);
+		if (mobType == null)
+		{
+			unknownEntityMessage.sendTo(sender, mobName);
+			return true;
+		}
+		
+		String replaceName = parameters[1];
+		CreatureType targetType = getCreatureType(replaceName);
+		if (targetType == null)
+		{
+			unknownEntityMessage.sendTo(sender, replaceName);
+			return true;
+		}
+		
+		float percent = 1;
 		if (parameters.length > 2)
 		{
 			try
@@ -264,6 +325,14 @@ public class CrowdControlPlugin extends JavaPlugin
 			{
 			}
 		}
+		
+		WorldSearchResults search = findWorld(sender, parameters, 3);
+		ControlledWorld world = search.world;
+		if (world == null)
+		{
+			noWorldMessage.sendTo(sender, search.worldName);
+			return true;
+		}
 			
 		List<ControlRule> rules = world.getRules();
 		if (rules == null)
@@ -271,6 +340,7 @@ public class CrowdControlPlugin extends JavaPlugin
 			rules = new ArrayList<ControlRule>();
 		}
 		
+		int currentRank = 1;
 		for (ControlRule rule : rules)
 		{
 			currentRank = rule.getRank() + 1;
@@ -282,27 +352,14 @@ public class CrowdControlPlugin extends JavaPlugin
 		rules.add(newRule);
 		world.setRules(rules);
 		persistence.put(world);
-		if (targetType == null)
+	
+		if (percent >= 1)
 		{
-			if (percent >= 1)
-			{
-				crowdDisableMessage.sendTo(sender, mobType.getName(), search.worldName);
-			}
-			else
-			{
-				crowdChanceDisableMessage.sendTo(sender, mobType.getName(), (int)(percent * 100), search.worldName);
-			}
+			crowdReplaceMessage.sendTo(sender, mobType.getName(), targetType.getName(), search.worldName);
 		}
 		else
 		{
-			if (percent >= 1)
-			{
-				crowdReplaceMessage.sendTo(sender, mobType.getName(), targetType.getName(), search.worldName);
-			}
-			else
-			{
-				crowdChanceReplaceMessage.sendTo(sender, mobType.getName(), targetType.getName(), (int)(percent * 100), search.worldName);
-			}
+			crowdChanceReplaceMessage.sendTo(sender, mobType.getName(), targetType.getName(), (int)(percent * 100), search.worldName);
 		}
 		
 		return true;
@@ -520,6 +577,7 @@ public class CrowdControlPlugin extends JavaPlugin
 	
 	protected PluginCommand crowdCommand;
 	protected PluginCommand crowdControlCommand;
+	protected PluginCommand crowdReplaceCommand;
 	protected PluginCommand crowdReleaseCommand;
 	protected PluginCommand nukeCommand;
 	protected PluginCommand listRulesCommand;

@@ -8,3 +8,46 @@ commands:
   crowd:
     description: Control mob spawning
     usage: Use /phelp crowd for help
+permissions:
+  CrowdControl:
+    description: CrowdControl permissions
+    type: map
+    map:
+      commands:
+        description: CrowdControl console command permissions
+        type: map
+        map:
+          crowd:
+            description: If true, they can use CC commands
+            type: map
+            map:
+              control:
+                description: Can disable creature spawning
+                type: boolean
+                default: false
+              replace:
+                description: Can replace spawned creatures
+                type: boolean
+                default: false
+              release:
+                description: Can release controlled creatures
+                type: boolean
+                default: false
+              nuke:
+                description: Can nuke populations of creatures
+                type: boolean
+                default: false
+              list:
+                description: Can list rules and populations
+                type: map
+                map:
+                  rules:
+                    description: Can list rules
+                    type: boolean
+                    default: false
+                  population:
+                    description: Can list populations
+                    type: boolean
+                    default: false
+                
+                
