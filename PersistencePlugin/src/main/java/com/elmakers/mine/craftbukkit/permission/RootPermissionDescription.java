@@ -28,6 +28,7 @@ public class RootPermissionDescription extends MapPermissionDescriptionNode {
 
         for (int i = 0; i < keys.length - 1; i++) {
             PermissionDescriptionNode node = top.getNode(keys[i]);
+            if (node == null) continue;
 
             if (!(node instanceof MapPermissionDescriptionNode)) {
                 StringBuilder builder = new StringBuilder();

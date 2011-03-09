@@ -85,7 +85,7 @@ public class PluginData extends Persisted
 		return message;
 	}
 	
-	public PluginCommand getCommand(String commandName, String defaultTooltip, String defaultUsage, CommandSenderData sender, String pNode, PermissionType pType)
+	public PluginCommand getCommand(String commandName, String defaultTooltip, String defaultUsage, CommandSenderData sender, PermissionType pType)
 	{
 		// First, look for a root command by this name-
 		// command map only holds root commands!
@@ -95,15 +95,6 @@ public class PluginData extends Persisted
 		// Create a new un-parented command
 		command = new PluginCommand(this, commandName, defaultTooltip, pType);
 		command.addUsage(defaultUsage);
-		
-		if (pNode == null)
-		{
-			command.setPermissionNode(command.getDefaultPermissionNode());
-		}
-		else
-		{
-			command.setPermissionNode(pNode);
-		}
 		
 		if (sender != null)
 		{

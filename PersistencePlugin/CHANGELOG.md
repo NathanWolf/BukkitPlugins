@@ -1,5 +1,22 @@
 # CHANGELOG
 
+# 0.58
+
+ - Finish implementing internal permissions
+ - Implement a "default" permission profile
+ - Permissions nodes are no longer persisted as part of plugin command
+ - No longer allow overridding command pnodes, too messy
+ - Silent fail if can't find callback method- allows for multiple handlers per plugin
+
+# 0.57
+
+ - Fix incredibly lame login NPE bug! :(
+
+# 0.56
+
+ - Some more permissions work, not done, in the middle of this
+ - Fixed a crash bug on startup - this was plugin-load-order dependent, so hard to repro- sorry! :(
+
 # 0.55
 
  - Re-integrate users/groups, bukkit permissions.

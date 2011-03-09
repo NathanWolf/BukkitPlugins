@@ -78,7 +78,6 @@ public class PersistenceCommands
 	{
 		return utilities.dispatch(this, messageOutput, cmd.getName(), parameters);
 	}
-	
 
 	public boolean onSU(Player player, String[] parameters)
 	{

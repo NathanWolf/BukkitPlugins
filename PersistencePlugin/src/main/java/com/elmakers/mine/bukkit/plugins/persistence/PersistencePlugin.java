@@ -43,6 +43,13 @@ public class PersistencePlugin extends JavaPlugin
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args)
 	{
+		if (permissions != null)
+		{
+			if (permissions.process(sender, cmd, args))
+			{
+				return true;
+			}
+		}
 		return handler.process(sender, cmd, args);
 	}
 
@@ -149,7 +156,7 @@ public class PersistencePlugin extends JavaPlugin
 	{
 		if (utilities == null)
 		{
-			utilities = persistence.getUtilities(this);	
+			utilities = getPersistence().getUtilities(this);
 		}
 		
 		return utilities;
@@ -159,7 +166,11 @@ public class PersistencePlugin extends JavaPlugin
 	{
 		if (permissions == null)
 		{
-			permissions = new GroupManager(getServer(), getUtilities(), getPersistence(), getDataFolder());
+			// TODO: This is messy, group manager relies on plugin utilities,
+			// which needs a permission manager.
+			// Hopefully all temporary!
+			permissions = new GroupManager(getServer(), getPersistence(), getDataFolder());
+			permissions.initialize();
 			PlayerData.setPermissionHandler(permissions);
 		}
 		return permissions;

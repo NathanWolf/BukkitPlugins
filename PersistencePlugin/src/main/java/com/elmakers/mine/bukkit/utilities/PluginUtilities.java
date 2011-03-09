@@ -1,9 +1,17 @@
 package com.elmakers.mine.bukkit.utilities;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bukkit.Server;
@@ -11,9 +19,14 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.InvalidDescriptionException;
+import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginDescriptionFile;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
+import com.elmakers.mine.bukkit.permission.PermissionManager;
 import com.elmakers.mine.bukkit.persistence.dao.CommandSenderData;
 import com.elmakers.mine.bukkit.persistence.dao.Message;
 import com.elmakers.mine.bukkit.persistence.dao.PermissionType;
@@ -21,6 +34,9 @@ import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.persistence.dao.PluginData;
 import com.elmakers.mine.bukkit.persistence.dao.WorldData;
+import com.elmakers.mine.craftbukkit.permission.PermissionDescriptionException;
+import com.elmakers.mine.craftbukkit.permission.PermissionDescriptionNodeException;
+import com.elmakers.mine.craftbukkit.permission.RootPermissionDescription;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 /** 
@@ -38,6 +54,7 @@ public class PluginUtilities
 	 * 
 	 * @param requestingPlugin The plugin requesting the messaging interface
 	 * @param persistence The Persistence reference to use for retrieving data
+	 * @param permissions The permissions manager
 	 */
 	public PluginUtilities(Plugin requestingPlugin, Persistence persistence)
 	{
@@ -62,6 +79,70 @@ public class PluginUtilities
 		plugin.initializeCache(allMessages, allCommands);
 		
 		playerSender = persistence.get("player", CommandSenderData.class);
+	}
+	
+	public void loadPermissions(PermissionManager permissions)
+	{
+		File dataFolder = owner.getDataFolder();
+		String pluginName = dataFolder.getName();
+		File file = new File(dataFolder.getParentFile(), pluginName + ".jar");
+		try
+		{
+			if (!file.exists())
+			{
+				throw new InvalidPluginException(new FileNotFoundException(String.format("%s does not exist",
+						file.getPath())));
+			}
+			try
+			{
+				JarFile jar = new JarFile(file);
+				JarEntry entry = jar.getJarEntry("plugin.yml");
+
+				if (entry == null)
+				{
+					throw new InvalidPluginException(new FileNotFoundException("Jar does not contain plugin.yml"));
+				}
+
+				InputStream stream = jar.getInputStream(entry);
+				
+				@SuppressWarnings("unchecked")
+				Map<String, Object> map = (Map<String, Object>)yaml.load(stream);
+				if (map.containsKey("permissions"))
+				{
+					try
+					{
+						@SuppressWarnings("unchecked")
+						Map<String, Object> perms = (Map<String, Object>)map.get("permissions");
+						
+						RootPermissionDescription rootNode = new RootPermissionDescription(perms);
+						permissions.addPluginRootPermission(pluginName, rootNode);
+					}
+					catch (ClassCastException ex)
+					{
+						throw new InvalidDescriptionException(ex, "permissions are of wrong type");
+					}
+					catch (PermissionDescriptionException ex)
+					{
+						throw new InvalidDescriptionException(ex, "permissions are invalid");
+					}
+					catch (PermissionDescriptionNodeException ex)
+					{
+						throw new InvalidDescriptionException(ex, "permissions are invalid");
+					}
+				}
+
+				stream.close();
+				jar.close();
+			}
+			catch (IOException ex)
+			{
+				throw new InvalidPluginException(ex);
+			}
+		}
+		catch (Throwable ex)
+		{
+			log.log(Level.INFO, "Error reading plugin permissions: ", ex);
+		}
 	}
 	
 	public Plugin getOwningPlugin()
@@ -141,7 +222,7 @@ public class PluginUtilities
 	 */
 	public PluginCommand getPlayerCommand(String commandName, String defaultTooltip, String defaultUsage)
 	{
-		return getPlayerCommand(commandName, defaultTooltip, defaultUsage, null, PermissionType.DEFAULT);
+		return getPlayerCommand(commandName, defaultTooltip, defaultUsage, PermissionType.DEFAULT);
 	}
 	
 	/**
@@ -160,27 +241,7 @@ public class PluginUtilities
 	 */
 	public PluginCommand getPlayerCommand(String commandName, String defaultTooltip, String defaultUsage, PermissionType pType)
 	{
-		return getCommand(commandName, defaultTooltip, defaultUsage, playerSender, null, pType);
-	}
-	
-	/**
-	 * Retrieve a player command description based on id. 
-	 * 
-	 * A command description can be used to easily process commands, including
-	 * commands with sub-commands.
-	 * 
-	 * This method automatically creates a player-specific (in-game) command.
-	 * 
-	 * @param commandName The command id to retrieve or create
-	 * @param defaultTooltip The default tooltip to use if this is a new command
-	 * @param defaultUsage The default usage string, more can be added
-	 * @param pNode Override the default permission node
-	 * @param pType The type of permissions to apply to this command
-	 * @return A command descriptor
-	 */
-	public PluginCommand getPlayerCommand(String commandName, String defaultTooltip, String defaultUsage, String pNode, PermissionType pType)
-	{
-		return getCommand(commandName, defaultTooltip, defaultUsage, playerSender, pNode, pType);
+		return getCommand(commandName, defaultTooltip, defaultUsage, playerSender, pType);
 	}
 	
 	/**
@@ -199,7 +260,7 @@ public class PluginUtilities
 	 */
 	public PluginCommand getGeneralCommand(String commandName, String defaultTooltip, String defaultUsage)
 	{
-		return getGeneralCommand(commandName, defaultTooltip, defaultUsage, null, PermissionType.DEFAULT);
+		return getGeneralCommand(commandName, defaultTooltip, defaultUsage, PermissionType.DEFAULT);
 	}
 	
 	/**
@@ -220,28 +281,7 @@ public class PluginUtilities
 	 */
 	public PluginCommand getGeneralCommand(String commandName, String defaultTooltip, String defaultUsage, PermissionType pType)
 	{
-		return getCommand(commandName, defaultTooltip, defaultUsage, null, null, pType);
-	}
-	
-	/**
-	 * Retrieve a general command description based on id. 
-	 * 
-	 * A command description can be used to easily process commands, including
-	 * commands with sub-commands.
-	 * 
-	 * This method automatically creates a general command that will be passed
-	 * a CommandSender for use as a server or in-game command.
-	 * 
-	 * @param commandName The command id to retrieve or create
-	 * @param defaultTooltip The default tooltip to use if this is a new command
-	 * @param defaultUsage The default usage string, more can be added
-	 * @param pNode Override the default permission node
-	 * @param pType The type of permissions to apply to this command
-	 * @return A command descriptor
-	 */
-	public PluginCommand getGeneralCommand(String commandName, String defaultTooltip, String defaultUsage, String pNode, PermissionType pType)
-	{
-		return getCommand(commandName, defaultTooltip, defaultUsage, null, pNode, pType);
+		return getCommand(commandName, defaultTooltip, defaultUsage, null, pType);
 	}
 	
 	/**
@@ -256,9 +296,9 @@ public class PluginUtilities
 	 * @param sender The sender that will issue this command
 	 * @return A command descriptor
 	 */
-	public PluginCommand getCommand(String commandName, String defaultTooltip, String defaultUsage, CommandSenderData sender, String pNode, PermissionType pType)
+	public PluginCommand getCommand(String commandName, String defaultTooltip, String defaultUsage, CommandSenderData sender, PermissionType pType)
 	{
-		return plugin.getCommand(commandName, defaultTooltip, defaultUsage, sender, pNode, pType);
+		return plugin.getCommand(commandName, defaultTooltip, defaultUsage, sender, pType);
 	}
 
 	/**
@@ -386,7 +426,6 @@ public class PluginUtilities
 			}
 			catch (NoSuchMethodException ex)
 			{
-				log.warning("Persistence: Can't find callback method " + callbackName + " of " + listener.getClass().getName() + " for sender " + sender.getClass().getName());
 			}					
 			catch (SecurityException ex)
 			{
@@ -424,5 +463,6 @@ public class PluginUtilities
 	private Plugin				owner;
 	private PluginData			plugin;
 	private CommandSenderData	playerSender;
-	private static final Logger	log	= Persistence.getLogger();
+	private static final Logger	log		= Persistence.getLogger();
+	private static final Yaml	yaml	= new Yaml(new SafeConstructor());
 }

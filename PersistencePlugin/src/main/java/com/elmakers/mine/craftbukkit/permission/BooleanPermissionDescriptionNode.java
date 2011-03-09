@@ -16,7 +16,8 @@ public class BooleanPermissionDescriptionNode extends PermissionDescriptionNode 
     public Object getDefault() {
         if (map.containsKey("default")) {
             try {
-                return Boolean.parseBoolean((String)map.get("default"));
+            	Object mapData = map.get("default");
+                return Boolean.parseBoolean(mapData.toString());
             } catch (ClassCastException ex) {
                 return false;
             }

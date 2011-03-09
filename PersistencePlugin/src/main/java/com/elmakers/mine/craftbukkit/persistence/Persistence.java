@@ -60,7 +60,10 @@ public class Persistence implements com.elmakers.mine.bukkit.persistence.Persist
 	 */
 	public PluginUtilities getUtilities(Plugin plugin)
 	{
-		return new PluginUtilities(plugin, this);
+		PluginUtilities utilities = new PluginUtilities(plugin, this);
+		// TODO: This should be temporary...
+		utilities.loadPermissions(PersistencePlugin.getInstance().getPermissions());
+		return utilities;
 	}
 	
 	/**

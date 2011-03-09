@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.bukkit.Server;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -19,6 +20,7 @@ import com.elmakers.mine.bukkit.persistence.dao.Message;
 import com.elmakers.mine.bukkit.persistence.dao.PlayerData;
 import com.elmakers.mine.bukkit.persistence.dao.PluginCommand;
 import com.elmakers.mine.bukkit.persistence.dao.ProfileData;
+import com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin;
 import com.elmakers.mine.bukkit.utilities.PluginUtilities;
 import com.elmakers.mine.craftbukkit.permission.InvalidPermissionProfileException;
 import com.elmakers.mine.craftbukkit.permission.PermissionDescriptionNode;
@@ -28,14 +30,22 @@ import com.elmakers.mine.craftbukkit.persistence.Persistence;
 
 public class GroupManager implements PermissionManager, PermissionHandler
 {
-	public GroupManager(Server server, PluginUtilities utilities, Persistence persistence, File dataFolder)
+	public GroupManager(Server server, Persistence persistence, File dataFolder)
 	{
 		this.persistence = persistence;
-		this.utilities = utilities;
 		this.server = server;
 		this.dataFolder = dataFolder;
-		
+	}
+	
+	public boolean process(CommandSender messageOutput, Command cmd, String[] parameters)
+	{
+		return utilities.dispatch(this, messageOutput, cmd.getName(), parameters);
+	}
+	
+	public void initialize()
+	{
 	    GroupManagerDefaults d = new GroupManagerDefaults();
+	    utilities = persistence.getUtilities(PersistencePlugin.getInstance());
 	    
 	    // Messages
 		addedPlayerToGroupMessage = utilities.getMessage("addedPlayerToGroup", d.addedPlayerToGroupMessage);
@@ -71,25 +81,22 @@ public class GroupManager implements PermissionManager, PermissionHandler
 		denyGroupCommand.bind("onDenyGroupr");
 		grantPlayerCommand.bind("onGrantPlayer");
 		grantGroupCommand.bind("onGrantGroup");
-		
-		initializePermissions();
 	}
 	
 	public void initializePermissions()
 	{		
+		if (permissionsInitialized) return;
+		permissionsInitialized = true;
+		
 		// Set up player profiles for permissions
 		FileReader loader = null;
 		try
 		{
 			loader = new FileReader(new File(dataFolder, permissionsFile));
 
-			if (!loadProfiles(loader))
+			if (!loadProfiles(loader, permissionsFile))
 			{
 				log.info("Persistence: There's an error with permissions.yml - hopefully more info about that above.");
-			}
-			else
-			{
-				log.info("Persistence: Loaded permission profiles from " + permissionsFile);
 			}
 		}
 		catch(FileNotFoundException ex)
@@ -322,18 +329,24 @@ public class GroupManager implements PermissionManager, PermissionHandler
 		return true;
 	}
 	
-	protected boolean loadProfiles(Reader reader)
+	protected boolean loadProfiles(Reader reader, String filename)
 	{
 		PermissionProfile[] profiles;
 		try
 		{
 			profiles = PermissionProfile.loadProfiles(this, server, reader);
+			log.info("Permissions: loaded " + profiles.length + " profiles from " + filename);
 			for (PermissionProfile profile : profiles)
 			{
-				ProfileData profileData = persistence.get(profile.getName(), ProfileData.class);
+				String profileName = profile.getName();
+				if (profileName.equalsIgnoreCase("default"))
+				{
+					defaultProfile = profile;
+				}
+				ProfileData profileData = persistence.get(profileName, ProfileData.class);
 				if (profileData == null)
 				{
-					profileData = new ProfileData(profile.getName());
+					profileData = new ProfileData(profileName);
 					persistence.put(profileData);
 				}
 				
@@ -343,6 +356,7 @@ public class GroupManager implements PermissionManager, PermissionHandler
 		}
 		catch (InvalidPermissionProfileException e)
 		{
+			log.info(e.getMessage());
 			return false;
 		}
 		
@@ -380,8 +394,42 @@ public class GroupManager implements PermissionManager, PermissionHandler
 		permissionHandlers.add(handler);
 	}
 	
+	public void addPluginRootPermission(String pluginName, RootPermissionDescription rootNode)
+	{
+		if (permissions.get(pluginName) != null) return;
+	       	
+		if (rootNode != null)
+		{
+			String[] names = rootNode.getNames();
+			for (String name : names)
+			{
+				permissions.put(name, rootNode);
+			}
+		}
+	}
+	
 	public boolean isSet(Player player, String permissionNode)
 	{
+		if (defaultProfile != null)
+		{
+			if (defaultProfile.isSet(permissionNode))
+			{
+				return true;
+			}
+		}
+
+		for (RootPermissionDescription rootNodes : permissions.values())
+		{
+			PermissionDescriptionNode permission = rootNodes.getPath(permissionNode);
+			if (permission != null)
+			{
+				Object defaultValue = permission.getDefault();
+				if (defaultValue instanceof Boolean)
+				{
+					return (boolean)(Boolean)defaultValue;
+				}
+			}
+		}
 		for (PermissionHandler subHandler : permissionHandlers)
 		{
 			if (subHandler.isSet(player, permissionNode))
@@ -395,10 +443,13 @@ public class GroupManager implements PermissionManager, PermissionHandler
 	private final Map<String, RootPermissionDescription> permissions = new HashMap<String, RootPermissionDescription>();
 	private final List<PermissionHandler> permissionHandlers = new ArrayList<PermissionHandler>();
 
-	protected Persistence									persistence		= null;
-	protected PluginUtilities								utilities		= null;
-	protected Server										server			= null;
-	protected File											dataFolder		= null;
+	protected Persistence									persistence				= null;
+	protected Server										server					= null;
+	protected File											dataFolder				= null;
+	protected PermissionProfile								defaultProfile			= null;
+	protected PluginUtilities								utilities				= null;
+
+	protected boolean										permissionsInitialized = false;
 
 	private PluginCommand									groupCommand;
 	private PluginCommand									groupCreateCommand;

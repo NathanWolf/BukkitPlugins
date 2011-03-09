@@ -111,21 +111,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 */
 	public PluginCommand getSubCommand(String subCommandName, String defaultTooltip, String defaultUsage)
 	{
-		return getSubCommand(subCommandName, defaultTooltip, defaultUsage, null, PermissionType.DEFAULT);
-	}
-	
-	/**
-	 * Get or create a sub-command of this command.
-	 * 
-	 * @param subCommandName The sub-command name
-	 * @param defaultTooltip The default tooltip
-	 * @param defaultUsage The default usage string
-	 * @param pType The type of permissions to apply
-	 * @return A new command object
-	 */
-	public PluginCommand getSubCommand(String subCommandName, String defaultTooltip, String defaultUsage, PermissionType pType)
-	{
-		return getSubCommand(subCommandName, defaultTooltip, defaultUsage, null, pType);
+		return getSubCommand(subCommandName, defaultTooltip, defaultUsage, PermissionType.DEFAULT);
 	}
 	
 	/**
@@ -138,23 +124,13 @@ public class PluginCommand implements Comparable<PluginCommand>
 	 * @param pType The type of permissions to apply
 	 * @return A new command object
 	 */
-	public PluginCommand getSubCommand(String subCommandName, String defaultTooltip, String defaultUsage, String pNode, PermissionType pType)
+	public PluginCommand getSubCommand(String subCommandName, String defaultTooltip, String defaultUsage, PermissionType pType)
 	{
 		PluginCommand child = childMap.get(subCommandName);
 		if (child == null)
 		{
 			child = new PluginCommand(plugin, subCommandName, defaultTooltip, pType);
 			child.addUsage(defaultUsage);
-			
-			if (pNode == null)
-			{
-				permissionNode = child.getDefaultPermissionNode();
-			}
-			else
-			{
-				permissionNode = pNode;
-			}
-			child.setPermissionNode(permissionNode);
 			
 			// adds senders
 			addSubCommand(child);	
@@ -217,7 +193,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 		{
 			// Always allow for non-player senders now
 			// TODO: Permissable interface check?
-			if (player == null) return true;
+			if (player == null || playerData == null) return true;
 		}
 		
 		switch (permissionType)
@@ -226,9 +202,10 @@ public class PluginCommand implements Comparable<PluginCommand>
 			case OPS_ONLY:
 				return player.isOp();
 			case DEFAULT:
-				if (permissionNode != null && permissionNode.length() > 0)
+				String pnode = getPermissionNode();
+				if (pnode != null && pnode.length() > 0)
 				{
-					return playerData.isSet(permissionNode);
+					return playerData.isSet(pnode);
 				}
 				break;
 		}
@@ -432,6 +409,17 @@ public class PluginCommand implements Comparable<PluginCommand>
 	{
 		return senders;
 	}
+	
+	@PersistField
+	public PermissionType getPermissionType()
+	{
+		return permissionType;
+	}
+
+	public void setPermissionType(PermissionType permissionType)
+	{
+		this.permissionType = permissionType;
+	}
 
 	public String getCallbackMethod()
 	{
@@ -466,26 +454,13 @@ public class PluginCommand implements Comparable<PluginCommand>
 		}
 	}
 
-	@PersistField
 	public String getPermissionNode()
 	{
+		if (permissionNode == null)
+		{
+			permissionNode = getDefaultPermissionNode();
+		}
 		return permissionNode;
-	}
-
-	public void setPermissionNode(String permissionNode)
-	{
-		this.permissionNode = permissionNode;
-	}
-
-	@PersistField
-	public void setPermissionType(PermissionType permissionType)
-	{
-		this.permissionType = permissionType;
-	}
-
-	public PermissionType getPermissionType()
-	{
-		return permissionType;
 	}
 
 	private List<PluginCommand>	children;	

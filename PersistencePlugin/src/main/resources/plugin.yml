@@ -1,19 +1,25 @@
 name: Persistence
 main: com.elmakers.mine.bukkit.plugins.persistence.PersistencePlugin
-version: 0.55
+version: 0.57
 website: http://mine.elmakers.com
 author: NathanWolf
 description : A generalized persistence engine for Bukkit.
 commands:
   persist:
     description: Access persistence commands
-    usage: Use "phelp persist" for help
+    usage: Use "phelp" for help
   phelp:
     description: Provide detailed help for any Persistence-enabled plugins
-    usage: Use "phelp" for help
+    usage: Get help on plugin commands
   su:
     description: Toggle SuperUser status (ops-only)
     usage: Use "phelp" for help
+  group:
+    description: Create and manage player groups
+  grant:
+    description: Grant players and groups access
+  deny:
+    description: Deny players and groups access
 permissions:
   Persistence:
     description: Persistence permissions
@@ -27,7 +33,23 @@ permissions:
             description: If true, they can use the persist command
             type: boolean
             default: false
+          phelp:
+            description: If true, they can use the help command
+            type: boolean
+            default: true
           su:
             description: Whether a user has SU access
+            type: boolean
+            default: false
+          group:
+            description: Allows access to group management
+            type: boolean
+            default: false
+          grant:
+            description: May grant permissions
+            type: boolean
+            default: false
+          deny:
+            description: May deny permissions
             type: boolean
             default: false

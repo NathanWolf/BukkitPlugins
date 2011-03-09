@@ -18,6 +18,8 @@ public class PersistenceListener extends PlayerListener
 	@Override
 	public void onPlayerJoin(PlayerEvent event)
 	{
+		PersistencePlugin.getInstance().getPermissions().initializePermissions();
+		
 		Player player = event.getPlayer();
 		String playerName = player.getName();
 		PlayerData playerData = persistence.get(playerName, PlayerData.class);
