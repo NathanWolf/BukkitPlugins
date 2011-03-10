@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.bukkit.Server;
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -37,15 +36,10 @@ public class GroupManager implements PermissionManager, PermissionHandler
 		this.dataFolder = dataFolder;
 	}
 	
-	public boolean process(CommandSender messageOutput, Command cmd, String[] parameters)
-	{
-		return utilities.dispatch(this, messageOutput, cmd.getName(), parameters);
-	}
-	
 	public void initialize()
 	{
 	    GroupManagerDefaults d = new GroupManagerDefaults();
-	    utilities = persistence.getUtilities(PersistencePlugin.getInstance());
+	    PluginUtilities utilities = PersistencePlugin.getInstance().getUtilities();
 	    
 	    // Messages
 		addedPlayerToGroupMessage = utilities.getMessage("addedPlayerToGroup", d.addedPlayerToGroupMessage);
@@ -442,7 +436,6 @@ public class GroupManager implements PermissionManager, PermissionHandler
 	protected Server										server					= null;
 	protected File											dataFolder				= null;
 	protected PermissionProfile								defaultProfile			= null;
-	protected PluginUtilities								utilities				= null;
 
 	protected boolean										permissionsInitialized = false;
 

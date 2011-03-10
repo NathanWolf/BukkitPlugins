@@ -11,7 +11,7 @@
   	</dependencies>
   </dependencyManagement>
   <properties>
-  	<build.version>0.60</build.version>
+  	<build.version>0.61</build.version>
   </properties>
   <repositories>
     <repository>

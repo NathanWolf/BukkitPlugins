@@ -304,6 +304,7 @@ public class PluginUtilities
 		return plugin.getCommand(commandName, defaultTooltip, defaultUsage, sender, pType);
 	}
 
+
 	/**
 	 * Dispatch any automatically bound command handlers.
 	 * 
@@ -325,6 +326,32 @@ public class PluginUtilities
 	 */
 	public boolean dispatch(Object listener, CommandSender sender, String baseCommand, String[] baseParameters)
 	{
+		List<Object> listeners = new ArrayList<Object>();
+		listeners.add(listener);
+		return dispatch(listeners, sender, baseCommand, baseParameters);
+	}
+	
+	/**
+	 * Dispatch any automatically bound command handlers.
+	 * 
+	 * Any commands registered with this plugin that around bound() to a command handler will be automatically called.
+	 * 
+	 * For Player commands, the signature should be:
+	 * 
+	 * public boolean onMyCommand(Player player, String[] parameters)
+	 * {
+	 * }
+	 * 
+	 * For General commands, a CommandSender should be used in place of Player.
+	 * 
+	 * @param listeners The class that will handle the command callback
+	 * @param sender The sender of this command
+	 * @param baseCommand The base command issues
+	 * @param baseParameters Any parameters (or sub-commands) passed to the base command 
+	 * @see PluginCommand#bind(String)
+	 */
+	public boolean dispatch(List<Object> listeners, CommandSender sender, String baseCommand, String[] baseParameters)
+	{
 		List<PluginCommand> baseCommands = plugin.getCommands();
 		if (baseCommands == null) return false;
 		
@@ -333,13 +360,13 @@ public class PluginUtilities
 		
 		for (PluginCommand command : commandsCopy)
 		{
-			boolean success = dispatch(listener, sender, command, baseCommand, baseParameters);
+			boolean success = dispatch(listeners, sender, command, baseCommand, baseParameters);
 			if (success) return true;
 		}
 		return false;
 	}
 	
-	protected boolean dispatch(Object listener, CommandSender sender, PluginCommand command, String commandString, String[] parameters)
+	protected boolean dispatch(List<Object> listeners, CommandSender sender, PluginCommand command, String commandString, String[] parameters)
 	{		
 		if (command != null && command.checkCommand(sender, commandString))
 		{			
@@ -361,7 +388,7 @@ public class PluginUtilities
 					
 					for (PluginCommand child : commandsCopy)
 					{
-						handledByChild = dispatch(listener, sender, child, childCommand, childParameters);
+						handledByChild = dispatch(listeners, sender, child, childCommand, childParameters);
 						if (handledByChild)
 						{
 							return true;
@@ -385,68 +412,76 @@ public class PluginUtilities
 				return true;
 			}
 			
-			try
+			for (Object listener : listeners)
 			{
-				List<CommandSenderData> senders = command.getSenders();
-				
-				if (senders != null)
+				try
 				{
-					for (CommandSenderData senderData : senders)
+					List<CommandSenderData> senders = command.getSenders();
+					
+					if (senders != null)
 					{
-						Class<?> senderType = senderData.getType();
-						if (senderType == null) continue;
-						if (!senderType.isAssignableFrom(sender.getClass())) continue;
-						try
+						for (CommandSenderData senderData : senders)
 						{
-							Method customHandler;
-							customHandler = listener.getClass().getMethod(callbackName, senderType, String[].class);
+							Class<?> senderType = senderData.getType();
+							if (senderType == null) continue;
+							if (!senderType.isAssignableFrom(sender.getClass())) continue;
 							try
 							{
-								return (Boolean)customHandler.invoke(listener, senderType.cast(sender), parameters);
+								Method customHandler;
+								customHandler = listener.getClass().getMethod(callbackName, senderType, String[].class);
+								try
+								{
+									return (Boolean)customHandler.invoke(listener, senderType.cast(sender), parameters);
+								}
+								catch(InvocationTargetException clientEx)
+								{
+									log.severe("Error invoking callback '" + callbackName);
+									clientEx.getTargetException().printStackTrace();
+									return false;
+								}
+								catch(Throwable clientEx)
+								{
+									log.severe("Error invoking trying to invoke callback '" + callbackName);
+									clientEx.printStackTrace();
+									return false;
+								}
 							}
-							catch(InvocationTargetException clientEx)
+							catch (NoSuchMethodException e)
 							{
-								log.severe("Error invoking callback '" + callbackName);
-								clientEx.getTargetException().printStackTrace();
-								return false;
-							}
-							catch(Throwable clientEx)
-							{
-								log.severe("Error invoking trying to invoke callback '" + callbackName);
-								clientEx.printStackTrace();
-								return false;
-							}
+							}					
 						}
-						catch (NoSuchMethodException e)
+		
+						try
 						{
-						}					
+							Method genericHandler;
+							genericHandler = listener.getClass().getMethod(callbackName, CommandSender.class, String[].class);
+							return (Boolean)genericHandler.invoke(listener, sender, parameters);
+						}
+						catch (NoSuchMethodException ex)
+						{
+						}	
 					}
 				}
-
-				Method genericHandler;
-				genericHandler = listener.getClass().getMethod(callbackName, CommandSender.class, String[].class);
-				return (Boolean)genericHandler.invoke(listener, sender, parameters);
+				catch (SecurityException ex)
+				{
+					log.warning("Persistence: Can't access callback method " + callbackName + " of " + listener.getClass().getName() + ", make sure it's public");
+				}
+				catch (IllegalArgumentException ex)
+				{
+					log.warning("Persistence: Can't find callback method " + callbackName + " of " + listener.getClass().getName() + " with the correct signature, please consult the docs.");
+				}
+				catch (IllegalAccessException ex)
+				{
+					log.warning("Persistence: Can't access callback method " + callbackName + " of " + listener.getClass().getName());
+				}
+				catch (InvocationTargetException ex)
+				{
+					log.severe("Persistence: Error invoking callback method " + callbackName + " of " + listener.getClass().getName());
+					ex.printStackTrace();
+				}
 			}
-			catch (NoSuchMethodException ex)
-			{
-			}					
-			catch (SecurityException ex)
-			{
-				log.warning("Persistence: Can't access callback method " + callbackName + " of " + listener.getClass().getName() + ", make sure it's public");
-			}
-			catch (IllegalArgumentException ex)
-			{
-				log.warning("Persistence: Can't find callback method " + callbackName + " of " + listener.getClass().getName() + " with the correct signature, please consult the docs.");
-			}
-			catch (IllegalAccessException ex)
-			{
-				log.warning("Persistence: Can't access callback method " + callbackName + " of " + listener.getClass().getName());
-			}
-			catch (InvocationTargetException ex)
-			{
-				log.severe("Persistence: Error invoking callback method " + callbackName + " of " + listener.getClass().getName());
-				ex.printStackTrace();
-			}
+			
+			log.info("Peristence: Can't find callback '" + callbackName + " for plugin " + plugin.getId());
 		}
 		
 		return false;

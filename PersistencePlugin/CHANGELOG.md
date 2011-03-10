@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.61
+
+ - More internal command fixes, "su" and "persist" were broken.
+ - Fix "persist list" when there are lists
+
 # 0.60
 
  - Allow use of "list" permissions to mimic old-style dynamic permission lists

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -16,6 +15,7 @@ import com.elmakers.mine.bukkit.utilities.PluginUtilities;
 import com.elmakers.mine.craftbukkit.persistence.Persistence;
 import com.elmakers.mine.craftbukkit.persistence.core.PersistedClass;
 import com.elmakers.mine.craftbukkit.persistence.core.PersistedField;
+import com.elmakers.mine.craftbukkit.persistence.core.PersistedList;
 import com.elmakers.mine.craftbukkit.persistence.core.Schema;
 
 public class PersistenceCommands
@@ -24,7 +24,6 @@ public class PersistenceCommands
 	{
 		PersistenceDefaults d = new PersistenceDefaults();
 		this.persistence = persistence;
-		this.utilities = utilities;
 
 		// Initialize Messages
 		
@@ -72,11 +71,6 @@ public class PersistenceCommands
 		suCommand.bind("onSU");
 		
 		helpCommand.bind("onHelp");
-	}
-	
-	public boolean process(CommandSender messageOutput, Command cmd, String[] parameters)
-	{
-		return utilities.dispatch(this, messageOutput, cmd.getName(), parameters);
 	}
 
 	public boolean onSU(Player player, String[] parameters)
@@ -329,7 +323,7 @@ public class PersistenceCommands
 	
 	protected void listEntity(CommandSender messageOutput, String schemaName, String entityName, String id)
 	{
-		PersistedClass persisted = getEntity(messageOutput, schemaName, entityName);
+   		PersistedClass persisted = getEntity(messageOutput, schemaName, entityName);
 		if (persisted == null) return;
 		
 		Object instance = persisted.get(id);
@@ -348,19 +342,51 @@ public class PersistenceCommands
 			
 			Object data = field.get(instance);
 			PersistedClass refType = field.getReferenceType();
-			if (refType != null)
-			{
-				data = refType.getIdData(data);
-			}
-			
+			boolean isList = (field instanceof PersistedList);
 			String dataField = "null";
-			if (data != null)
-			{
-				dataField = data.toString();
+			
+			if (isList)
+			{			
+				if (data != null && (data instanceof List<?>))
+				{
+					@SuppressWarnings("unchecked")
+					List<Object> instances = (List<Object>)data;
+					int count = 0;
+					dataField = "[";
+					for (Object listInstance : instances)
+					{
+						String listId = "?";
+						if (listInstance != null)
+						{
+							if (refType != null)
+							{
+								listInstance = refType.getIdData(listInstance);
+							}
+							listId = listInstance.toString();
+						}
+						if (count != 0) dataField += ",";
+						dataField += listId;
+						
+						if (count++ > 4)
+						{
+							dataField += "...";
+							break;
+						}
+					}
+					dataField += "]";
+				}
 			}
 			else if (refType != null)
 			{
-				dataField = listCompactEntity(refType, data);
+				data = refType.getIdData(data);
+				if (data != null)
+				{
+					dataField = listCompactEntity(refType, data);
+				}
+			}
+			else if (data != null)
+			{
+				dataField = data.toString();
 			}
 			
 			String row = fieldName + " = " + dataField;
@@ -604,7 +630,6 @@ public class PersistenceCommands
 	private Message suEnabledMessage;
 	private Message suDisabledMessage;
 	
-	private PluginUtilities utilities;
 	private Persistence persistence;
 
 }

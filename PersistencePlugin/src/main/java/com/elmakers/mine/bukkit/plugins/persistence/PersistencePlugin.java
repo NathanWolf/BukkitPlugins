@@ -1,5 +1,7 @@
 package com.elmakers.mine.bukkit.plugins.persistence;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.bukkit.command.Command;
@@ -41,16 +43,15 @@ public class PersistencePlugin extends JavaPlugin
 	 * @see org.bukkit.plugin.java.JavaPlugin#onCommand(org.bukkit.command.CommandSender, org.bukkit.command.Command, java.lang.String, java.lang.String[])
 	 */
 	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args)
+	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] parameters)
 	{
-		if (permissions != null)
+		if (listeners == null)
 		{
-			if (permissions.process(sender, cmd, args))
-			{
-				return true;
-			}
+			listeners = new ArrayList<Object>();
+			listeners.add(handler);
+			listeners.add(getPermissions());
 		}
-		return handler.process(sender, cmd, args);
+		return utilities.dispatch(listeners, sender, cmd.getName(), parameters);
 	}
 
 	/**
@@ -152,7 +153,7 @@ public class PersistencePlugin extends JavaPlugin
 		pm.registerEvent(Type.PLAYER_JOIN, listener, Priority.Normal, this);
 	}
 	
-	protected PluginUtilities getUtilities()
+	public PluginUtilities getUtilities()
 	{
 		if (utilities == null)
 		{
@@ -186,6 +187,7 @@ public class PersistencePlugin extends JavaPlugin
 	private Persistence					persistence		= null;
 	private GroupManager				permissions		= null;
 	private PluginUtilities				utilities		= null;
+	private List<Object>				listeners 		= null;
 	private static final Logger			log				= Logger.getLogger("Minecraft");
 	
 }
