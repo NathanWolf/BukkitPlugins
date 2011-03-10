@@ -237,10 +237,10 @@ public class CrowdControlPlugin extends JavaPlugin
 		{
 			try
 			{
-				percent = Float.parseFloat(parameters[2]);
+				percent = Float.parseFloat(parameters[1]);
 				if (percent > 1)
 				{
-					percent = (float)Integer.parseInt(parameters[2]) / 100;
+					percent = (float)Integer.parseInt(parameters[1]) / 100;
 				}
 			} 
 			catch(NumberFormatException ex)

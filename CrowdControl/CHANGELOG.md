@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 0.20
+
+ - Fix some broken console command parameters
+
 # 0.19
 
  - Update config.yml to support internal permissions
