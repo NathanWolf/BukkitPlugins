@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 0.60
+
+ - Allow use of "list" permissions to mimic old-style dynamic permission lists
+ - Some fixes to CommandData for the persisted permission type
+
 # 0.59
 
  - Fix permissions in config.yml

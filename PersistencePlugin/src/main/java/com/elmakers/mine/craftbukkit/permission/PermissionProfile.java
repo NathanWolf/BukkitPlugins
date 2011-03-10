@@ -69,7 +69,8 @@ public class PermissionProfile implements Permissions {
     private void loadNode(final String path, Object node) throws InvalidPermissionProfileException {
         if (node instanceof Map<?, ?>) {
             try {
-                Map<String, Object> map = (Map<String, Object>)node;
+                @SuppressWarnings("unchecked")
+				Map<String, Object> map = (Map<String, Object>)node;
                 Set<String> keys = map.keySet();
 
                 for (String key : keys) {
@@ -80,6 +81,14 @@ public class PermissionProfile implements Permissions {
             } catch (IllegalArgumentException ex) {
                 throw new InvalidPermissionProfileException(ex);
             }
+        } else if (node instanceof List<?>) {
+        	 @SuppressWarnings("unchecked")
+			 List<Object> list = (List<Object>)node;
+        	 for (Object key : list) {
+        		 if (key instanceof String) {
+        			 values.put(path + "." + (String)key, (Boolean)true);
+        		 }
+        	 }
         } else {
             set(path, node);
         }

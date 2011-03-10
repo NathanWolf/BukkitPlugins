@@ -335,7 +335,7 @@ public class GroupManager implements PermissionManager, PermissionHandler
 		try
 		{
 			profiles = PermissionProfile.loadProfiles(this, server, reader);
-			log.info("Permissions: loaded " + profiles.length + " profiles from " + filename);
+			log.info("Persistence: loaded " + profiles.length + " profiles from " + filename);
 			for (PermissionProfile profile : profiles)
 			{
 				String profileName = profile.getName();
@@ -420,14 +420,9 @@ public class GroupManager implements PermissionManager, PermissionHandler
 
 		for (RootPermissionDescription rootNodes : permissions.values())
 		{
-			PermissionDescriptionNode permission = rootNodes.getPath(permissionNode);
-			if (permission != null)
+			if (rootNodes.isDefaultSet(permissionNode))
 			{
-				Object defaultValue = permission.getDefault();
-				if (defaultValue instanceof Boolean)
-				{
-					return (boolean)(Boolean)defaultValue;
-				}
+				return true;
 			}
 		}
 		for (PermissionHandler subHandler : permissionHandlers)

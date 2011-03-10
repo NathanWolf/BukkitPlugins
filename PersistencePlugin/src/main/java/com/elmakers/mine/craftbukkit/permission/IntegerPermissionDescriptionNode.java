@@ -19,7 +19,8 @@ public class IntegerPermissionDescriptionNode extends PermissionDescriptionNode 
     public Object getDefault() {
         if (map.containsKey("default")) {
             try {
-                return Integer.parseInt((String)map.get("default"), 10);
+            	// TODO: Better type checking/conversion (see DataType)
+                return Integer.parseInt(map.get("default").toString(), 10);
             } catch (ClassCastException ex) {
                 return 0;
             }

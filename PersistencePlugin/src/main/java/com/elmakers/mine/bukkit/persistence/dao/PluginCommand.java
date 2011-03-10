@@ -138,7 +138,9 @@ public class PluginCommand implements Comparable<PluginCommand>
 			Persistence persistence = Persistence.getInstance();
 			persistence.put(child);
 			persistence.put(this);
-		}
+		}	
+		
+		child.setPermissionType(pType);
 		
 		return child;
 	}
@@ -184,7 +186,12 @@ public class PluginCommand implements Comparable<PluginCommand>
 			player = (Player)sender;
 			playerData = Persistence.getInstance().get(player.getName(), PlayerData.class);
 		}
-
+		
+		if (permissionType == null)
+		{
+			permissionType = PermissionType.DEFAULT;
+		} 
+		
 		if (permissionType == PermissionType.PLAYER_ONLY)
 		{
 			if (player == null || playerData == null) return false;
@@ -409,8 +416,7 @@ public class PluginCommand implements Comparable<PluginCommand>
 	{
 		return senders;
 	}
-	
-	@PersistField
+
 	public PermissionType getPermissionType()
 	{
 		return permissionType;

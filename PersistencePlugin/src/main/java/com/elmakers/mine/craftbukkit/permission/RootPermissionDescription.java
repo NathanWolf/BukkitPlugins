@@ -1,6 +1,7 @@
 
 package com.elmakers.mine.craftbukkit.permission;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +21,36 @@ public class RootPermissionDescription extends MapPermissionDescriptionNode {
         } catch (ClassCastException ex) {
             throw new PermissionDescriptionNodeException("Root permissions are not maps", ex);
         }
+    }
+    
+    public boolean isDefaultSet(final String path)
+    {
+    	String[] keys = path.split("\\.");
+        MapPermissionDescriptionNode top = this;
+
+        for (int i = 0; i < keys.length; i++) {
+            PermissionDescriptionNode node = top.getNode(keys[i]);
+            if (node == null) continue;
+
+            if (node instanceof MapPermissionDescriptionNode) {
+            	top = (MapPermissionDescriptionNode)node;
+            } else if (node instanceof ListPermissionDescriptionNode && i == keys.length - 1) {
+            	ListPermissionDescriptionNode list = (ListPermissionDescriptionNode)node;
+            	
+            	@SuppressWarnings("unchecked")
+				ArrayList<Object> arrayList = (ArrayList<Object>)list.getDefault();
+            	if (arrayList != null) {
+            		return arrayList.contains(keys[i]);
+            	}
+            } else if (node instanceof BooleanPermissionDescriptionNode && i == keys.length - 1) {
+                return (Boolean)node.getDefault();
+            }   
+            else {
+            	return false;
+            }
+        }
+
+        return false;
     }
 
     public PermissionDescriptionNode getPath(final String map) {

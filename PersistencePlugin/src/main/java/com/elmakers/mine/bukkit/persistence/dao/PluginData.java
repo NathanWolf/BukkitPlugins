@@ -90,7 +90,24 @@ public class PluginData extends Persisted
 		// First, look for a root command by this name-
 		// command map only holds root commands!
 		PluginCommand command = commandMap.get(commandName);
-		if (command != null) return command;
+		if (command != null) 
+		{
+			command.setPermissionType(pType);
+			List<CommandSenderData> senders = command.getSenders();
+			if (sender != null)
+			{
+				if (senders == null)
+				{
+					senders = new ArrayList<CommandSenderData>();
+				}
+				if (!senders.contains(sender))
+				{
+					senders.add(sender);
+					command.setSenders(senders);
+				}
+			}
+			return command;
+		}
 		
 		// Create a new un-parented command
 		command = new PluginCommand(this, commandName, defaultTooltip, pType);
