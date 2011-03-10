@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.991
+
+ - Yes, I'm doing that with the version numbers until 1.0 :P
+ - Update config.yml to support internal permissions
+
 ## 0.99
 
  - Bring back tunnel, torches disabled.
