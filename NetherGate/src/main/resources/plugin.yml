@@ -1,6 +1,6 @@
 name: NetherGate
 main: com.elmakers.mine.bukkit.plugins.nether.NetherGatePlugin
-version: 0.52
+version: 0.53
 website: http://mine.elmakers.com
 author: NathanWolf
 description : An attempt to reproduce Nether Gates in SMP
@@ -72,7 +72,7 @@ permissions:
                   clean:
                     description: Can clean up spawn areas
                     type: boolean
-                    default: true
+                    default: false
               home:
                 description: Can access home commands
                 type: map

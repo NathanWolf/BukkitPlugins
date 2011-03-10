@@ -110,8 +110,8 @@ public class NetherGatePlugin extends JavaPlugin
 		kitCommand = netherCommand.getSubCommand("kit", "Give yourself a portal kit", null);
 
 		homeCommand = netherCommand.getSubCommand("home", "Manage your home", null); 
-		homeSetCommand = netherCommand.getSubCommand("set", "Set your home world and location", null); 
-		homeGoCommand = netherCommand.getSubCommand("go", "Go to your home world and location", null);
+		homeSetCommand = homeCommand.getSubCommand("set", "Set your home world and location", null); 
+		homeGoCommand = homeCommand.getSubCommand("go", "Go to your home world and location", null);
 	
 		compassCommand = netherCommand.getSubCommand("compass", "Get your current location", null);
 		
